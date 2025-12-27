@@ -1,7 +1,7 @@
-// app/api/calculate/route.ts
 import { NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+// 注意：这里去掉了 ": Request"，因为这是 JS 文件
+export async function POST(request) {
   // 1. 获取前端传来的数据
   const body = await request.json();
   const { firstName, lastName, date, time, city } = body;
@@ -9,16 +9,15 @@ export async function POST(request: Request) {
   console.log("收到数据:", body);
 
   // ==========================================
-  // 【在这里写你的核心后端逻辑】
-  // 比如：调用算命算法、查数据库、或者调用 OpenAI
+  // 模拟后端逻辑
   // ==========================================
   
-  // 模拟一个复杂的计算过程
   const result = {
-    sunSign: "Leo", // 比如这是你算出来的
-    moonSign: "Virgo",
-    luckyColor: "Gold",
-    message: `你好 ${firstName}, 你的命运齿轮开始转动了...`
+    firstName: firstName,
+    sunSign: "Leo",          // 模拟算出来的星座
+    moonSign: "Virgo",       // 模拟数据
+    lifePath: "Number 1",    // 模拟数据
+    message: `你好 ${firstName}, 星星已收到你的召唤 (来自后端 API)`
   };
 
   // 2. 把结果返回给前端

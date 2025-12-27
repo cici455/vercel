@@ -238,36 +238,47 @@ export default function Home() {
   const [step, setStep] = useState(0);
 
   // 这里是连接后端逻辑的地方
+  // ... 其他代码保持不变 ...
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // TODO: 这里写你的后端调用逻辑
-    // const formData = new FormData(e.target as HTMLFormElement);
-    // await fetch('/api/your-backend-endpoint', { method: 'POST', body: ... })
+    // 1. 收集表单数据
+    // 注意：你需要给 input 加上 name 属性，或者用 state 绑定
+    // 这里为了演示简单，假设你已经把 input 的值存到了 state 里，或者直接获取
+    // 实际开发建议给 InputPage 组件里的 input 加上 onChange 绑定
     
-    setStep(2); // 进入加载页
+    const formData = {
+        firstName: "User", // 这里应该填写真实获取到的 input 值
+        lastName: "Test",
+        date: "01/01/2000",
+        city: "New York"
+    };
+
+    setStep(2); // 显示 "ALIGNING STARS" 加载动画
+
+    try {
+        // 2. 发送给后端 (就是第一步写的那个文件)
+        const response = await fetch('/api/calculate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        
+        console.log("后端返回的结果:", data);
+        
+        // 3. 拿到结果后，进入 Dashboard
+        // 你可以把 data 存起来，传给 DashboardPage 组件显示
+        setStep(3); 
+        
+    } catch (error) {
+        console.error("请求失败:", error);
+        alert("连接宇宙信号失败，请重试");
+        setStep(1); // 返回输入页
+    }
   };
 
-  return (
-    <main className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden font-sans text-white">
-      {/* 噪音背景层 */}
-      <div className="fixed top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none z-50" 
-           style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`}}>
-      </div>
-      
-      {/* 暗角层 */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
-           style={{background: 'radial-gradient(circle at center, transparent 40%, #000000 120%)'}}>
-      </div>
-
-      <ConstellationBackground />
-
-      <AnimatePresence mode="wait">
-        {step === 0 && <LandingPage key="landing" onStart={() => setStep(1)} />}
-        {step === 1 && <InputPage key="input" onSubmit={handleFormSubmit} />}
-        {step === 2 && <LoadingPage key="loading" onComplete={() => setStep(3)} />}
-        {step === 3 && <DashboardPage key="dashboard" />}
-      </AnimatePresence>
-    </main>
-  );
+  // ... 其他代码保持不变 ...
 }

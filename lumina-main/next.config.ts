@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 1. 必须开启静态导出
-  output: "export",
+  // Cloudflare Pages 使用 @cloudflare/next-on-pages 时不需要静态导出
+  // output: "export" 会阻止 API 路由工作，所以移除它
 
-  // 2. 必须关闭图片优化 (否则静态部署会报错或白屏)
+  // 图片优化配置（Cloudflare Pages 支持）
   images: {
     unoptimized: true,
   },

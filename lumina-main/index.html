@@ -80,27 +80,62 @@
                 baseY: Math.random() * height
             }));
 
-            // 星座形状生成器 (归一化坐标)
+            // 12星座形状生成器 (归一化坐标，简化图案)
             const ZodiacShapes = {
-                ARIES: (i) => { // 白羊座形状
-                    const points = [[0.2,0.6],[0.35,0.5],[0.5,0.45],[0.65,0.5],[0.75,0.65]];
-                    const pt = points[i % points.length];
-                    return { x: pt[0], y: pt[1] };
+                ARIES: (i) => { // 白羊座 - 弯曲的角
+                    const points = [[0.3,0.5],[0.4,0.4],[0.5,0.35],[0.6,0.4],[0.7,0.5],[0.65,0.6],[0.5,0.65],[0.35,0.6]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
                 },
-                TAURUS: (i) => { // 金牛座 V形
-                    const points = [[0.5,0.8],[0.5,0.6],[0.3,0.4],[0.7,0.4],[0.2,0.25],[0.8,0.25]];
-                    const pt = points[i % points.length];
-                    return { x: pt[0], y: pt[1] };
+                TAURUS: (i) => { // 金牛座 - V形
+                    const points = [[0.5,0.7],[0.5,0.5],[0.35,0.35],[0.65,0.35],[0.25,0.2],[0.75,0.2]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
                 },
-                LEO: (i) => { // 狮子座 问号形
-                    const points = [[0.3,0.3],[0.4,0.2],[0.55,0.2],[0.65,0.35],[0.6,0.5],[0.45,0.6],[0.35,0.7]];
-                    const pt = points[i % points.length];
-                    return { x: pt[0], y: pt[1] };
+                GEMINI: (i) => { // 双子座 - 双人形
+                    const points = [[0.3,0.3],[0.3,0.5],[0.3,0.7],[0.7,0.3],[0.7,0.5],[0.7,0.7],[0.5,0.4],[0.5,0.6]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                CANCER: (i) => { // 巨蟹座 - 蟹钳形
+                    const points = [[0.5,0.5],[0.35,0.4],[0.25,0.35],[0.2,0.45],[0.3,0.55],[0.65,0.4],[0.75,0.35],[0.8,0.45],[0.7,0.55]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                LEO: (i) => { // 狮子座 - 问号形
+                    const points = [[0.3,0.3],[0.4,0.2],[0.55,0.2],[0.65,0.35],[0.6,0.5],[0.45,0.6],[0.35,0.7],[0.5,0.65]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                VIRGO: (i) => { // 处女座 - M形
+                    const points = [[0.3,0.7],[0.4,0.5],[0.5,0.4],[0.6,0.5],[0.7,0.7],[0.5,0.6],[0.4,0.55]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                LIBRA: (i) => { // 天秤座 - 平衡符号
+                    const points = [[0.5,0.3],[0.5,0.5],[0.3,0.5],[0.7,0.5],[0.2,0.4],[0.8,0.4],[0.2,0.6],[0.8,0.6]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                SCORPIO: (i) => { // 天蝎座 - 蝎子形
+                    const points = [[0.3,0.3],[0.4,0.4],[0.5,0.5],[0.6,0.6],[0.65,0.7],[0.6,0.75],[0.5,0.7],[0.35,0.6],[0.25,0.5]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                SAGITTARIUS: (i) => { // 射手座 - 箭头形
+                    const points = [[0.5,0.2],[0.5,0.4],[0.5,0.6],[0.4,0.7],[0.6,0.7],[0.35,0.75],[0.65,0.75]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                CAPRICORN: (i) => { // 摩羯座 - 山羊形
+                    const points = [[0.3,0.3],[0.4,0.25],[0.5,0.3],[0.6,0.35],[0.65,0.45],[0.6,0.55],[0.5,0.6],[0.4,0.65],[0.3,0.7]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                AQUARIUS: (i) => { // 水瓶座 - 波浪形
+                    const points = [[0.2,0.4],[0.35,0.35],[0.5,0.4],[0.65,0.35],[0.8,0.4],[0.5,0.5],[0.3,0.55],[0.7,0.55]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
+                },
+                PISCES: (i) => { // 双鱼座 - 双鱼形
+                    const points = [[0.3,0.4],[0.25,0.5],[0.3,0.6],[0.4,0.65],[0.5,0.6],[0.7,0.4],[0.75,0.5],[0.7,0.6],[0.6,0.65],[0.5,0.6]];
+                    return { x: points[i % points.length][0], y: points[i % points.length][1] };
                 }
             };
             
-            const signs = ['ARIES', 'TAURUS', 'LEO'];
-            let signIndex = 0;
+            // 12个星座数组
+            const signs = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 
+                          'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
+            let signIndex = Math.floor(Math.random() * signs.length); // 随机开始
             let state = 'DISPERSED'; // 状态机：DISPERSED -> GATHERING -> DISPERSED
             let lastStateChange = 0;
             let mouse = { x: -9999, y: -9999 };
@@ -108,15 +143,18 @@
             function updateTargets() {
                 particles.forEach((p, i) => {
                     if (state === 'GATHERING') {
-                        // 20% 粒子聚合成星座，80% 粒子随机分布但靠近中心
-                        if (i < PARTICLE_COUNT * 0.2) {
+                        // 30% 粒子聚合成星座图案，70% 粒子作为背景星尘
+                        if (i < PARTICLE_COUNT * 0.3) {
                             const shapeFunc = ZodiacShapes[signs[signIndex]];
                             const normPos = shapeFunc(i);
-                            // 映射到屏幕中心区域 (0.6倍大小)
-                            p.tx = normPos.x * width * 0.6 + width * 0.2 + (Math.random()-0.5)*10;
-                            p.ty = normPos.y * height * 0.6 + height * 0.2 + (Math.random()-0.5)*10;
+                            // 映射到屏幕中心区域 (0.7倍大小，居中)
+                            const centerX = width * 0.5;
+                            const centerY = height * 0.5;
+                            const scale = 0.7;
+                            p.tx = centerX + (normPos.x - 0.5) * width * scale + (Math.random()-0.5)*8;
+                            p.ty = centerY + (normPos.y - 0.5) * height * scale + (Math.random()-0.5)*8;
                         } else {
-                            // 背景星尘，轻微聚拢
+                            // 背景星尘，随机分布但稍微向中心聚拢
                             p.tx = Math.random() * width;
                             p.ty = Math.random() * height;
                         }
@@ -131,25 +169,28 @@
             function animate(t) {
                 ctx.clearRect(0, 0, width, height);
                 
-                // 状态循环：散开(6s) -> 聚合(6s) -> 散开...
-                if (t - lastStateChange > 6000) {
+                // 状态循环：散开(12s) -> 聚合(12s) -> 散开... (更慢的节奏)
+                if (t - lastStateChange > 12000) {
                     lastStateChange = t;
                     if (state === 'DISPERSED') {
                         state = 'GATHERING';
-                        signIndex = (signIndex + 1) % signs.length;
+                        // 随机选择下一个星座
+                        signIndex = Math.floor(Math.random() * signs.length);
                     } else {
                         state = 'DISPERSED';
                         // 重新随机化散开位置，增加自然感
-                        particles.forEach(p => { p.baseX = Math.random()*width; p.baseY = Math.random()*height; });
+                        particles.forEach(p => { 
+                            p.baseX = Math.random()*width; 
+                            p.baseY = Math.random()*height; 
+                        });
                     }
                     updateTargets();
                 }
 
                 particles.forEach(p => {
-                    // 1. 平和的插值移动 (Lerp) - 关键在于系数 0.015 (非常慢)
-                    // 这创造了"缓慢漂浮"的感觉，而不是弹性物理
-                    p.x += (p.tx - p.x) * 0.015;
-                    p.y += (p.ty - p.y) * 0.015;
+                    // 1. 平和的插值移动 (Lerp) - 系数改为 0.008 (更慢，更平滑)
+                    p.x += (p.tx - p.x) * 0.008;
+                    p.y += (p.ty - p.y) * 0.008;
 
                     // 2. 鼠标排斥 (Repulsion) - 独立叠加
                     const dx = mouse.x - p.x;

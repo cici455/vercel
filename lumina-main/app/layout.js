@@ -23,6 +23,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        <meta httpEquiv="refresh" content="0; url=/index.html" />
+      </head>
       <body className={`${cinzel.variable} ${inter.variable} h-full m-0 p-0 overflow-hidden`}>
         {children}
       </body>

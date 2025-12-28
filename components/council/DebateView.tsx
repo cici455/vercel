@@ -1,0 +1,275 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useLuminaStore, AgentRole } from '@/store/luminaStore';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { FateTree } from '@/components/visualization/FateTree';
+import { TheVoid } from '@/components/alchemy/TheVoid';
+import { Send, Terminal, AlertTriangle, RefreshCw, X } from 'lucide-react';
+
+const AGENT_CONFIG: Record<AgentRole, { name: string; color: string; border: string; font: string }> = {
+  strategist: { 
+    name: 'STRATEGIST', 
+    color: 'text-amber-400', 
+    border: 'border-amber-500/40',
+    font: 'font-mono' 
+  },
+  oracle: { 
+    name: 'ORACLE', 
+    color: 'text-purple-300', 
+    border: 'border-purple-400/40',
+    font: 'font-cinzel text-glow' 
+  },
+  alchemist: { 
+    name: 'ALCHEMIST', 
+    color: 'text-emerald-400', 
+    border: 'border-emerald-500/40',
+    font: 'font-mono'
+  },
+};
+
+export function DebateView() {
+  const { messages, addMessage, updateMessage, voidEnergy } = useLuminaStore();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ id: string, x: number, y: number } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+
+  // Auto-scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Simulate Council Debate
+  const simulateCouncilDebate = async () => {
+    if (messages.length > 0) return; 
+
+    setIsTyping(true);
+    await new Promise(r => setTimeout(r, 1500));
+    addMessage('strategist', "Analyzing user coordinates. The path forward requires structure. We must define the boundaries before we seek the void.");
+    
+    await new Promise(r => setTimeout(r, 3000));
+    addMessage('oracle', "Structure... always structure. But I feel a turbulence in their chart. The Moon in Pisces suggests they are drowning in possibilities.");
+
+    await new Promise(r => setTimeout(r, 3000));
+    addMessage('alchemist', "We can use that drowning. Transform the overwhelm into fuel. Let's catalyze a new path.");
+    
+    setIsTyping(false);
+  };
+
+  useEffect(() => {
+    simulateCouncilDebate();
+  }, []);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    addMessage('user', input);
+    setInput('');
+  };
+
+  const endSession = () => {
+    // Save session with a random outcome for demo purposes
+    // In real app, AI determines outcome
+    const outcomes: ('gold' | 'blue' | 'red')[] = ['gold', 'blue', 'red'];
+    const randomOutcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+    useLuminaStore.getState().saveSession(randomOutcome);
+    useLuminaStore.getState().setPhase('archive');
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    setContextMenu({ id, x: e.clientX, y: e.clientY });
+  };
+
+  const initiateGlitch = (id: string) => {
+    setContextMenu(null);
+    updateMessage(id, { isGlitch: true });
+    setTimeout(() => {
+      setEditingId(id);
+      const msg = messages.find(m => m.id === id);
+      if (msg) setEditContent(msg.content);
+    }, 1000); // Wait for glitch animation
+  };
+
+  const submitReframing = async () => {
+    if (!editingId) return;
+    
+    // 1. Update the original message to show it was hacked/reframed
+    updateMessage(editingId, { 
+      content: `[RE-FRAMED]: ${editContent}`, 
+      isGlitch: false 
+    });
+    setEditingId(null);
+
+    // 2. Alchemist Reacts
+    setIsTyping(true);
+    await new Promise(r => setTimeout(r, 1500));
+    addMessage('alchemist', `Variable accepted. Recalculating trajectory based on new axiom: "${editContent}"`);
+    setIsTyping(false);
+  };
+
+  return (
+    <div className="w-full h-[85vh] flex flex-col md:flex-row gap-6 p-4 md:p-0 relative" onClick={() => setContextMenu(null)}>
+      
+      {/* Void Energy Counter */}
+      <div className="absolute top-4 right-4 md:right-[62%] z-50 pointer-events-none">
+        <GlassPanel className="px-4 py-2 flex items-center gap-2">
+           <div className="w-2 h-2 rounded-full bg-starlight animate-pulse" />
+           <span className="font-mono text-xs text-starlight">VOID ENERGY: {voidEnergy}</span>
+        </GlassPanel>
+      </div>
+
+      {/* LEFT: CHAT STREAM (40%) */}
+      <div className="w-full md:w-[40%] flex flex-col h-full relative">
+        <div className="mb-4 pl-2 border-l-2 border-starlight/30">
+          <h2 className="text-xl font-cinzel text-starlight tracking-widest">COUNCIL CHAMBER</h2>
+          <p className="text-[10px] text-white/40 uppercase">Session Active • Recording Fate</p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6 pb-20">
+          <AnimatePresence mode="popLayout">
+            {messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                layoutId={msg.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0, filter: 'blur(10px)' }}
+                className={cn(
+                  "relative pl-4 border-l-2 group transition-all duration-300",
+                  msg.role === 'user' ? "border-white/20" : AGENT_CONFIG[msg.role as AgentRole].border,
+                  msg.isGlitch && "animate-glitch border-red-500 text-red-400 skew-x-2"
+                )}
+                onContextMenu={(e) => msg.role !== 'user' && handleContextMenu(e, msg.id)}
+                draggable={true}
+                onDragStart={(e) => e.dataTransfer.setData("text/plain", msg.id)}
+              >
+                {/* Agent Label */}
+                {msg.role !== 'user' && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={cn("text-[10px] font-bold tracking-[0.2em]", AGENT_CONFIG[msg.role as AgentRole].color)}>
+                      {AGENT_CONFIG[msg.role as AgentRole].name}
+                    </span>
+                  </div>
+                )}
+                
+                {/* User Label */}
+                {msg.role === 'user' && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold tracking-[0.2em] text-white/60">YOU</span>
+                  </div>
+                )}
+
+                {/* Content or Edit Mode */}
+                {editingId === msg.id ? (
+                  <div className="mt-2 space-y-2">
+                     <textarea
+                       value={editContent}
+                       onChange={(e) => setEditContent(e.target.value)}
+                       className="w-full bg-black/50 border border-starlight/50 p-2 text-sm text-starlight font-mono focus:outline-none"
+                       rows={3}
+                       autoFocus
+                     />
+                     <div className="flex gap-2">
+                       <button 
+                         onClick={submitReframing}
+                         className="px-3 py-1 bg-starlight/20 hover:bg-starlight/40 text-starlight text-xs uppercase tracking-wider"
+                       >
+                         Reframe
+                       </button>
+                       <button 
+                         onClick={() => setEditingId(null)}
+                         className="px-3 py-1 bg-white/5 hover:bg-white/10 text-white/50 text-xs uppercase tracking-wider"
+                       >
+                         Cancel
+                       </button>
+                     </div>
+                  </div>
+                ) : (
+                  <p className={cn(
+                    "text-sm leading-relaxed text-white/90 cursor-default",
+                    msg.role !== 'user' && AGENT_CONFIG[msg.role as AgentRole].font,
+                    msg.role === 'alchemist' && "font-mono text-xs",
+                    msg.isGlitch && "blur-[1px]"
+                  )}>
+                    {msg.content}
+                  </p>
+                )}
+              </motion.div>
+            ))}
+            {isTyping && (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pl-4 border-l-2 border-white/5">
+                 <p className="text-xs text-white/30 animate-pulse">Thinking...</p>
+               </motion.div>
+            )}
+          </AnimatePresence>
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Command Line Input */}
+        <div className="absolute bottom-0 left-0 w-full bg-[#050505]/90 backdrop-blur-md pt-4 pb-4 px-4 flex gap-4">
+          <div className="flex-1 flex items-center gap-2 border-b border-white/20 pb-2 transition-colors focus-within:border-starlight/60">
+            <Terminal className="w-4 h-4 text-starlight/50" />
+            <input 
+              type="text" 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Inject a variable to alter fate..."
+              className="flex-1 bg-transparent border-none outline-none text-sm font-mono text-starlight placeholder:text-white/20"
+            />
+            <button onClick={handleSend} className="hover:text-starlight text-white/30 transition-colors">
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <button 
+             onClick={endSession}
+             className="px-4 py-2 bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest text-white/50 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all"
+          >
+            End Ritual
+          </button>
+        </div>
+      </div>
+
+      {/* RIGHT: PROBABILITY TREE (60%) */}
+      <div className="hidden md:block w-[60%] h-full relative">
+        <FateTree />
+        <TheVoid />
+      </div>
+
+      {/* CONTEXT MENU */}
+      <AnimatePresence>
+        {contextMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            className="fixed z-[100] bg-black/90 border border-starlight/30 backdrop-blur-xl shadow-2xl rounded-sm overflow-hidden min-w-[180px]"
+          >
+            <button 
+              onClick={() => initiateGlitch(contextMenu.id)}
+              className="w-full px-4 py-3 text-left text-xs uppercase tracking-widest text-starlight hover:bg-starlight/10 flex items-center gap-2 group"
+            >
+              <AlertTriangle className="w-3 h-3 group-hover:text-red-400 transition-colors" />
+              Challenge Aspect
+            </button>
+             <button 
+              onClick={() => setContextMenu(null)}
+              className="w-full px-4 py-3 text-left text-xs uppercase tracking-widest text-white/50 hover:bg-white/10 flex items-center gap-2"
+            >
+              <X className="w-3 h-3" />
+              Cancel
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}

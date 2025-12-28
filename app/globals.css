@@ -1,57 +1,89 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  --background: #050505;
+  --foreground: #ededed;
+  
+  /* Celestial Breath Palette */
+  --color-void: #050505;
+  --color-starlight: #D4AF37;
+  --color-nebula: #2E004F;
+  --color-holo: rgba(255, 255, 255, 0.1);
+  
+  /* Legacy/Support Colors */
+  --color-star: #ffffff;
+  --color-sun: #fbbf24;
+  --color-moon: #e2e8f0;
+}
+
+@theme {
+  --color-void: var(--color-void);
+  --color-starlight: var(--color-starlight);
+  --color-nebula: var(--color-nebula);
+  --color-holo: var(--color-holo);
+
+  --font-cinzel: var(--font-cinzel);
+  --font-inter: var(--font-inter);
+
+  --animate-grain: grain 8s steps(10) infinite;
+
+  @keyframes grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -10%); }
+    20% { transform: translate(-15%, 5%); }
+    30% { transform: translate(7%, -25%); }
+    40% { transform: translate(-5%, 25%); }
+    50% { transform: translate(-15%, 10%); }
+    60% { transform: translate(15%, 0%); }
+    70% { transform: translate(0%, 15%); }
+    80% { transform: translate(3%, 35%); }
+    90% { transform: translate(-10%, 10%); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+    50% { box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
+  }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: black;
-  overflow: hidden; /* 防止出现滚动条 */
+  color: var(--foreground);
+  background: var(--color-void);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  overflow: hidden;
 }
 
-/* 玻璃拟态效果 */
-.glass-panel {
-  background: rgba(10, 10, 15, 0.6);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 60px rgba(0, 0, 0, 0.6);
-}
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_4px_60px_rgba(0,0,0,0.6)];
+  }
+  
+  .glass-btn {
+    @apply bg-white/5 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-starlight/30 hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] cursor-pointer;
+  }
+  
+  .input-glass {
+    @apply bg-black/40 border border-white/10 text-white transition-colors focus:border-starlight/40 focus:bg-black/60 focus:outline-none placeholder:text-white/30;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
 
-.glass-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s ease-out;
-}
+  .text-starlight-glow {
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+  }
 
-.glass-btn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.08);
-}
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
 
-.input-glass {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
-  transition: 0.3s;
-}
-
-.input-glass:focus {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(0, 0, 0, 0.6);
-  outline: none;
-}
-
-.glow-gold {
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-}
-
-.text-outline {
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
-  color: transparent;
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
 }

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Cloudflare Pages 需要 Edge Runtime
+export const runtime = 'edge';
+
 // 处理 OPTIONS 请求（CORS 预检）
 export async function OPTIONS() {
   return new NextResponse(null, {

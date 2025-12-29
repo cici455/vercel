@@ -14,6 +14,14 @@
   --color-star: #ffffff;
   --color-sun: #fbbf24;
   --color-moon: #e2e8f0;
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 120s linear infinite;
+  }
 }
 
 @theme {
@@ -59,31 +67,28 @@ body {
 }
 
 @layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_4px_60px_rgba(0,0,0,0.6)];
+    @apply bg-transparent backdrop-blur-none border-none shadow-none; /* Removed card style for ethereal look */
   }
   
   .glass-btn {
-    @apply bg-white/5 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-starlight/30 hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] cursor-pointer;
+    @apply bg-white/[0.03] border border-white/10 transition-all duration-500 hover:bg-white/[0.1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] cursor-pointer text-white relative overflow-hidden tracking-[0.2em] font-light;
   }
   
   .input-glass {
-    @apply bg-black/40 border border-white/10 text-white transition-colors focus:border-starlight/40 focus:bg-black/60 focus:outline-none placeholder:text-white/30;
+    @apply bg-black/40 border border-white/15 text-white transition-colors focus:border-white/40 focus:bg-black/60 focus:outline-none placeholder:text-gray-600;
   }
   
-  .text-glow {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  .glow-gold {
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
   }
 
-  .text-starlight-glow {
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-pulse-glow {
-    animation: pulse-glow 3s ease-in-out infinite;
+  .text-outline {
+    -webkit-text-stroke: 1px rgba(255,255,255,0.1);
+    color: transparent;
   }
 }

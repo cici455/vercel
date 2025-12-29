@@ -1,174 +1,104 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
-import * as THREE from 'three';
-
-function Stars(props: any) {
-  const ref = useRef<THREE.Points>(null);
-  
-  // Generate random positions and initial phases for breathing
-  const [positions, phases] = useMemo(() => {
-    const count = 5000;
-    const positions = new Float32Array(count * 3);
-    const phases = new Float32Array(count);
-    
-    for (let i = 0; i < count; i++) {
-      const r = 50 + Math.random() * 100; // Radius between 50 and 150
-      const theta = 2 * Math.PI * Math.random();
-      const phi = Math.acos(2 * Math.random() - 1);
-      
-      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = r * Math.cos(phi);
-      
-      phases[i] = Math.random() * Math.PI * 2;
-    }
-    return [positions, phases];
-  }, []);
-
-  useFrame((state, delta) => {
-    if (ref.current) {
-      // Drift
-      ref.current.rotation.x -= delta / 50;
-      ref.current.rotation.y -= delta / 60;
-      
-      // Breathing effect handled in shader or simply by scaling/opacity if using custom shader
-      // For PointMaterial, we can't easily animate per-particle opacity without a custom shader.
-      // So we will just drift the whole group and maybe pulse the size slightly?
-      // Or we can use a custom shader material.
-      // For simplicity and performance, let's stick to rotation drift for now, 
-      // but maybe add a sine wave to the scale to simulate "breathing" of the whole field?
-      // Actually, let's use the 'transparent' and 'opacity' prop on PointMaterial and animate that?
-      // No, that would flash all stars.
-      
-      // Let's just stick to the drift as requested: "slow drift".
-      // "breathing opacity" is hard without custom shader for Points.
-      // I will use @react-three/drei's <Stars> again but with better settings or stick to this manual one.
-      // The user asked for "breathing (opacity change)". 
-      // I'll try to implement a simple shader material for that.
-    }
-  });
-
-  return (
-    <group rotation={[0, 0, Math.PI / 4]}>
-      <Points ref={ref} positions={positions} stride={3} frustumCulled={false} {...props}>
-        <PointMaterial
-          transparent
-          color="#ffffff"
-          size={0.15}
-          sizeAttenuation={true}
-          depthWrite={false}
-          opacity={0.8}
-        />
-      </Points>
-    </group>
-  );
-}
-
-// Custom Shader Star for Breathing
-const StarShaderMaterial = {
-  uniforms: {
-    time: { value: 0 },
-    color: { value: new THREE.Color('#ffffff') }
-  },
-  vertexShader: `
-    attribute float phase;
-    varying float vAlpha;
-    uniform float time;
-    void main() {
-      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      gl_PointSize = 2.0 * (300.0 / -mvPosition.z);
-      gl_Position = projectionMatrix * mvPosition;
-      
-      // Breathing calculation
-      float breath = 0.5 + 0.5 * sin(time * 1.0 + phase);
-      vAlpha = breath;
-    }
-  `,
-  fragmentShader: `
-    uniform vec3 color;
-    varying float vAlpha;
-    void main() {
-      if (length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
-      gl_FragColor = vec4(color, vAlpha);
-    }
-  `
-};
-
-function BreathingStars() {
-  const ref = useRef<THREE.Points>(null);
-  
-  const [positions, phases] = useMemo(() => {
-    const count = 3000;
-    const positions = new Float32Array(count * 3);
-    const phases = new Float32Array(count);
-    
-    for (let i = 0; i < count; i++) {
-      const x = (Math.random() - 0.5) * 200;
-      const y = (Math.random() - 0.5) * 200;
-      const z = (Math.random() - 0.5) * 200;
-      
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-      
-      phases[i] = Math.random() * Math.PI * 2;
-    }
-    return [positions, phases];
-  }, []);
-
-  const shaderArgs = useMemo(() => ({
-    uniforms: {
-      time: { value: 0 },
-      color: { value: new THREE.Color('#ffffff') }
-    },
-    vertexShader: StarShaderMaterial.vertexShader,
-    fragmentShader: StarShaderMaterial.fragmentShader,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  }), []);
-
-  useFrame((state) => {
-    if (ref.current) {
-      // Update time uniform
-      const material = ref.current.material as THREE.ShaderMaterial;
-      material.uniforms.time.value = state.clock.elapsedTime;
-      
-      // Drift
-      ref.current.rotation.y = state.clock.elapsedTime * 0.02;
-    }
-  });
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-phase"
-          count={phases.length}
-          array={phases}
-          itemSize={1}
-        />
-      </bufferGeometry>
-      <shaderMaterial attach="material" args={[shaderArgs]} />
-    </points>
-  );
-}
+import { useRef, useEffect } from 'react';
 
 export default function StarField() {
-  return (
-    <div className="fixed inset-0 -z-10 bg-black">
-      <Canvas camera={{ position: [0, 0, 1] }}>
-        <BreathingStars />
-      </Canvas>
-    </div>
-  );
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+    
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Star properties
+    const stars: { x: number; y: number; z: number; prevZ: number }[] = [];
+    const starCount = 800;
+    const speed = 0.5; // Base speed factor
+    
+    // Initialize stars
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        z: 0,
+        prevZ: 0
+      });
+    }
+
+    let animationId: number;
+
+    const draw = () => {
+      // Clear with slight fade for trail? No, user asked for NO trails.
+      ctx.fillStyle = '#020205'; // Match background color to clear
+      ctx.fillRect(0, 0, width, height);
+      
+      const cx = width / 2;
+      const cy = height / 2;
+
+      ctx.lineWidth = 1;
+      
+      stars.forEach(star => {
+        // Converge Effect:
+        // Stars spawn at random positions.
+        // They move towards the center (cx, cy).
+        // Speed increases slightly as they get closer? Or keep it constant/slow/hypnotic.
+        
+        // Calculate vector to center
+        const dx = cx - star.x;
+        const dy = cy - star.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        // Normalize and move
+        if (dist > 1) {
+            star.x += (dx / dist) * speed;
+            star.y += (dy / dist) * speed;
+        } else {
+            // Re-spawn at edge if it hits center
+            if (Math.random() > 0.5) {
+                star.x = Math.random() > 0.5 ? 0 : width;
+                star.y = Math.random() * height;
+            } else {
+                star.x = Math.random() * width;
+                star.y = Math.random() > 0.5 ? 0 : height;
+            }
+        }
+      });
+      
+      // Draw stars as tiny dots
+      ctx.fillStyle = '#ffffff';
+      stars.forEach(star => {
+         const size = Math.random() * 1.5 + 0.5; // 0.5px to 2px
+         ctx.globalAlpha = Math.random() * 0.5 + 0.3; // Twinkle
+         ctx.beginPath();
+         ctx.arc(star.x, star.y, size, 0, Math.PI * 2);
+         ctx.fill();
+      });
+      
+      animationId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 -z-10 bg-black" />;
 }

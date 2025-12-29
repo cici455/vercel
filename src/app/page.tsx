@@ -1,116 +1,532 @@
-'use client';
+"use client";
 
-import { useLuminaStore } from '@/store/luminaStore';
-import StarField from '@/components/canvas/StarField';
-import { IntroView } from '@/components/council/IntroView';
-import { ObservatoryView } from '@/components/council/ObservatoryView';
-import { CalibrationView } from '@/components/council/CalibrationView';
-import { SoloView } from '@/components/council/SoloView';
-import { DebateView } from '@/components/council/DebateView';
-import { ArchiveView } from '@/components/archive/ArchiveView';
-import AmbientSound from '@/components/ui/AmbientSound';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useRef, useMemo, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Sphere } from "@react-three/drei";
+import { motion, AnimatePresence } from "framer-motion";
+import * as THREE from "three";
+import DashboardView from "@/components/DashboardView";
+import ConstellationBackground from "@/components/canvas/ConstellationBackground"; // Import new background
 
-export default function Home() {
-  const { phase } = useLuminaStore();
+// --- Camera Rig for Transitions ---
+function CameraRig({ entered }: { entered: boolean }) {
+  useFrame((state) => {
+    // Zoom in when entered
+    const targetZ = entered ? 3.5 : 15;
+    // Smooth lerp
+    state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 0.03);
+    
+    // Optional: look at mouse or just stay centered
+    // state.camera.lookAt(0, 0, 0);
+  });
+  return null;
+}
+
+// --- Consultation Form ---
+function ConsultationForm() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    date: "",
+    time: "",
+    city: ""
+  });
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({...formData, city: value});
+    
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    
+    if (value.length >= 1) {
+      searchTimeout.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/cities?q=${encodeURIComponent(value)}`);
+          if (!res.ok) throw new Error('Failed to fetch cities');
+          const data = await res.json();
+          setCitySuggestions(data);
+          setShowSuggestions(true);
+        } catch (err) {
+          console.error(err);
+          setCitySuggestions([]); // Clear on error
+        }
+      }, 300);
+    } else {
+      setCitySuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectCity = (city: any) => {
+    setFormData({...formData, city: `${city.name}, ${city.country}`});
+    setShowSuggestions(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    
+    // Simulate API call or call the real API
+    try {
+      const res = await fetch('/api/consult', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      console.log(data);
+      setStatus("success");
+      // Short delay before showing dashboard to allow "success" state to trigger animations if needed
+      // But for now, we can switch immediately or let the parent handle it.
+      // Actually, we should let the user see "Fate Aligned" for a moment, then transition?
+      // Or just replace the form content directly.
+      // Let's modify the parent to handle the view switching based on status.
+      
+      // For this implementation, we'll keep the "Fate Aligned" message for 2 seconds, then switch.
+      setTimeout(() => setShowDashboard(true), 2000);
+      
+    } catch (err) {
+      console.error(err);
+      setStatus("idle");
+    }
+  };
+
+  if (showDashboard) {
+    return (
+      <div className="relative w-full h-screen bg-black overflow-hidden">
+        {/* Background Layer - Independent of 3D Scene */}
+        <ConstellationBackground />
+        
+        {/* Foreground Content */}
+        <div className="relative z-10 w-full h-full flex items-center justify-center pointer-events-auto">
+           <DashboardView userData={formData} onEnterCouncil={() => console.log("Enter Council")} />
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "success") {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0 }}
+        className="relative z-20 text-center text-white p-8 border border-white/20 rounded-2xl backdrop-blur-md bg-black/40 max-w-md mx-4"
+      >
+        <h2 className="text-2xl font-serif mb-4" style={{ fontFamily: "'Cinzel', serif" }}>
+          Fate Aligned
+        </h2>
+        <p className="text-gray-300 tracking-widest text-sm leading-relaxed">
+          Your request has been received by the cosmos.
+          <br/>
+          Initializing Astral Audit...
+        </p>
+      </motion.div>
+    );
+  }
 
   return (
-    <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden p-4">
-      {/* Background Layer */}
-      <StarField />
-      <AmbientSound />
+    <motion.div 
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      transition={{ duration: 1, delay: 0.5 }}
+      className={`relative z-20 w-full ${showDashboard ? 'max-w-4xl' : 'max-w-lg'} px-8`}
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-8 rounded-2xl border border-white/10 bg-black/30 backdrop-blur-md shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+        <h2 className="text-xl text-center text-white/80 font-serif tracking-[0.2em] mb-4" style={{ fontFamily: "'Cinzel', serif" }}>
+          Identify Yourself
+        </h2>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase tracking-widest text-gray-500">First Name</label>
+            <input 
+              required
+              type="text" 
+              className="bg-transparent border-b border-white/20 text-white p-2 text-sm focus:outline-none focus:border-white/60 transition-colors"
+              value={formData.firstName}
+              onChange={e => setFormData({...formData, firstName: e.target.value})}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase tracking-widest text-gray-500">Last Name</label>
+            <input 
+              required
+              type="text" 
+              className="bg-transparent border-b border-white/20 text-white p-2 text-sm focus:outline-none focus:border-white/60 transition-colors"
+              value={formData.lastName}
+              onChange={e => setFormData({...formData, lastName: e.target.value})}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase tracking-widest text-gray-500">Birth Date</label>
+            <input 
+              required
+              type="text"
+              placeholder="MM/DD/YYYY"
+              maxLength={10}
+              className="bg-transparent border-b border-white/20 text-white p-2 text-sm focus:outline-none focus:border-white/60 transition-colors placeholder:text-white/20"
+              value={formData.date}
+              onChange={(e) => {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 8) v = v.slice(0, 8);
+                if (v.length >= 5) {
+                  v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+                } else if (v.length >= 3) {
+                  v = `${v.slice(0, 2)}/${v.slice(2)}`;
+                }
+                setFormData({...formData, date: v});
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase tracking-widest text-gray-500">Birth Time</label>
+            <input 
+              required
+              type="time" 
+              className="bg-transparent border-b border-white/20 text-white p-2 text-sm focus:outline-none focus:border-white/60 transition-colors"
+              value={formData.time}
+              onChange={e => setFormData({...formData, time: e.target.value})}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 relative">
+          <label className="text-[10px] uppercase tracking-widest text-gray-500">Birth City</label>
+          <input 
+            required
+            type="text" 
+            className="bg-transparent border-b border-white/20 text-white p-2 text-sm focus:outline-none focus:border-white/60 transition-colors"
+            value={formData.city}
+            onChange={handleCityChange}
+            onFocus={() => formData.city.length >= 1 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            autoComplete="off"
+          />
+          {showSuggestions && citySuggestions.length > 0 && (
+            <ul className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-black border border-white/20 rounded-b-lg backdrop-blur-md z-50 custom-scrollbar">
+              {citySuggestions.map((city, i) => (
+                <li 
+                  key={i}
+                  className="px-4 py-2 text-sm text-gray-300 hover:bg-white/10 cursor-pointer transition-colors border-b border-white/5 last:border-0"
+                  onClick={() => selectCity(city)}
+                >
+                  <span className="text-white font-medium">{city.name}</span>
+                  <span className="text-xs text-gray-500 ml-2">{city.country}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <button 
+          type="submit"
+          disabled={status === "loading"}
+          className="mt-6 py-3 border border-white/20 rounded-full text-xs text-white tracking-[0.3em] uppercase hover:bg-white/10 transition-all disabled:opacity-50"
+        >
+          {status === "loading" ? "Transmitting..." : "Submit to the Void"}
+        </button>
+      </form>
+    </motion.div>
+  );
+}
+
+// --- 1. The Hollow Cylinder Star Tunnel ---
+function StarTunnel() {
+  const count = 2000;
+  const mesh = useRef<THREE.Points>(null);
+  const planetZ = -12;
+  const planetRadius = 2.2;
+  
+  // Use a soft circle texture instead of square points
+  const starTexture = useMemo(() => {
+    // Check if we're on the client side
+    if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+    
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
       
-      {/* Content Layer */}
-      <div className="z-10 w-full max-w-5xl">
-        {/* Header - Only show if NOT in intro phase */}
-        {phase !== 'intro' && phase !== 'observatory' && phase !== 'archive' && (
-          <motion.header 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute top-8 left-0 w-full text-center pointer-events-none"
-          >
-            <h1 className="text-4xl font-light tracking-[0.5em] text-white/20 uppercase font-[family-name:var(--font-cinzel)]">Lumina</h1>
-          </motion.header>
+      // Draw a soft glow circle
+      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.8)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 32, 32);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      return texture;
+    } catch (e) {
+      console.error("Failed to create star texture", e);
+      return null;
+    }
+  }, []);
+
+  // Initial positions: Sharp Hollow Cylinder reaching near the planet rim
+  const particles = useMemo(() => {
+    const temp = [];
+    for (let i = 0; i < count; i++) {
+      // Bias the distribution towards a hollow cylinder whose inner wall
+      // is slightly larger than the planet radius (so stars "touch" the rim visually)
+      const angle = Math.random() * Math.PI * 2;
+      // 65% in the inner wall close to the rim, 35% in the outer fade
+      const innerMin = planetRadius + 0.25;   // just outside the planet
+      const innerMax = planetRadius + 1.8;
+      const outerMin = innerMax;
+      const outerMax = 12.0;
+      const r = Math.random() > 0.35
+        ? innerMin + Math.random() * (innerMax - innerMin)
+        : outerMin + Math.random() * (outerMax - outerMin);
+
+      const x = r * Math.cos(angle);
+      const y = r * Math.sin(angle);
+      const z = (Math.random() - 0.5) * 80; // Long tunnel depth
+      
+      temp.push(x, y, z);
+    }
+    return new Float32Array(temp);
+  }, [count]);
+
+  // Per-vertex colors to make stars "brilliant" near the planet
+  const colors = useMemo(() => {
+    const arr = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const base = 0.75; // slight base glow
+      arr[i * 3 + 0] = base;
+      arr[i * 3 + 1] = base;
+      arr[i * 3 + 2] = base;
+    }
+    return arr;
+  }, [count]);
+
+  useFrame((state) => {
+    if (mesh.current) {
+      const positions = mesh.current.geometry.attributes.position.array as Float32Array;
+      const colorAttr = mesh.current.geometry.getAttribute('color') as THREE.BufferAttribute | null;
+      
+      for (let i = 2; i < count * 3; i += 3) {
+        // Move towards negative Z (suction)
+        positions[i] -= 0.2; // Slower baseline speed
+
+        // Subtle acceleration when close to the planet for a natural pull
+        const dz = Math.abs(positions[i] - planetZ);
+        if (dz < 10) {
+          positions[i] -= 0.06 * (1 - dz / 10); // small extra pull near the planet
+        }
+
+        // Reset when star reaches the planet plane (slightly behind rim)
+        if (positions[i] < planetZ - 0.6) {
+          positions[i] = 40; // Respawn at camera/front
+        }
+
+        // Make stars more brilliant near the planet
+        if (colorAttr) {
+          const idx = i - 2; // start of this vertex (x component index)
+          const vertexIndex = Math.floor(idx / 3);
+          // brightness increases as z approaches planetZ, capped at 1.0
+          const nearFactor = Math.max(0, 1 - Math.min(1, Math.abs(positions[i] - planetZ) / 20));
+          const brightness = 0.6 + 0.4 * nearFactor;
+          colors[vertexIndex * 3 + 0] = brightness;
+          colors[vertexIndex * 3 + 1] = brightness;
+          colors[vertexIndex * 3 + 2] = brightness;
+        }
+      }
+      mesh.current.geometry.attributes.position.needsUpdate = true;
+      if (colorAttr) {
+        colorAttr.needsUpdate = true;
+      }
+      // Rotate the tunnel to create "Vortex" feel
+      mesh.current.rotation.z += 0.001; 
+    }
+  });
+
+  return (
+    <points ref={mesh}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={particles}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.22}
+        map={starTexture || undefined}
+        color="#ffffff"
+        transparent
+        opacity={0.85}
+        sizeAttenuation={true}
+        depthWrite={false}
+        vertexColors
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+// --- 2. The Obsidian Sphere & Atmosphere ---
+function ObsidianPlanet() {
+  return (
+    <group position={[0, 0, -12]}>
+      {/* 
+        1. Core Sphere (Obsidian)
+        High polish, black, reflective.
+      */}
+      <Sphere args={[2.2, 32, 32]}>
+        <meshPhysicalMaterial 
+          color="#000000"
+          roughness={0.0}
+          metalness={0.3}
+          clearcoat={1.0} // Glass-like coating
+          clearcoatRoughness={0.1}
+          ior={1.4}
+        />
+      </Sphere>
+
+      {/* 
+        2. Volumetric Glow (Atmosphere)
+        A slightly larger sphere with a custom Fresnel-like gradient using opacity.
+        We simulate this with a simple transparent material and a back-light.
+      */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[2.25, 32, 32]} />
+        <meshBasicMaterial 
+          color="#444444" 
+          transparent 
+          opacity={0.15} 
+          side={THREE.BackSide} // Render inside to create depth
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* 
+        3. Rim Light Ring (The "Event Horizon" Edge) 
+        Facing camera, creates the sharp white outline.
+      */}
+      <mesh position={[0, 0, -0.05]} rotation={[0, 0, 0]}>
+         <ringGeometry args={[2.2, 2.25, 128]} />
+         <meshBasicMaterial color="#ffffff" transparent opacity={0.8} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* 
+        4. Outer Halo (Soft diffuse glow)
+      */}
+      <mesh position={[0, 0, -0.1]}>
+         <ringGeometry args={[2.2, 2.8, 128]} />
+         <meshBasicMaterial color="#ffffff" transparent opacity={0.05} side={THREE.DoubleSide} />
+      </mesh>
+      
+      {/* Lights */}
+      <pointLight position={[5, 5, 5]} intensity={2} color="#ffffff" distance={20} />
+      <pointLight position={[-5, -5, 5]} intensity={1} color="#aaccff" distance={20} />
+      {/* Strong backlight for rim */}
+      <pointLight position={[0, 0, -5]} intensity={10} color="white" distance={10} />
+    </group>
+  );
+}
+
+export default function LandingPage() {
+  const [entered, setEntered] = useState(false);
+
+  return (
+    <div className="relative w-full h-screen bg-black overflow-hidden flex flex-col justify-center items-center py-12">
+      
+      {/* Header & Button - Animate out when entered */}
+      <AnimatePresence>
+        {!entered && (
+          <>
+            {/* Header */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 1 }}
+              className="absolute top-12 z-10 text-center mix-blend-screen w-full"
+            >
+              <h1 
+                className="text-6xl md:text-8xl font-serif font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                LUMINA
+              </h1>
+              <p className="mt-4 text-xs text-gray-400 tracking-[0.8em] uppercase">
+                The Event Horizon
+              </p>
+            </motion.div>
+
+            {/* Footer Button */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: 50 }}
+              transition={{ duration: 1 }}
+              className="absolute bottom-16 z-10"
+            >
+              <motion.button
+                onClick={() => setEntered(true)}
+                whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(255,255,255,0.3)" }}
+                className="text-xs text-white border border-white/30 px-10 py-3 rounded-full tracking-[0.3em] uppercase transition-all duration-300 hover:bg-white/10 hover:border-white/60"
+              >
+                Enter The Void
+              </motion.button>
+            </motion.div>
+          </>
         )}
+      </AnimatePresence>
 
-        <AnimatePresence mode="wait">
-          {phase === 'intro' && (
-             <motion.div
-               key="intro"
-               className="w-full"
-             >
-               <IntroView />
-             </motion.div>
-          )}
+      {/* Consultation Form - Animate in when entered */}
+      <AnimatePresence>
+        {entered && (
+          <div className="pointer-events-auto">
+            <ConsultationForm />
+          </div>
+        )}
+      </AnimatePresence>
 
-          {phase === 'calibration' && (
-            <motion.div
-              key="calibration"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full"
-            >
-              <CalibrationView />
-            </motion.div>
-          )}
-
-          {phase === 'observatory' && (
-            <motion.div
-              key="observatory"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full"
-            >
-              <ObservatoryView />
-            </motion.div>
-          )}
-
-          {phase === 'solo' && (
-            <motion.div
-              key="solo"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full"
-            >
-              <SoloView />
-            </motion.div>
-          )}
-
-          {phase === 'debate' && (
-            <motion.div
-              key="debate"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full"
-            >
-              <DebateView />
-            </motion.div>
-          )}
-
-          {phase === 'archive' && (
-            <motion.div
-              key="archive"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full h-full"
-            >
-              <ArchiveView />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* 3D Scene */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <Canvas 
+          camera={{ position: [0, 0, 15], fov: 40 }} // Cinematic FOV
+          dpr={1} // Optimize for performance (was [1, 2])
+          gl={{ 
+            antialias: false,
+            alpha: false,
+            preserveDrawingBuffer: true,
+            powerPreference: "high-performance"
+          }}
+        > 
+          <color attach="background" args={["#000000"]} />
+          <fog attach="fog" args={["#000000", 15, 50]} />
+          
+          <ambientLight intensity={0.2} />
+          
+          <CameraRig entered={entered} />
+          <StarTunnel />
+          <ObsidianPlanet />
+          
+        </Canvas>
       </div>
-      
-      {/* Footer / Status */}
-      {phase !== 'observatory' && phase !== 'archive' && (
-        <footer className="absolute bottom-8 text-center text-[10px] text-white/20 tracking-[0.3em] uppercase">
-          Archetypal Life Simulator v0.1
-        </footer>
-      )}
-    </main>
+    </div>
   );
 }

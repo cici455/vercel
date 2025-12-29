@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 1. 必须开启静态导出
-  output: "export",
+  // Cloudflare Pages works best with default (dynamic) output if using Edge functions,
+  // or 'export' if purely static. Since we have API routes, we remove 'export' to allow server-side features.
+  // output: "export", 
 
-  // 2. 必须关闭图片优化 (否则静态部署会报错或白屏)
+  // Image optimization is supported on Cloudflare if configured, but keeping unoptimized is safer for simple setups.
   images: {
     unoptimized: true,
   },

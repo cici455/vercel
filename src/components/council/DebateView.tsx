@@ -146,7 +146,7 @@ export function DebateView() {
                 )}
                 onContextMenu={(e) => msg.role !== 'user' && handleContextMenu(e, msg.id)}
                 draggable={true}
-                onDragStart={(e) => e.dataTransfer.setData("text/plain", msg.id)}
+                onDragStart={(e: React.DragEvent<HTMLDivElement>) => e.dataTransfer.setData("text/plain", msg.id)}
               >
                 {/* Agent Label */}
                 {msg.role !== 'user' && (

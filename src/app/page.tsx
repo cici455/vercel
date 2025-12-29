@@ -2,7 +2,7 @@
 
 import React, { useRef, useMemo, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Sphere } from "@react-three/drei";
+import { Sphere, Points, PointMaterial } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import DashboardView from "@/components/DashboardView";
@@ -243,9 +243,10 @@ function ConsultationForm() {
 // --- 1. The Hollow Cylinder Star Tunnel ---
 function StarTunnel() {
   const count = 2000;
-  const mesh = useRef<THREE.Points>(null);
+  const ref = useRef<THREE.Points>(null); // Changed mesh -> ref to match Drei usage
   const planetZ = -12;
   const planetRadius = 2.2;
+  const speed = 0.2; // Define speed here
   
   // Use a soft circle texture instead of square points
   const starTexture = useMemo(() => {
@@ -277,8 +278,8 @@ function StarTunnel() {
   }, []);
 
   // Initial positions: Sharp Hollow Cylinder reaching near the planet rim
-  const particles = useMemo(() => {
-    const temp = [];
+  const positions = useMemo(() => { // Renamed particles -> positions to match Drei prop
+    const temp = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       // Bias the distribution towards a hollow cylinder whose inner wall
       // is slightly larger than the planet radius (so stars "touch" the rim visually)
@@ -296,92 +297,64 @@ function StarTunnel() {
       const y = r * Math.sin(angle);
       const z = (Math.random() - 0.5) * 80; // Long tunnel depth
       
-      temp.push(x, y, z);
+      temp[i * 3] = x;
+      temp[i * 3 + 1] = y;
+      temp[i * 3 + 2] = z;
     }
-    return new Float32Array(temp);
+    return temp;
   }, [count]);
 
-  // Per-vertex colors to make stars "brilliant" near the planet
-  const colors = useMemo(() => {
-    const arr = new Float32Array(count * 3);
+  // Per-vertex colors not needed for Points/PointMaterial in this way usually, 
+  // but if we want per-star color, we pass it to geometry, not implemented in simple PointMaterial.
+  // We'll skip complex per-vertex color updates for now to save perf.
+  const texture = starTexture;
+
+  useFrame((state, delta) => {
+    if (!ref.current) return;
+    
+    // Rotate tunnel slowly
+    ref.current.rotation.z += delta * 0.05;
+
+    // Get positions array
+    const positions = ref.current.geometry.attributes.position.array as Float32Array;
+    
+    // Update each star
     for (let i = 0; i < count; i++) {
-      const base = 0.75; // slight base glow
-      arr[i * 3 + 0] = base;
-      arr[i * 3 + 1] = base;
-      arr[i * 3 + 2] = base;
-    }
-    return arr;
-  }, [count]);
-
-  useFrame((state) => {
-    if (mesh.current) {
-      const positions = mesh.current.geometry.attributes.position.array as Float32Array;
-      const colorAttr = mesh.current.geometry.getAttribute('color') as THREE.BufferAttribute | null;
+      const i3 = i * 3;
       
-      for (let i = 2; i < count * 3; i += 3) {
-        // Move towards negative Z (suction)
-        positions[i] -= 0.2; // Slower baseline speed
+      // Move star towards center (z-axis)
+      positions[i3 + 2] -= speed * (1 + Math.random()); // Move along Z
 
-        // Subtle acceleration when close to the planet for a natural pull
-        const dz = Math.abs(positions[i] - planetZ);
-        if (dz < 10) {
-          positions[i] -= 0.06 * (1 - dz / 10); // small extra pull near the planet
-        }
-
-        // Reset when star reaches the planet plane (slightly behind rim)
-        if (positions[i] < planetZ - 0.6) {
-          positions[i] = 40; // Respawn at camera/front
-        }
-
-        // Make stars more brilliant near the planet
-        if (colorAttr) {
-          const idx = i - 2; // start of this vertex (x component index)
-          const vertexIndex = Math.floor(idx / 3);
-          // brightness increases as z approaches planetZ, capped at 1.0
-          const nearFactor = Math.max(0, 1 - Math.min(1, Math.abs(positions[i] - planetZ) / 20));
-          const brightness = 0.6 + 0.4 * nearFactor;
-          colors[vertexIndex * 3 + 0] = brightness;
-          colors[vertexIndex * 3 + 1] = brightness;
-          colors[vertexIndex * 3 + 2] = brightness;
-        }
+      // Reset if too far
+      if (positions[i3 + 2] < -20) {
+        positions[i3 + 2] = 10 + Math.random() * 5;
+        // Reset x/y to random cylinder rim
+        const r = 3.5 + Math.random() * 8; 
+        const theta = Math.random() * Math.PI * 2;
+        positions[i3] = Math.cos(theta) * r;
+        positions[i3 + 1] = Math.sin(theta) * r;
       }
-      mesh.current.geometry.attributes.position.needsUpdate = true;
-      if (colorAttr) {
-        colorAttr.needsUpdate = true;
-      }
-      // Rotate the tunnel to create "Vortex" feel
-      mesh.current.rotation.z += 0.001; 
     }
+    
+    ref.current.geometry.attributes.position.needsUpdate = true;
+    
+    // HACK: Invalidate loop to force re-render when animating
+    // Since we set frameloop="demand", we must manually request frames
+    state.invalidate();
   });
 
   return (
-    <points ref={mesh}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={particles}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={count}
-          array={colors}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.22}
-        map={starTexture || undefined}
-        color="#ffffff"
+    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
+      <PointMaterial
         transparent
-        opacity={0.85}
+        color="#ffffff"
+        size={0.03}
         sizeAttenuation={true}
         depthWrite={false}
-        vertexColors
-        blending={THREE.AdditiveBlending}
+        map={texture}
+        alphaMap={texture}
       />
-    </points>
+    </Points>
   );
 }
 
@@ -504,16 +477,17 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      {/* 3D Scene */}
+      {/* 3D Scene - Render ON DEMAND and LOW DPR */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas 
-          camera={{ position: [0, 0, 15], fov: 40 }} // Cinematic FOV
-          dpr={1} // Optimize for performance (was [1, 2])
+          camera={{ position: [0, 0, 15], fov: 40 }}
+          dpr={[0.5, 1]} // LOWER DPR to 0.5 for stability
+          frameloop="demand" // ONLY RENDER WHEN NEEDED (saves GPU)
           gl={{ 
             antialias: false,
             alpha: false,
-            preserveDrawingBuffer: true,
-            powerPreference: "high-performance"
+            preserveDrawingBuffer: false, // Disable screenshot for perf
+            powerPreference: "low-power" // Prefer stability over perf
           }}
         > 
           <color attach="background" args={["#000000"]} />
@@ -523,7 +497,8 @@ export default function LandingPage() {
           
           <CameraRig entered={entered} />
           <StarTunnel />
-          <ObsidianPlanet />
+          {/* Disable heavy planet for now if crashing */}
+          <ObsidianPlanet /> 
           
         </Canvas>
       </div>

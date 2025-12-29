@@ -2,6 +2,18 @@
 
 import { useRef, useEffect } from 'react';
 
+// Particles with 3D coordinates
+// x, y: range roughly -width to width (to cover field when z changes)
+// z: range 1 to fov (depth)
+interface Particle {
+  x: number;
+  y: number;
+  z: number;
+  color: string;
+  baseX: number; // Store original spawn relative position
+  baseY: number;
+}
+
 export default function ConstellationBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -30,18 +42,6 @@ export default function ConstellationBackground() {
     const fov = 300; // Field of view for 3D projection
     const baseSpeed = 2;
     
-    // Particles with 3D coordinates
-    // x, y: range roughly -width to width (to cover field when z changes)
-    // z: range 1 to fov (depth)
-    interface Particle {
-      x: number;
-      y: number;
-      z: number;
-      color: string;
-      baseX: number; // Store original spawn relative position
-      baseY: number;
-    }
-
     const particles: Particle[] = [];
 
     // Initialize

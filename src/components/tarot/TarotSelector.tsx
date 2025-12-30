@@ -292,7 +292,7 @@ export default function TarotSelector({ onNavigateToCouncil }: TarotSelectorProp
       selectedTopics,
       intentText: intentText.trim(),
       tarot: currentCard,
-      selectedAgent
+      selectedAgent: selectedAgent || undefined
     };
 
     if (onNavigateToCouncil) {

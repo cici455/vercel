@@ -5,17 +5,6 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  // Turbopack configuration to reduce resource usage
-  experimental: {
-    turbo: {
-      rules: {
-        '*.tsx': {
-          loaders: ['tsx-loader'],
-        },
-      },
-      memoryLimit: 4096, // Limit to 4GB of memory
-    },
-  },
 };
 
 export default nextConfig;

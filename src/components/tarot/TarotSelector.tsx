@@ -323,12 +323,14 @@ export default function TarotSelector({ onNavigateToCouncil }: TarotSelectorProp
             key={i}
             className="absolute w-1 h-1 bg-white rounded-full"
             initial={{
-              x: i % window.innerWidth,
-              y: (i * 137.5) % window.innerHeight,
+              x: 0,
+              y: 0,
               opacity: 0.5,
               scale: 0.5
             }}
             animate={{
+              x: typeof window !== 'undefined' ? i % window.innerWidth : 0,
+              y: typeof window !== 'undefined' ? (i * 137.5) % window.innerHeight : 0,
               opacity: [0.3, 0.8],
               scale: [0.5, 1.5]
             }}

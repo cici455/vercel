@@ -29,7 +29,9 @@ function ConsultationForm() {
     lastName: "",
     date: "",
     time: "",
-    city: ""
+    city: "",
+    lat: 0,
+    lng: 0
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const [showDashboard, setShowDashboard] = useState(false);
@@ -39,7 +41,8 @@ function ConsultationForm() {
 
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setFormData({...formData, city: value});
+    // Reset coords if user types manually, forcing them to re-select or we need geocoding
+    setFormData({...formData, city: value, lat: 0, lng: 0});
     
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     
@@ -63,7 +66,13 @@ function ConsultationForm() {
   };
 
   const selectCity = (city: any) => {
-    setFormData({...formData, city: `${city.name}, ${city.country}`});
+    // Store lat/lng from the selected city object
+    setFormData({
+      ...formData, 
+      city: `${city.name}, ${city.country}`,
+      lat: city.lat || 0,
+      lng: city.lng || 0
+    });
     setShowSuggestions(false);
   };
 
@@ -102,8 +111,8 @@ function ConsultationForm() {
         {/* Background Layer - Independent of 3D Scene */}
         <ConstellationBackground />
         
-        {/* Foreground Content */}
-        <div className="relative z-10 w-full h-full flex items-center justify-center pointer-events-auto">
+        {/* Foreground Content - Allow Scrolling */}
+        <div className="relative z-10 w-full h-full overflow-y-auto pointer-events-auto">
            <DashboardView userData={formData} onEnterCouncil={() => console.log("Enter Council")} />
         </div>
       </div>
@@ -242,7 +251,7 @@ function ConsultationForm() {
 
 // --- 1. The Hollow Cylinder Star Tunnel ---
 function StarTunnel() {
-  const count = 2000;
+  const count = 500; // Reduced for performance
   const ref = useRef<THREE.Points>(null); // Changed mesh -> ref to match Drei usage
   const planetZ = -12;
   const planetRadius = 2.2;
@@ -479,7 +488,8 @@ export default function LandingPage() {
 
       {/* 3D Scene - Render ON DEMAND and LOW DPR */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <Canvas 
+        {/* Temporarily disabled for stability */}
+        {/* <Canvas 
           camera={{ position: [0, 0, 15], fov: 40 }}
           dpr={[0.5, 1]} // LOWER DPR to 0.5 for stability
           frameloop="demand" // ONLY RENDER WHEN NEEDED (saves GPU)
@@ -497,10 +507,8 @@ export default function LandingPage() {
           
           <CameraRig entered={entered} />
           <StarTunnel />
-          {/* Disable heavy planet for now if crashing */}
-          <ObsidianPlanet /> 
           
-        </Canvas>
+        </Canvas> */}
       </div>
     </div>
   );

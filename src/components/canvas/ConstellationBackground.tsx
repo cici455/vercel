@@ -67,7 +67,7 @@ export default function ConstellationBackground() {
     const draw = () => {
       // 1. Trails (Quantum Flow)
       // Do not clearRect. Use semi-transparent fill for trails.
-      ctx.fillStyle = 'rgba(10, 10, 15, 0.2)'; // Dark background with slight transparency for fade
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.2)'; // Deep void black (neutral-950 is #0a0a0a)
       ctx.fillRect(0, 0, width, height);
       
       const cx = width / 2;
@@ -163,5 +163,5 @@ export default function ConstellationBackground() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 -z-10 bg-[#0A0A0F]" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 -z-10 bg-neutral-950" />;
 }

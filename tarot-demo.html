@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMINA Tarot Selector Demo</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .font-serif {
+            font-family: 'Cinzel', serif;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Mock data for the demo
+        const TOPICS = [
+            { id: "love", label: "Love & Relationships", icon: "❤️" },
+            { id: "dating", label: "Dating & Attraction", icon: "⭐" },
+            { id: "commitment", label: "Commitment / Marriage", icon: "🔒" },
+            { id: "breakups", label: "Breakups & Healing", icon: "🔥" },
+            { id: "sex", label: "Sex & Desire", icon: "❤️" },
+            { id: "career", label: "Career Direction", icon: "💼" },
+            { id: "work-conflicts", label: "Work Conflicts", icon: "⚖️" },
+            { id: "money", label: "Money & Resources", icon: "💰" },
+            { id: "purpose", label: "Purpose / Calling", icon: "🎯" },
+            { id: "family", label: "Family & Home", icon: "🏠" },
+            { id: "friendships", label: "Friendships & Community", icon: "👥" },
+            { id: "self-worth", label: "Self-worth & Confidence", icon: "🛡️" },
+            { id: "decisions", label: "Mental Clarity / Decisions", icon: "🧠" },
+            { id: "creativity", label: "Creativity", icon: "🎨" },
+            { id: "health", label: "Health / Energy", icon: "⚡" },
+            { id: "spiritual", label: "Spiritual Growth", icon: "📖" },
+            { id: "communication", label: "Communication", icon: "💬" },
+            { id: "change", label: "Change / Travel", icon: "📍" },
+        ];
+
+        const MOCK_TAROT_CARDS = [
+            {
+                id: 'the-lovers',
+                name: 'The Lovers',
+                orientation: 'upright',
+                omen: 'Love and harmony are on the horizon.',
+                meaning: 'The Lovers card represents love, harmony, and choices. It suggests a deep connection with another person or a significant decision that will affect your relationships.',
+                practice: 'Reflect on what truly matters in your relationships and be open to new connections.'
+            },
+            {
+                id: 'the-empress',
+                name: 'The Empress',
+                orientation: 'upright',
+                omen: 'Abundance and creativity are flowing.',
+                meaning: 'The Empress symbolizes fertility, creativity, and abundance. She represents the nurturing and creative aspects of femininity.',
+                practice: 'Embrace your creative side and nurture the relationships and projects that matter to you.'
+            },
+            {
+                id: 'the-emperor',
+                name: 'The Emperor',
+                orientation: 'upright',
+                omen: 'Structure and authority are needed.',
+                meaning: 'The Emperor represents leadership, structure, and authority. He symbolizes the masculine principle of control and organization.',
+                practice: 'Take charge of your life and establish clear boundaries and goals.'
+            }
+        ];
+
+        const CARD_TOPIC_HINTS = {
+            'The Lovers': ['love', 'dating', 'commitment', 'sex'],
+            'The Empress': ['love', 'family', 'creativity', 'self-worth'],
+            'The Emperor': ['career', 'money', 'decisions', 'work-conflicts'],
+        };
+
+        const AGENTS = [
+            {
+                id: 'strategist',
+                name: 'Strategist',
+                title: 'The Architect of Fate',
+                color: '#D4AF37',
+                icon: '🎯'
+            },
+            {
+                id: 'oracle',
+                name: 'Oracle',
+                title: 'The Seer of Stars',
+                color: '#b8d7f5',
+                icon: '⭐'
+            },
+            {
+                id: 'alchemist',
+                name: 'Alchemist',
+                title: 'The Transformer',
+                color: '#f5b8d7',
+                icon: '🔥'
+            }
+        ];
+
+        const TOPIC_AGENT_MAP = {
+            career: ['strategist'],
+            'work-conflicts': ['strategist'],
+            money: ['strategist'],
+            decisions: ['strategist'],
+            change: ['strategist'],
+            purpose: ['oracle'],
+            spiritual: ['oracle'],
+            creativity: ['oracle'],
+            health: ['oracle'],
+            'self-worth': ['oracle'],
+            love: ['alchemist'],
+            dating: ['alchemist'],
+            commitment: ['alchemist'],
+            breakups: ['alchemist'],
+            sex: ['alchemist'],
+            family: ['alchemist'],
+            friendships: ['alchemist'],
+            communication: ['alchemist'],
+        };
+
+        const PLACEHOLDERS = [
+            "What do I need to understand about my love life?",
+            "How should I approach a career decision?",
+            "Help me interpret what I'm feeling lately.",
+            "What's the best path for my spiritual growth?",
+            "How can I improve my relationships?",
+            "What should I focus on for my health?"
+        ];
+
+        // Main Tarot Selector Component
+        function TarotSelector() {
+            const [selectedTopics, setSelectedTopics] = React.useState([]);
+            const [intentText, setIntentText] = React.useState('');
+            const [currentCard, setCurrentCard] = React.useState(MOCK_TAROT_CARDS[0]);
+            const [currentPlaceholder, setCurrentPlaceholder] = React.useState(0);
+            const [selectedAgent, setSelectedAgent]

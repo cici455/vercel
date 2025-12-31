@@ -462,26 +462,27 @@ const RitualFocusModal = ({ item, onClose, onEnterCouncil }: { item: CardItem; o
 
               {/* CTA Button */}
               <div className="flex justify-center">
-                <motion.button
-                  onClick={onEnterCouncil}
-                  className="group relative flex flex-col items-center justify-center px-12 py-3 bg-[#0a0a12] border border-white/20 rounded-full transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_rgba(0,0,0,0.6)]"
-                  whileHover={{ 
-                    scale: 1.02, 
-                    borderColor: "rgba(231, 215, 182, 0.4)",
-                    boxShadow: "0 0 20px rgba(231, 215, 182, 0.1)"
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E7D7B6]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
-                  
-                  <span className="font-cinzel text-xs text-[#E7D7B6] font-bold tracking-[0.2em] uppercase z-10 drop-shadow-md">
-                    Enter Council
-                  </span>
-                  <span className="text-[9px] text-white/30 tracking-widest uppercase mt-0.5 font-sans z-10 group-hover:text-white/50 transition-colors">
-                    Read today’s omens
-                  </span>
-                </motion.button>
+                <a href="/ritual">
+                  <motion.button
+                    className="group relative flex flex-col items-center justify-center px-12 py-3 bg-[#0a0a12] border border-white/20 rounded-full transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_rgba(0,0,0,0.6)]"
+                    whileHover={{ 
+                      scale: 1.02, 
+                      borderColor: "rgba(231, 215, 182, 0.4)",
+                      boxShadow: "0 0 20px rgba(231, 215, 182, 0.1)"
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E7D7B6]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                    
+                    <span className="font-cinzel text-xs text-[#E7D7B6] font-bold tracking-[0.2em] uppercase z-10 drop-shadow-md">
+                      CHOOSE YOUR OMEN
+                    </span>
+                    <span className="text-[9px] text-white/30 tracking-widest uppercase mt-0.5 font-sans z-10 group-hover:text-white/50 transition-colors">
+                      Draw a card to set today’s session
+                    </span>
+                  </motion.button>
+                </a>
               </div>
             </div>
           </div>
@@ -625,37 +626,38 @@ export default function DashboardView({ userData, onEnterCouncil }: DashboardVie
           
           {/* Part B: Floating Primary CTA */}
           <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-             <motion.button
-               onClick={onEnterCouncil}
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ 
-                 opacity: 1, 
-                 y: 0,
-                 boxShadow: ["0 0 0px rgba(255,255,255,0)", "0 0 20px rgba(255,255,255,0.05)", "0 0 0px rgba(255,255,255,0)"]
-               }}
-               transition={{ 
-                 opacity: { delay: 1, duration: 0.8 },
-                 y: { delay: 1, duration: 0.8 },
-                 boxShadow: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-               }}
-               whileHover={{ 
-                 scale: 1.02, 
-                 borderColor: "rgba(231, 215, 182, 0.4)",
-                 boxShadow: "0 0 20px rgba(231, 215, 182, 0.1)" // Champagne glow
-               }}
-               whileTap={{ scale: 0.98 }}
-               className="group relative flex flex-col items-center justify-center px-12 py-3 bg-[#0a0a12] border border-white/20 rounded-full transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_rgba(0,0,0,0.6)]"
-             >
-               {/* Shine effect */}
-               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E7D7B6]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
-               
-               <span className="font-cinzel text-xs text-[#E7D7B6] font-bold tracking-[0.2em] uppercase z-10 drop-shadow-md">
-                 Enter Council
-               </span>
-               <span className="text-[9px] text-white/30 tracking-widest uppercase mt-0.5 font-sans z-10 group-hover:text-white/50 transition-colors">
-                 Read today’s omens
-               </span>
-             </motion.button>
+             <a href="/ritual">
+               <motion.button
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ 
+                   opacity: 1, 
+                   y: 0,
+                   boxShadow: ["0 0 0px rgba(255,255,255,0)", "0 0 20px rgba(255,255,255,0.05)", "0 0 0px rgba(255,255,255,0)"]
+                 }}
+                 transition={{ 
+                   opacity: { delay: 1, duration: 0.8 },
+                   y: { delay: 1, duration: 0.8 },
+                   boxShadow: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                 }}
+                 whileHover={{ 
+                   scale: 1.02, 
+                   borderColor: "rgba(231, 215, 182, 0.4)",
+                   boxShadow: "0 0 20px rgba(231, 215, 182, 0.1)" // Champagne glow
+                 }}
+                 whileTap={{ scale: 0.98 }}
+                 className="group relative flex flex-col items-center justify-center px-12 py-3 bg-[#0a0a12] border border-white/20 rounded-full transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_rgba(0,0,0,0.6)]"
+               >
+                 {/* Shine effect */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E7D7B6]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                 
+                 <span className="font-cinzel text-xs text-[#E7D7B6] font-bold tracking-[0.2em] uppercase z-10 drop-shadow-md">
+                   CHOOSE YOUR OMEN
+                 </span>
+                 <span className="text-[9px] text-white/30 tracking-widest uppercase mt-0.5 font-sans z-10 group-hover:text-white/50 transition-colors">
+                   Draw a card to set today’s session
+                 </span>
+               </motion.button>
+             </a>
           </div>
         </>
       )}

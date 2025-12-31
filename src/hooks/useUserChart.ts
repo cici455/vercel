@@ -53,26 +53,82 @@ export const useUserChart = (userData: UserChartInput | null) => {
     try {
       // 1. Parse Date & Time
       let birthDate: Date;
-      const [p1, p2, p3] = userData.date.split('/');
       
-      if (p3 && p3.length === 4) {
-        // Assume MM/DD/YYYY
-        const month = parseInt(p1, 10);
-        const day = parseInt(p2, 10);
-        const year = parseInt(p3, 10);
-        
-        if (month < 1 || month > 12 || day < 1 || day > 31) {
-             throw new Error("Invalid Date");
-        }
-
-        birthDate = new Date(year, month - 1, day);
-        const [hours, minutes] = userData.time.split(':').map(Number);
-        birthDate.setHours(hours || 0, minutes || 0);
+      // Handle different date formats
+      const dateStr = userData.date;
+      const timeStr = userData.time;
+      
+      // Check if date is in MM/DD/YYYY format
+      const mmddyyyyRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+      const yyyymmddRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+      
+      let year: number, month: number, day: number;
+      let hours: number, minutes: number;
+      
+      // Parse time first
+      const timeParts = timeStr.split(':').map(Number);
+      if (timeParts.length >= 2) {
+        hours = timeParts[0] || 0;
+        minutes = timeParts[1] || 0;
       } else {
-        // Fallback for standard YYYY-MM-DD
-        birthDate = new Date(`${userData.date}T${userData.time}`);
+        throw new Error("Invalid Time");
       }
-
+      
+      if (mmddyyyyRegex.test(dateStr)) {
+        // MM/DD/YYYY format
+        const match = dateStr.match(mmddyyyyRegex);
+        if (match) {
+          month = parseInt(match[1], 10);
+          day = parseInt(match[2], 10);
+          year = parseInt(match[3], 10);
+        } else {
+          throw new Error("Invalid Date");
+        }
+      } else if (yyyymmddRegex.test(dateStr)) {
+        // YYYY-MM-DD format
+        const match = dateStr.match(yyyymmddRegex);
+        if (match) {
+          year = parseInt(match[1], 10);
+          month = parseInt(match[2], 10);
+          day = parseInt(match[3], 10);
+        } else {
+          throw new Error("Invalid Date");
+        }
+      } else {
+        // Try to parse as ISO string
+        birthDate = new Date(`${dateStr}T${timeStr}`);
+        if (!isNaN(birthDate.getTime())) {
+          // Valid ISO date
+        } else {
+          throw new Error("Invalid Date Format");
+        }
+        
+        // Extract components for validation
+        year = birthDate.getFullYear();
+        month = birthDate.getMonth() + 1;
+        day = birthDate.getDate();
+      }
+      
+      // Validate date components
+      if (month < 1 || month > 12) {
+        throw new Error("Invalid Month");
+      }
+      
+      // Validate day for the given month and year
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (day < 1 || day > daysInMonth) {
+        throw new Error("Invalid Day");
+      }
+      
+      // Validate time components
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        throw new Error("Invalid Time");
+      }
+      
+      // Create final date object
+      birthDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // Final validation
       if (isNaN(birthDate.getTime())) {
         throw new Error("Invalid Date Object");
       }

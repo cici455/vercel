@@ -2,9 +2,22 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const messageApi = require('./api/message');
+const dotenv = require('dotenv');
 
 // Load environment variables from .env file
-require('dotenv').config();
+console.log('Attempting to load .env file...');
+const result = dotenv.config();
+if (result.error) {
+  console.error('Error loading .env file:', result.error);
+} else {
+  console.log('Loaded .env file successfully');
+  console.log('Environment variables loaded:', Object.keys(result.parsed || {}));
+  console.log('MONGODB_URI loaded:', process.env.MONGODB_URI ? 'Yes' : 'No');
+}
+
+// Also print for api/message.js usage
+process.env.MONGODB_URI = process.env.MONGODB_URI || '';
+console.log('process.env.MONGODB_URI:', process.env.MONGODB_URI);
 
 const PORT = process.env.PORT || 3000;
 

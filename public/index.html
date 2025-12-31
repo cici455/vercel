@@ -3,220 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message Board</title>
+    <title>LUMINA Tarot Selector</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap">
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        
+        .font-serif {
+            font-family: 'Cinzel', serif;
         }
-
-        .container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .card-container {
+            perspective: 1000px;
+        }
+        
+        .card {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
             width: 100%;
-            max-width: 600px;
+            height: 100%;
+            backface-visibility: hidden;
         }
-
-        h1 {
-            color: #333;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-align: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .message-form {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .submit-btn {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .messages-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .message-item {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-            transition: all 0.3s ease;
-        }
-
-        .message-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .message-text {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .message-time {
-            font-size: 12px;
-            color: #666;
-            text-align: right;
-        }
-
-        .loading {
-            text-align: center;
-            color: #666;
-            padding: 20px;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .message-form {
-                flex-direction: column;
-            }
-
-            .submit-btn {
-                width: 100%;
-            }
+        
+        .card-back {
+            transform: rotateY(180deg);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Message Board</h1>
-        <form class="message-form" id="messageForm">
-            <input type="text" class="message-input" id="messageInput" placeholder="Write your message..." required>
-            <button type="submit" class="submit-btn">Send</button>
-        </form>
-        <div class="messages-list" id="messagesList">
-            <div class="loading">Loading messages...</div>
-        </div>
-    </div>
+    <div id="root"></div>
 
-    <script>
-        const messageForm = document.getElementById('messageForm');
-        const messageInput = document.getElementById('messageInput');
-        const messagesList = document.getElementById('messagesList');
+    <script type="text/babel">
+        // Mock data for topics and agents
+        const TOPICS = [
+            { id: "love", label: "Love & Relationships", icon: "❤️" },
+            { id: "dating", label: "Dating & Attraction", icon: "⭐" },
+            { id: "commitment", label: "Commitment / Marriage", icon: "🔒" },
+            { id: "breakups", label: "Breakups & Healing", icon: "🔥" },
+            { id: "sex", label: "Sex & Desire", icon: "❤️" },
+            { id: "career", label: "Career Direction", icon: "💼" },
+            { id: "work-conflicts", label: "Work Conflicts", icon: "⚖️" },
+            { id: "money", label: "Money & Resources", icon: "💰" },
+            { id: "purpose", label: "Purpose / Calling", icon: "🎯" },
+            { id: "family", label: "Family & Home", icon: "🏠" },
+            { id: "friendships", label: "Friendships & Community", icon: "👥" },
+            { id: "self-worth", label: "Self-worth & Confidence", icon: "🛡️" },
+            { id: "decisions", label: "Mental Clarity / Decisions", icon: "🧠" },
+            { id: "creativity", label: "Creativity", icon: "🎨" },
+            { id: "health", label: "Health / Energy", icon: "⚡" },
+            { id: "spiritual", label: "Spiritual Growth", icon: "📖" },
+            { id: "communication", label: "Communication", icon: "💬" },
+            { id: "change", label: "Change / Travel", icon: "📍" },
+        ];
 
-        async function loadMessages() {
-            try {
-                const response = await fetch('/api/message');
-                const messages = await response.json();
-                
-                messagesList.innerHTML = '';
-                
-                if (messages.length === 0) {
-                    messagesList.innerHTML = '<div class="loading">No messages yet. Be the first to send one!</div>';
+        const AGENTS = [
+            { id: 'strategist', name: 'Strategist', title: 'The Architect of Fate', color: '#D4AF37', icon: '🎯' },
+            { id: 'oracle', name: 'Oracle', title: 'The Seer of Stars', color: '#b8d7f5', icon: '⭐' },
+            { id: 'alchemist', name: 'Alchemist', title: 'The Transformer', color: '#f5b8d7', icon: '🔥' }
+        ];
+
+        const PLACEHOLDERS = [
+            "What do I need to understand about my love life?",
+            "How should I approach a career decision?",
+            "Help me interpret what I'm feeling lately.",
+            "What's the best path for my spiritual growth?",
+            "How can I improve my relationships?",
+            "What should I focus on for my health?"
+        ];
+
+        // Main Tarot Selector Component
+        function TarotSelector() {
+            const [selectedTopics, setSelectedTopics] = React.useState([]);
+            const [intentText, setIntentText] = React.useState('');
+            const [currentCard, setCurrentCard] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [currentPlaceholder, setCurrentPlaceholder] = React.useState(0);
+            const [selectedAgent, setSelectedAgent] = React.useState(null);
+            const [readingHistory, setReadingHistory] = React.useState([]);
+            const [showHistory, setShowHistory] = React.useState(false);
+
+            // Rotate placeholders
+            React.useEffect(() => {
+                const interval = setInterval(() => {
+                    setCurrentPlaceholder((prev) => (prev + 1) % PLACEHOLDERS.length);
+                }, 3000);
+                return () => clearInterval(interval);
+            }, []);
+
+            // Load reading history on page load
+            React.useEffect(() => {
+                loadReadingHistory();
+            }, []);
+
+            // Load reading history from API
+            async function loadReadingHistory() {
+                try {
+                    const response = await fetch('/api/tarot');
+                    if (response.ok) {
+                        const data = await response.json();
+                        setReadingHistory(data);
+                    }
+                } catch (error) {
+                    console.error('Error loading reading history:', error);
+                }
+            }
+
+            // Toggle topic selection
+            const toggleTopic = (topicId) => {
+                setSelectedTopics(prev => {
+                    if (prev.includes(topicId)) {
+                        return prev.filter(id => id !== topicId);
+                    } else {
+                        return [...prev, topicId];
+                    }
+                });
+            };
+
+            // Generate tarot reading
+            const generateReading = async () => {
+                if (selectedTopics.length === 0 || !intentText.trim()) {
+                    alert('Please select at least one topic and enter your question.');
                     return;
                 }
-                
-                messages.forEach(message => {
-                    const messageItem = document.createElement('div');
-                    messageItem.className = 'message-item';
-                    
-                    const messageText = document.createElement('div');
-                    messageText.className = 'message-text';
-                    messageText.textContent = message.text;
-                    
-                    const messageTime = document.createElement('div');
-                    messageTime.className = 'message-time';
-                    messageTime.textContent = new Date(message.createdAt).toLocaleString();
-                    
-                    messageItem.appendChild(messageText);
-                    messageItem.appendChild(messageTime);
-                    messagesList.appendChild(messageItem);
-                });
-            } catch (error) {
-                console.error('Error loading messages:', error);
-                messagesList.innerHTML = '<div class="loading">Failed to load messages. Please try again later.</div>';
-            }
+
+                setIsLoading(true);
+                setCurrentCard(null);
+
+                try {
+                    // Send POST request to API
+                    const response = await fetch('/api/tarot', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            topics: selectedTopics,
+                            intent: intentText.trim()
+                        }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCurrentCard(data.card);
+                        // Refresh history after new reading
+                        loadReadingHistory();
+                    } else {
+                        const errorData = await response.json();
+                        console.error('Error generating reading:', errorData);
+                        alert('Failed to generate reading. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to connect to server. Please try again.');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-indigo-900 p-4">
+                    <div className="max-w-4xl mx-auto">
+                        <h1 className="font-serif text-4xl text-center mb-8 text-purple-300">LUMINA TAROT SELECTOR</h1>
+
+                        {/* Topic Selection */}
+                        <div className="bg-black/50 backdrop-blur-lg border border-purple-500/30 rounded-lg p-6 mb-8">
+                            <h2 className="text-2xl font-serif mb-4 text-purple-200">Select Topics</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+                                {TOPICS.map(topic => (
+                                    <button
+                                        key={topic.id}
+                                        onClick={() => toggleTopic(topic.id)}
+                                        className={`px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 ${
+                                            selectedTopics.includes(topic.id)
+                                                ? 'bg-purple-600 text-white shadow-lg'
+                                                : 'bg-black/50 border border-purple-500/30 hover:bg-purple-500/20 text-purple-200'
+                                        }`}
+                                    >
+                                        <span className="text-xl">{topic.icon}</span>
+                                        <span>{topic.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Intent Input */}
+                            <div className="mb-6">
+                                <h3 className="text-xl font-serif mb-2 text-purple-200">Your Question</h3>
+                                <textarea
+                                    value={intentText}
+                                    onChange={(e) => setIntentText(e.target.value)}
+                                    placeholder={PLACEHOLDERS[currentPlaceholder]}
+                                    className="w-full bg-black/50 border border-purple-500/30 rounded-lg p-4 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    rows={3}
+                                ></textarea>
+                            </div>
+
+                            {/* Generate Button */}
+                            <button
+                                onClick={generateReading}
+                                disabled={isLoading}
+                                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-lg font-serif text-xl transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? 'Generating Reading...' : 'Draw Your Card'}
+                            </button>
+                        </div>
+
+                        {/* Tarot Card Display */}
+                        {currentCard && (
+                            <div className="bg-black/50 backdrop-blur-lg border border-purple-500/30 rounded-lg p-6 mb-8">
+                                <h2 className="text-2xl font-serif mb-6 text-center text-purple-200">Your Reading</h2>
+                                <div className="max-w-md mx-auto bg-gradient-to-br from-purple-900/50 to-indigo-900/50 border border-purple-500/50 rounded-xl p-6 shadow-xl">
+                                    <h3 className="text-3xl font-serif mb-4 text-center text-white">{currentCard.name}</h3>
+                                    <div className="bg-black/50 rounded-lg p-4 mb-4">
+                                        <p className="text-lg text-purple-200"><strong>Meaning:</strong> {currentCard.meaning}</p>
+                                    </div>
+                                    <div className="bg-black/50 rounded-lg p-4">
+                                        <p className="text-lg text-purple-200"><strong>Recommendation:</strong> {currentCard.recommendation}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* History Toggle */}
+                        <div className="text-center mb-4">
+                            <button
+                                onClick={() => setShowHistory(!showHistory)}
+                                className="bg-black/50 border border-purple-500/30 text-purple-200 px-6 py-2 rounded-lg hover:bg-purple-500/20 transition-all"
+                            >
+                                {showHistory ? 'Hide Reading History' : 'Show Reading History'}
+                            </button>
+                        </div>
+
+                        {/* Reading History */}
+                        {showHistory && (
+                            <div className="bg-black/50 backdrop-blur-lg border border-purple-500/30 rounded-lg p-6">
+                                <h2 className="text-2xl font-serif mb-4 text-purple-200">Reading History</h2>
+                                {readingHistory.length === 0 ? (
+                                    <p className="text-center text-purple-400">No readings yet. Generate your first reading!</p>
+                                ) : (
+                                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                                        {readingHistory.slice(0, 10).map((reading, index) => (
+                                            <div key={index} className="bg-black/50 border border-purple-500/30 rounded-lg p-4">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h3 className="font-serif text-xl text-purple-200">{reading.card?.name || 'Tarot Reading'}</h3>
+                                                    <span className="text-sm text-purple-400">
+                                                        {new Date(reading.createdAt).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <p className="text-purple-300 mb-2"><strong>Topics:</strong> {reading.topics?.join(', ') || 'N/A'}</p>
+                                                <p className="text-purple-300 mb-2"><strong>Question:</strong> {reading.intent || 'N/A'}</p>
+                                                {reading.card && (
+                                                    <div className="bg-black/30 rounded p-3">
+                                                        <p className="text-sm text-purple-200"><strong>Meaning:</strong> {reading.card.meaning}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
         }
 
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const text = messageInput.value.trim();
-            if (!text) return;
-            
-            try {
-                await fetch('/api/message', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ text }),
-                });
-                
-                messageInput.value = '';
-                await loadMessages();
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again later.');
-            }
-        });
-
-        // Load messages when the page opens
-        window.addEventListener('DOMContentLoaded', loadMessages);
+        // Render the component
+        ReactDOM.render(<TarotSelector />, document.getElementById('root'));
     </script>
 </body>
 </html>

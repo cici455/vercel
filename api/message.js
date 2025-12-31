@@ -1,23 +1,50 @@
 const { MongoClient } = require('mongodb');
 
-const uri = process.env.MONGODB_URI;
 let client;
 let db;
 
+// Get URI from environment variables at runtime, not at module load time
+const getMongoURI = () => {
+  console.log('Getting MongoDB URI from environment variables...');
+  const uri = process.env.MONGODB_URI;
+  console.log('MongoDB URI from env:', uri);
+  return uri;
+};
+
 async function connectToDatabase() {
+  console.log('Attempting to connect to MongoDB...');
+  const uri = getMongoURI();
+  console.log('MongoDB URI:', uri);
+  
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
+  
   if (!client) {
-    client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    await client.connect();
-    db = client.db('messages');
+    try {
+      client = new MongoClient(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log('MongoClient created, connecting...');
+      await client.connect();
+      console.log('Connected to MongoDB!');
+      db = client.db('messages');
+      console.log('Database selected:', db.databaseName);
+    } catch (error) {
+      console.error('MongoDB connection error:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      throw error;
+    }
   }
   return db;
 }
 
 module.exports = async (req, res) => {
   try {
+    console.log('Processing request:', req.method, req.url);
+    
     const database = await connectToDatabase();
     const messagesCollection = database.collection('messages');
 
@@ -25,18 +52,25 @@ module.exports = async (req, res) => {
       const message = req.body;
       message.createdAt = new Date();
       await messagesCollection.insertOne(message);
-      res.status(201).json({ message: 'Message sent successfully' });
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Message sent successfully' }));
     } else if (req.method === 'GET') {
       const messages = await messagesCollection.find({})
         .sort({ createdAt: -1 })
         .limit(10)
         .toArray();
-      res.status(200).json(messages);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(messages));
     } else {
-      res.status(405).json({ message: 'Method not allowed' });
+      res.writeHead(405, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Method not allowed' }));
     }
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Error in API handler:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ 
+      message: 'Internal server error',
+      error: error.message 
+    }));
   }
 };

@@ -8,6 +8,7 @@ import {
   UsersRound, Compass, Globe, Sparkles, GraduationCap
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Type definitions
 type AccentColor = "gold" | "teal";
@@ -96,6 +97,7 @@ const DOMAINS: Domain[] = [
 
 // Main Ritual Chamber component - 3-card Carousel
 export default function RitualChamberPage() {
+  const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [intention, setIntention] = useState('');
 
@@ -135,8 +137,9 @@ export default function RitualChamberPage() {
     };
 
     console.log('Session payload:', payload);
-    // In a real app, we would navigate to council page
-    // router.push({ pathname: '/council', query: { payload: JSON.stringify(payload) } });
+    // Navigate to council page with payload
+    const encodedPayload = encodeURIComponent(JSON.stringify(payload));
+    router.push(`/council?payload=${encodedPayload}`);
   };
 
   return (

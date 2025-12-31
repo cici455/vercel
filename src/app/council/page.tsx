@@ -3,6 +3,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Star, Moon, Flame } from 'lucide-react';
+import { Cinzel } from 'next/font/google';
+
+// Google Font for headers
+const cinzel = Cinzel({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-cinzel',
+});
 
 // Mock data
 const MOCK_HISTORY = [
@@ -66,19 +74,22 @@ export default function ChronoCouncilPage() {
   };
 
   return (
-    <div className="h-screen w-full bg-[#050505] text-[#Eaeaea] font-sans overflow-hidden">
+    <div className={`h-screen w-full bg-[#050505] text-[#Eaeaea] font-sans overflow-hidden ${cinzel.variable}`} style={{ 
+      backgroundImage: 'radial-gradient(circle at center, rgba(212,175,55,0.03) 0%, transparent 70%), radial-gradient(circle at 80% 20%, rgba(160,236,214,0.02) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(157,78,221,0.02) 0%, transparent 50%)',
+      backgroundAttachment: 'fixed'
+    }}>
       <div className="flex h-full">
         {/* Left Panel: CouncilChamber (75%) */}
-        <div className="w-[75%] h-full flex flex-col border-r border-[#333333]">
+        <div className="w-[75%] h-full flex flex-col border-r border-[#333333]/50">
           {/* Header */}
-          <header className="p-6 border-b border-[#333333]">
-            <h1 className="text-center text-sm tracking-widest uppercase text-[#888888]">
+          <header className="p-6 border-b border-[#333333]/50">
+            <h1 className={`text-center text-sm tracking-widest uppercase text-[#888888] font-serif`}>
               RITUAL IN PROGRESS
             </h1>
           </header>
 
           {/* Message List */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:hidden scrollbar-hide">
             {messages.map((message, index) => (
               <motion.div
                 key={message.id}
@@ -90,7 +101,7 @@ export default function ChronoCouncilPage() {
                 <div className={`max-w-[70%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
                   {/* Role indicator */}
                   {message.role !== 'user' && (
-                    <div className="flex items-center gap-2 mb-2 text-xs text-[#888888] uppercase tracking-wider">
+                    <div className="flex items-center gap-2 mb-2 text-xs text-[#888888] uppercase tracking-wider font-serif">
                       {message.role === 'strategist' && (
                         <>
                           <Star size={14} className="text-[#D4AF37]" />
@@ -114,14 +125,14 @@ export default function ChronoCouncilPage() {
 
                   {/* Message content */}
                   <div 
-                    className={`p-4 rounded-lg backdrop-blur-sm border 
+                    className={`p-5 rounded-lg backdrop-blur-md border 
                       ${message.role === 'user' 
-                        ? 'bg-[#1a1a1a] border-[#333333]' 
+                        ? 'bg-black/40 border-[#333333]/80' 
                         : message.role === 'strategist'
-                        ? 'bg-[#0a0a0a] border-[#D4AF37]' 
+                        ? 'bg-black/40 border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
                         : message.role === 'oracle'
-                        ? 'bg-[#0a0a0a]/80 border-[#A0ECD6] backdrop-blur-md' 
-                        : 'bg-[#0a0a0a] border-[#9D4EDD] font-mono' 
+                        ? 'bg-black/30 border-[#A0ECD6]/50 backdrop-blur-lg shadow-[0_0_15px_rgba(160,236,214,0.3)]' 
+                        : 'bg-black/40 border-[#9D4EDD]/50 font-mono shadow-[0_0_15px_rgba(157,78,221,0.3)]' 
                       }`}
                   >
                     <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
@@ -137,7 +148,7 @@ export default function ChronoCouncilPage() {
           </div>
 
           {/* Input Area */}
-          <div className="p-6 border-t border-[#333333]">
+          <div className="p-6 border-t border-[#333333]/50">
             <div className="flex gap-3">
               <div className="flex-1 relative">
                 <input
@@ -146,12 +157,12 @@ export default function ChronoCouncilPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                  className="w-full p-4 bg-[#1a1a1a] border border-[#333333] rounded-lg focus:outline-none focus:border-[#D4AF37] placeholder-[#666666] text-[#Eaeaea]"
+                  className="w-full p-4 bg-black/40 border border-[#333333]/80 backdrop-blur-sm rounded-lg focus:outline-none focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] placeholder-[#666666] text-[#Eaeaea]"
                 />
               </div>
               <button 
                 onClick={handleSend}
-                className="px-6 py-4 bg-[#1a1a1a] border border-[#9D4EDD] rounded-lg hover:bg-[#9D4EDD]/20 transition-colors text-xs uppercase tracking-wider"
+                className="px-6 py-4 bg-black/40 border border-[#9D4EDD]/50 backdrop-blur-sm rounded-lg hover:bg-[#9D4EDD]/10 hover:shadow-[0_0_15px_rgba(157,78,221,0.3)] transition-all text-xs uppercase tracking-wider font-serif"
               >
                 SUMMON COUNCIL
               </button>
@@ -162,17 +173,17 @@ export default function ChronoCouncilPage() {
         {/* Right Panel: DestinyTree (25%) */}
         <div className="w-[25%] h-full flex flex-col">
           {/* Header */}
-          <header className="p-6 border-b border-[#333333]">
-            <h2 className="text-center text-sm tracking-widest uppercase text-[#888888]">
+          <header className="p-6 border-b border-[#333333]/50">
+            <h2 className={`text-center text-sm tracking-widest uppercase text-[#888888] font-serif`}>
               DESTINY TREE
             </h2>
           </header>
 
           {/* Timeline */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden scrollbar-hide">
             <div className="relative">
               {/* Vertical line */}
-              <div className="absolute left-4 top-0 bottom-0 w-px bg-[#333333]"></div>
+              <div className="absolute left-1.5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#D4AF37]/30 via-[#D4AF37]/10 to-transparent"></div>
               
               {/* Nodes */}
               <div className="space-y-8">
@@ -183,21 +194,34 @@ export default function ChronoCouncilPage() {
                     onClick={() => handleNodeClick(node.id)}
                   >
                     {/* Node */}
-                    <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full 
-                      ${node.active 
-                        ? 'bg-[#D4AF37] ring-2 ring-[#D4AF37]/50 ring-offset-2 ring-offset-[#050505]' 
-                        : 'bg-[#333333] hover:bg-[#444444]' 
-                      } transition-all duration-300"
-                    >
+                    <div className="relative z-10 flex items-center justify-center">
+                      {/* Active node with ping animation */}
                       {node.active && (
-                        <div className="absolute inset-0 rounded-full bg-[#D4AF37]/30 animate-ping"></div>
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-[#D4AF37]/30"
+                          animate={{ 
+                            scale: [1, 2.5, 1],
+                            opacity: [0.5, 0, 0]
+                          }}
+                          transition={{ 
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeOut"
+                          }}
+                        />
                       )}
-                      <div className={`w-4 h-4 rounded-full ${node.active ? 'bg-[#D4AF37]' : 'bg-[#666666]'}`}></div>
+                      {/* Node dot */}
+                      <div className={`w-2 h-2 rounded-full transition-all duration-300 
+                        ${node.active 
+                          ? 'bg-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.5)]' 
+                          : 'bg-[#666666] hover:bg-[#888888]' 
+                        }`}
+                      ></div>
                     </div>
                     
                     {/* Label */}
                     <div className="ml-4 flex-1">
-                      <div className={`text-sm ${node.active ? 'text-[#D4AF37]' : 'text-[#888888]'} transition-colors`}>
+                      <div className={`text-sm ${node.active ? 'text-[#D4AF37]' : 'text-[#888888]'} transition-colors font-serif`}>
                         {node.label}
                       </div>
                     </div>
@@ -207,8 +231,8 @@ export default function ChronoCouncilPage() {
                 {/* Ghost Nodes (Visual cue for alternative paths) */}
                 {[1, 2].map((i) => (
                   <div key={`ghost-${i}`} className="flex items-start opacity-50">
-                    <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-[#333333]">
-                      <div className="w-2 h-2 rounded-full bg-[#666666]"></div>
+                    <div className="relative z-10 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#666666]"></div>
                     </div>
                     <div className="ml-4 flex-1">
                       <div className="text-xs text-[#666666]">

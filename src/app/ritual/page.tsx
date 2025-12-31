@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, 
   Landmark, Briefcase, Heart, Home, Activity, BookOpen, 
@@ -161,26 +161,29 @@ export default function RitualChamber() {
   const selectedDomain = DOMAINS[selectedDomainIndex];
   
   // Animation for center card float - Optimized
-  const floatY = useMotionValue(0);
-  const floatX = useMotionValue(0);
+  const controls = useAnimation();
   
   useEffect(() => {
     // Float animation
-    const floatAnimation = () => {
-      floatY.set(0);
-      floatX.set(0);
+    const floatAnimation = async () => {
+      await controls.start({
+        y: 0,
+        x: 0,
+        transition: { duration: 0.5 }
+      });
       
       // Small float animation
-      setTimeout(() => {
-        floatY.set(-10);
-        floatX.set(2);
-      }, 500);
+      await controls.start({
+        y: -10,
+        x: 2,
+        transition: { duration: 3, ease: "easeInOut" }
+      });
     };
     
     floatAnimation();
     const interval = setInterval(floatAnimation, 5000);
     return () => clearInterval(interval);
-  }, [selectedDomainIndex, floatY, floatX]);
+  }, [selectedDomainIndex, controls]);
   
   // Handle next domain
   const handleNextDomain = () => {
@@ -319,11 +322,7 @@ export default function RitualChamber() {
           {/* Center focus card */}
           <motion.div
             className="relative z-10"
-            animate={{
-              y: floatY,
-              x: floatX
-            }}
-            transition={{ duration: 3, ease: "easeInOut" }}
+            animate={controls}
           >
             {/* Faint halo behind card */}
             <motion.div

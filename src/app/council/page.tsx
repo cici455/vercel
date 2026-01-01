@@ -51,9 +51,11 @@ const TREE_NODES = [
 export default function ChronoCouncilPage() {
   const [messages, setMessages] = useState(MOCK_HISTORY);
   const [input, setInput] = useState('');
+  const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
+  const [isCouncilMode, setIsCouncilMode] = useState(false);
 
   // Handle message send
-  const handleSend = () => {
+  const handleSend = async (mode: 'solo' | 'council' = 'solo') => {
     if (!input.trim()) return;
     
     const newMessage = {
@@ -63,8 +65,88 @@ export default function ChronoCouncilPage() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     
+    // Update UI with user message immediately
     setMessages([...messages, newMessage]);
     setInput('');
+
+    try {
+      // Prepare history for backend API
+      const formattedHistory = [...messages, newMessage].map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+      // Call council API with new mode parameters
+      const response = await fetch('/api/council', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: input,
+          astroData: {
+            sunSign: 'Leo', // This would come from user's actual astro data
+            moonSign: 'Virgo',
+            risingSign: 'Libra'
+          },
+          history: formattedHistory,
+          mode,
+          activeAgent
+        })
+      });
+
+      const data = await response.json();
+      
+      // Generate timestamps for all responses
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      // Add AI responses to chat only for non-null responses
+      const nextId = messages.length + 2;
+      const aiResponses: typeof messages = [];
+      let responseId = nextId;
+      
+      if (data.responses.strategist !== null) {
+        aiResponses.push({
+          id: responseId++,
+          role: 'strategist',
+          content: data.responses.strategist,
+          timestamp
+        });
+      }
+      
+      if (data.responses.oracle !== null) {
+        aiResponses.push({
+          id: responseId++,
+          role: 'oracle',
+          content: data.responses.oracle,
+          timestamp
+        });
+      }
+      
+      if (data.responses.alchemist !== null) {
+        aiResponses.push({
+          id: responseId++,
+          role: 'alchemist',
+          content: data.responses.alchemist,
+          timestamp
+        });
+      }
+      
+      // Update chat with AI responses
+      setMessages(prev => [...prev, ...aiResponses]);
+      
+      // Update mode state if council mode was used
+      if (mode === 'council') {
+        setIsCouncilMode(true);
+      } else {
+        setIsCouncilMode(false);
+      }
+      
+      // TODO: Update Destiny Tree with new turn label
+      console.log('Turn label:', data.turnLabel);
+    } catch (error) {
+      console.error('Error calling council API:', error);
+    }
   };
 
   // Handle node click
@@ -83,9 +165,53 @@ export default function ChronoCouncilPage() {
         <div className="w-[75%] h-full flex flex-col border-r border-[#333333]/50">
           {/* Header */}
           <header className="p-6 border-b border-[#333333]/50">
-            <h1 className={`text-center text-sm tracking-widest uppercase text-[#888888] font-serif`}>
-              RITUAL IN PROGRESS
-            </h1>
+            <div className="flex flex-col items-center gap-4">
+              <h1 className={`text-center text-sm tracking-widest uppercase text-[#888888] font-serif`}>
+                RITUAL IN PROGRESS
+              </h1>
+              
+              {/* Agent Avatars */}
+              <div className="flex gap-6">
+                {/* Strategist */}
+                <div 
+                  className={`flex flex-col items-center transition-all duration-300 cursor-pointer ${activeAgent === 'strategist' ? 'opacity-100 scale-110' : 'opacity-50 scale-95 hover:opacity-75'}`}
+                  onClick={() => setActiveAgent('strategist')}
+                >
+                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'bg-black/40 border border-[#333333]/80'}`}>
+                    <Star size={20} className="text-[#D4AF37]" />
+                  </div>
+                  <div className="text-xs uppercase tracking-wider font-serif">
+                    STRATEGIST
+                  </div>
+                </div>
+                
+                {/* Oracle */}
+                <div 
+                  className={`flex flex-col items-center transition-all duration-300 cursor-pointer ${activeAgent === 'oracle' ? 'opacity-100 scale-110' : 'opacity-50 scale-95 hover:opacity-75'}`}
+                  onClick={() => setActiveAgent('oracle')}
+                >
+                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/20 border border-[#A0ECD6]/50 shadow-[0_0_15px_rgba(160,236,214,0.3)]' : 'bg-black/40 border border-[#333333]/80'}`}>
+                    <Moon size={20} className="text-[#A0ECD6]" />
+                  </div>
+                  <div className="text-xs uppercase tracking-wider font-serif">
+                    ORACLE
+                  </div>
+                </div>
+                
+                {/* Alchemist */}
+                <div 
+                  className={`flex flex-col items-center transition-all duration-300 cursor-pointer ${activeAgent === 'alchemist' ? 'opacity-100 scale-110' : 'opacity-50 scale-95 hover:opacity-75'}`}
+                  onClick={() => setActiveAgent('alchemist')}
+                >
+                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/20 border border-[#9D4EDD]/50 shadow-[0_0_15px_rgba(157,78,221,0.3)]' : 'bg-black/40 border border-[#333333]/80'}`}>
+                    <Flame size={20} className="text-[#9D4EDD]" />
+                  </div>
+                  <div className="text-xs uppercase tracking-wider font-serif">
+                    ALCHEMIST
+                  </div>
+                </div>
+              </div>
+            </div>
           </header>
 
           {/* Message List */}
@@ -138,8 +264,21 @@ export default function ChronoCouncilPage() {
                     <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
                       {message.content}
                     </p>
-                    <div className="mt-2 text-xs text-[#666666]">
-                      {message.timestamp}
+                    <div className="mt-2 flex justify-between items-center">
+                      <div className="text-xs text-[#666666]">
+                        {message.timestamp}
+                      </div>
+                      {message.role !== 'user' && (message.role === 'oracle' || message.role === 'alchemist') && (
+                        <button
+                          onClick={() => {
+                            setActiveAgent(message.role as 'oracle' | 'alchemist');
+                            setIsCouncilMode(false);
+                          }}
+                          className="text-xs text-[#888888] hover:text-[#D4AF37] transition-colors flex items-center gap-1"
+                        >
+                          <span className="uppercase tracking-wider">Focus on this Path</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -149,23 +288,45 @@ export default function ChronoCouncilPage() {
 
           {/* Input Area */}
           <div className="p-6 border-t border-[#333333]/50">
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Enter your query..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                  className="w-full p-4 bg-black/40 border border-[#333333]/80 backdrop-blur-sm rounded-lg focus:outline-none focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] placeholder-[#666666] text-[#Eaeaea]"
-                />
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="Enter your query..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSend('solo')}
+                    className="w-full p-4 bg-black/40 border border-[#333333]/80 backdrop-blur-sm rounded-lg focus:outline-none focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] placeholder-[#666666] text-[#Eaeaea]"
+                  />
+                </div>
+                
+                {/* Send Button (Solo Mode) */}
+                <button 
+                  onClick={() => handleSend('solo')}
+                  className="px-6 py-4 bg-black/40 border border-[#D4AF37]/50 backdrop-blur-sm rounded-lg hover:bg-[#D4AF37]/10 hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all text-xs uppercase tracking-wider font-serif"
+                >
+                  SEND
+                </button>
+                
+                {/* Summon Council Button */}
+                <button 
+                  onClick={() => handleSend('council')}
+                  className="px-6 py-4 bg-black/40 border border-[#9D4EDD]/50 backdrop-blur-sm rounded-lg hover:bg-[#9D4EDD]/10 hover:shadow-[0_0_15px_rgba(157,78,221,0.3)] transition-all text-xs uppercase tracking-wider font-serif"
+                >
+                  SUMMON COUNCIL
+                </button>
               </div>
-              <button 
-                onClick={handleSend}
-                className="px-6 py-4 bg-black/40 border border-[#9D4EDD]/50 backdrop-blur-sm rounded-lg hover:bg-[#9D4EDD]/10 hover:shadow-[0_0_15px_rgba(157,78,221,0.3)] transition-all text-xs uppercase tracking-wider font-serif"
-              >
-                SUMMON COUNCIL
-              </button>
+              
+              {/* Mode Indicator */}
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-[#888888] uppercase tracking-wider font-serif">
+                  CURRENT MODE:
+                </div>
+                <div className="px-3 py-1 rounded-full text-xs bg-[#D4AF37]/20 border border-[#D4AF37]/50">
+                  {isCouncilMode ? 'COUNCIL DEBATE' : `SINGLE AGENT: ${activeAgent.toUpperCase()}`}
+                </div>
+              </div>
             </div>
           </div>
         </div>

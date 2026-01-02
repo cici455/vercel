@@ -1,99 +1,110 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyA5Hn4QMVGSWBBtaqOEUWD9Qtkv1q2rOhU");
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
+  console.log("--- API REQUEST RECEIVED ---");
+  
   try {
-    const body = await req.json();
-    const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [] } = body;
+    // 1. Parse Body (Wrap in try-catch to prevent JSON parse errors)
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error("JSON Parse Error:", e);
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    // --- 1. DYNAMIC SYSTEM PROMPT CONSTRUCTION ---
-    // This injects the "Soul" into the AI based on the current user state.
-    
+    const { message, astroData, mode = 'council', activeAgent = 'strategist' } = body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    console.log(`Mode: ${mode}, Agent: ${activeAgent}, HasKey: ${!!apiKey}`);
+
+    if (!apiKey) {
+      console.error("Error: Missing API Key");
+      return NextResponse.json({ error: "Server Configuration Error: Missing API Key" }, { status: 500 });
+    }
+
+    // 2. Construct Prompt
     const systemPrompt = `
-      You are LUMINA, a specialized "Psychic Council" engine.
-      You are simulating a user's internal psychological conflict using Jungian Archetypes and Astrology.
-
-      === CURRENT STATE ===
-      - User Input: "${message}"
-      - Interaction Mode: ${mode.toUpperCase()}
-      - Active Speaker(s): ${mode === 'council' ? 'ALL THREE (Debate)' : `ONLY ${activeAgent.toUpperCase()} (Deep Dive)`}
-
-      === THE ARCHETYPES ===
+      You are LUMINA. 
+      Mode: ${mode}. Active Agent: ${activeAgent}.
+      User Input: "${message}"
       
-      1. 🧠 THE STRATEGIST (Sun Sign: ${astroData.sunSign || 'Unknown'})
-         - Role: The Ego, The CEO, The Rational Father.
-         - Tone: Cold, authoritative, risk-averse, "Cruel but fair."
-         - Mission: Protect the user's assets and social status. Ignore emotions.
-      
-      2. 🔮 THE ORACLE (Moon Sign: ${astroData.moonSign || 'Unknown'})
-         - Role: The Id, The Mystic, The Shadow.
-         - Tone: Poetic, eerie, cryptic, intense.
-         - Mission: Reveal the hidden emotional truth. Contradict the Strategist's logic.
-      
-      3. ⚗️ THE ALCHEMIST (Rising Sign: ${astroData.risingSign || 'Unknown'})
-         - Role: The Persona, The Hacker, The Doer.
-         - Tone: Energetic, cyberpunk, tactical.
-         - Mission: Synthesize the conflict into a concrete ACTION PLAN (Steps).
+      ARCHETYPES:
+      - Strategist (Sun: ${astroData?.sunSign || 'Unknown'})
+      - Oracle (Moon: ${astroData?.moonSign || 'Unknown'})
+      - Alchemist (Rising: ${astroData?.risingSign || 'Unknown'})
 
-      === INSTRUCTIONS ===
-      ${mode === 'council'
-        ? "Generate a 3-way debate. The characters should reference each other. Keep it punchy."
-        : `You are now speaking ONLY as the ${activeAgent}. Ignore the others. Dive deep into your specific worldview. Be conversational.`
-      }
-
-      === OUTPUT FORMAT (STRICT JSON) ===
-      Return ONLY valid JSON. Do not use Markdown code blocks.
-      
+      OUTPUT FORMAT: STRICT JSON only.
       {
-        "turnLabel": "A short 2-5 word poetic title for this turn",
+        "turnLabel": "Title",
         "responses": {
-          "strategist": ${mode === 'solo' && activeAgent !== 'strategist' ? "null" : "\"String content...\""},
-          "oracle": ${mode === 'solo' && activeAgent !== 'oracle' ? "null" : "\"String content...\""},
-          "alchemist": ${mode === 'solo' && activeAgent !== 'alchemist' ? "null" : "\"String content (use bullet points for steps)...\""}
+          "strategist": ${mode === 'solo' && activeAgent !== 'strategist' ? "null" : "\"text...\""},
+          "oracle": ${mode === 'solo' && activeAgent !== 'oracle' ? "null" : "\"text...\""},
+          "alchemist": ${mode === 'solo' && activeAgent !== 'alchemist' ? "null" : "\"text...\""}
         }
       }
     `;
 
-    // --- 2. CALL GEMINI ---
-    try {
-      const model = genAI.getGenerativeModel({
-        model: "gemini-pro", // High reasoning capability and available model
-        systemInstruction: systemPrompt,
-        generationConfig: {
-          responseMimeType: "application/json", // Force JSON
-          temperature: 0.8 // High creativity
-        }
-      });
+    // 3. Prepare Fetch Config
+    // Use v1 API and gemini-2.5-flash which is available
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    
+    const payload = {
+      contents: [{ role: "user", parts: [{ text: systemPrompt }] }],
+      generationConfig: {
+        temperature: 0.9
+      }
+    };
 
-      const chat = model.startChat({
-        history: history.map((msg: any) => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }] // Fixed: msg.content instead of msg.parts
-        }))
-      });
+    console.log("Sending request to Google...");
 
-      const result = await chat.sendMessage(message);
-      const responseText = result.response.text();
+    // 4. Execute Fetch with explicit Timeout handling (to avoid hanging)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-      return Response.json(JSON.parse(responseText));
-    } catch (apiError) {
-      console.error("Gemini API Call Failed, using fallback response:", apiError);
-      // Fallback response with the correct format
-      const fallbackResponse = {
-        turnLabel: "Cosmic Alignment",
-        responses: {
-          strategist: mode === 'council' || activeAgent === 'strategist' ? `As your Strategist, I analyze your situation with cold precision. Your query: "${message}" requires careful planning. Let me outline the logical steps forward.` : null,
-          oracle: mode === 'council' || activeAgent === 'oracle' ? `As your Oracle, I see the hidden currents beneath your words. Your query: "${message}" echoes with deeper meaning. Listen to the whispers of your intuition.` : null,
-          alchemist: mode === 'council' || activeAgent === 'alchemist' ? `As your Alchemist, I transform your chaos into action. Your query: "${message}" demands concrete steps. Here's your protocol: \n\n• Step 1: Define your core objective clearly\n• Step 2: Gather necessary resources\n• Step 3: Execute with focused intensity\n• Step 4: Iterate and refine based on results` : null
-        }
-      };
-      return Response.json(fallbackResponse);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+
+    console.log("Google Response Status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Google API Error Body:", errorText);
+      throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return Response.json({ error: "Failed to consult the stars." }, { status: 500 });
+    const data = await response.json();
+    
+    // 5. Parse content safely
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      throw new Error("No text returned from Gemini candidates");
+    }
+
+    // Remove Markdown code blocks if present
+    const cleanText = rawText.replace(/^```json\n|```$/g, '').trim();
+    
+    const jsonResponse = JSON.parse(cleanText);
+    return NextResponse.json(jsonResponse);
+
+  } catch (error: any) {
+    console.error("--- FATAL ERROR IN ROUTE ---");
+    console.error(error);
+    
+    // Return a 500 instead of crashing the process
+    return NextResponse.json(
+      { 
+        error: "Internal Server Error", 
+        details: error.message,
+        hint: "Check server logs. If in China, ensure you have a proxy." 
+      },
+      { status: 500 }
+    );
   }
 }

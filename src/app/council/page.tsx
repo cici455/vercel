@@ -12,39 +12,26 @@ const cinzel = Cinzel({
   variable: '--font-cinzel',
 });
 
-// Mock data
-const MOCK_HISTORY = [
+// Intro state with agent introductions
+const INTRO_STATE = [
   {
     id: 1,
-    role: 'user',
-    content: "I want to quit my job and start a business, but I'm scared.",
+    role: 'strategist',
+    content: "I am your Rationality. I guard your assets and define your reality.",
     timestamp: '10:42 AM'
   },
   {
     id: 2,
-    role: 'strategist', // The Sun
-    content: "Analyzing your 2nd House (Assets): Saturn is currently retrograding. The financial risk is calculated at 85%. Logical conclusion: Retain current employment for 6 more months to accumulate capital.",
-    timestamp: '10:42 AM'
+    role: 'oracle',
+    content: "I am your Intuition. I keep the secrets you are afraid to whisper.",
+    timestamp: '10:43 AM'
   },
   {
     id: 3,
-    role: 'oracle', // The Moon - Interjecting
-    content: "I hear the lie in your logic. The fear isn't about money; it's about the suffocation of your soul. Waiting 6 months will only deepen the shadow. You crave the chaos.",
-    timestamp: '10:43 AM'
-  },
-  {
-    id: 4,
-    role: 'alchemist', // The Rising - Synthesizing
-    content: "Conflict Detected. Synthesizing solution... \n\nPROTOCOL ALPHA:\n1. Keep the day job (appease Strategist).\n2. Launch 'Night Venture' strictly between 8 PM - 12 AM (feed the Oracle).\n3. Re-evaluate in 30 days.",
-    timestamp: '10:43 AM'
+    role: 'alchemist',
+    content: "I am your Action. I turn your chaos into concrete protocols.",
+    timestamp: '10:44 AM'
   }
-];
-
-const TREE_NODES = [
-  { id: 1, label: 'The Spark', active: false },
-  { id: 2, label: 'Rational Analysis', active: false },
-  { id: 3, label: 'The Conflict', active: false },
-  { id: 4, label: 'Synthesis (Current)', active: true },
 ];
 
 // Define types for tree nodes
@@ -58,19 +45,19 @@ interface TreeNode {
 
 // Main component
 export default function ChronoCouncilPage() {
-  const [messages, setMessages] = useState(MOCK_HISTORY);
+  const [messages, setMessages] = useState(INTRO_STATE);
   const [input, setInput] = useState('');
   const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
   const [isCouncilMode, setIsCouncilMode] = useState(false);
   const [isSummonActive, setIsSummonActive] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
-  const [treeNodes, setTreeNodes] = useState<TreeNode[]>([
-    { id: 1, label: 'The Spark', messageId: 1, type: 'strategist', active: false },
-    { id: 2, label: 'Rational Analysis', messageId: 2, type: 'strategist', active: false },
-    { id: 3, label: 'The Conflict', messageId: 3, type: 'council', active: false },
-    { id: 4, label: 'Synthesis', messageId: 4, type: 'council', active: true },
-  ]);
-  const [activeTreeNode, setActiveTreeNode] = useState<number>(4);
+  const [activeTreeNode, setActiveTreeNode] = useState<number | null>(null);
+  
+  // Handle agent selection from header icons
+  const handleAgentSelect = (agent: 'strategist' | 'oracle' | 'alchemist') => {
+    setActiveAgent(agent);
+    setIsCouncilMode(false);
+  };
 
   // Handle message send
   const handleSend = async (mode: 'solo' | 'council' = 'solo') => {
@@ -180,53 +167,12 @@ export default function ChronoCouncilPage() {
         // Deactivate summon button after council response
         setIsSummonActive(false);
       }
-      
-      // Update Destiny Tree with new turn label
-      if (data.turnLabel) {
-        // Find the latest strategist message to link with tree node
-        const strategistMessageId = aiResponses.find(r => r.role === 'strategist')?.id || nextId;
-        
-        // Add new tree node
-        const newTreeNode: TreeNode = {
-          id: treeNodes.length + 1,
-          label: data.turnLabel,
-          messageId: strategistMessageId,
-          type: responseType,
-          active: true
-        };
-        
-        // Update tree nodes - deactivate all others
-        setTreeNodes(prev => [
-          ...prev.map(node => ({ ...node, active: false })),
-          newTreeNode
-        ]);
-        
-        setActiveTreeNode(newTreeNode.id);
-      }
     } catch (error) {
       console.error('Error calling council API:', error);
     }
   };
 
-  // Handle node click - scroll to corresponding message
-  const handleNodeClick = (nodeId: number) => {
-    // Find the corresponding node
-    const clickedNode = treeNodes.find(node => node.id === nodeId);
-    if (!clickedNode) return;
-    
-    // Update active node state
-    setTreeNodes(prev => prev.map(node => ({
-      ...node,
-      active: node.id === nodeId
-    })));
-    setActiveTreeNode(nodeId);
-    
-    // Scroll to the corresponding message
-    const messageElement = document.getElementById(`message-${clickedNode.messageId}`);
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  // No need for separate handleNodeClick function - navigation is handled directly in the destiny tree component
 
   return (
     <div className={`h-screen w-full bg-[#050505] text-[#Eaeaea] font-sans overflow-hidden ${cinzel.variable}`} style={{ 
@@ -243,46 +189,49 @@ export default function ChronoCouncilPage() {
                 RITUAL IN PROGRESS
               </h1>
               
-              {/* Agent Avatars */}
+              {/* Agent Icons (Clickable Buttons) */}
               <div className="flex gap-6">
-                {/* Strategist */}
-                <div 
+                {/* Strategist Button */}
+                <button 
                   className={`flex flex-col items-center transition-all duration-300 cursor-pointer ${activeAgent === 'strategist' ? 'opacity-100 scale-110' : 'opacity-50 scale-95 hover:opacity-75'}`}
-                  onClick={() => setActiveAgent('strategist')}
+                  onClick={() => handleAgentSelect('strategist')}
+                  aria-label="Select Strategist mode"
                 >
-                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'bg-black/40 border border-[#333333]/80'}`}>
+                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.5)]' : 'bg-black/40 border border-[#333333]/80'}`}>
                     <Star size={20} className="text-[#D4AF37]" />
                   </div>
-                  <div className="text-xs uppercase tracking-wider font-serif">
+                  <div className={`text-xs uppercase tracking-wider font-serif ${activeAgent === 'strategist' ? 'text-[#D4AF37]' : 'text-[#888888]'}`}>
                     STRATEGIST
                   </div>
-                </div>
+                </button>
                 
-                {/* Oracle */}
-                <div 
+                {/* Oracle Button */}
+                <button 
                   className={`flex flex-col items-center transition-all duration-300 cursor-pointer ${activeAgent === 'oracle' ? 'opacity-100 scale-110' : 'opacity-50 scale-95 hover:opacity-75'}`}
-                  onClick={() => setActiveAgent('oracle')}
+                  onClick={() => handleAgentSelect('oracle')}
+                  aria-label="Select Oracle mode"
                 >
-                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/20 border border-[#A0ECD6]/50 shadow-[0_0_15px_rgba(160,236,214,0.3)]' : 'bg-black/40 border border-[#333333]/80'}`}>
+                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/20 border border-[#A0ECD6]/50 shadow-[0_0_15px_rgba(160,236,214,0.5)]' : 'bg-black/40 border border-[#333333]/80'}`}>
                     <Moon size={20} className="text-[#A0ECD6]" />
                   </div>
-                  <div className="text-xs uppercase tracking-wider font-serif">
+                  <div className={`text-xs uppercase tracking-wider font-serif ${activeAgent === 'oracle' ? 'text-[#A0ECD6]' : 'text-[#888888]'}`}>
                     ORACLE
                   </div>
-                </div>
+                </button>
                 
-                {/* Alchemist */}
-                <div 
+                {/* Alchemist Button */}
+                <button 
                   className={`flex flex-col items-center transition-all duration-300 cursor-pointer ${activeAgent === 'alchemist' ? 'opacity-100 scale-110' : 'opacity-50 scale-95 hover:opacity-75'}`}
-                  onClick={() => setActiveAgent('alchemist')}
+                  onClick={() => handleAgentSelect('alchemist')}
+                  aria-label="Select Alchemist mode"
                 >
-                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/20 border border-[#9D4EDD]/50 shadow-[0_0_15px_rgba(157,78,221,0.3)]' : 'bg-black/40 border border-[#333333]/80'}`}>
+                  <div className={`p-3 rounded-full mb-2 ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/20 border border-[#9D4EDD]/50 shadow-[0_0_15px_rgba(157,78,221,0.5)]' : 'bg-black/40 border border-[#333333]/80'}`}>
                     <Flame size={20} className="text-[#9D4EDD]" />
                   </div>
-                  <div className="text-xs uppercase tracking-wider font-serif">
+                  <div className={`text-xs uppercase tracking-wider font-serif ${activeAgent === 'alchemist' ? 'text-[#9D4EDD]' : 'text-[#888888]'}`}>
                     ALCHEMIST
                   </div>
-                </div>
+                </button>
               </div>
             </div>
           </header>
@@ -423,64 +372,85 @@ export default function ChronoCouncilPage() {
               {/* Vertical line */}
               <div className="absolute left-1.5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#D4AF37]/30 via-[#D4AF37]/10 to-transparent"></div>
               
-              {/* Dynamic Nodes from API responses */}
+              {/* Dynamic Nodes from Messages */}
               <div className="space-y-8">
-                {treeNodes.map((node) => (
-                  <div 
-                    key={node.id} 
-                    className="flex items-start cursor-pointer"
-                    onClick={() => handleNodeClick(node.id)}
-                  >
-                    {/* Node */}
-                    <div className="relative z-10 flex items-center justify-center">
-                      {/* Active node with ping animation */}
-                      {node.active && (
-                        <motion.div
-                          className={`absolute inset-0 rounded-full ${node.type === 'strategist' ? 'bg-[#D4AF37]/30' : 'bg-white/20'}`}
-                          animate={{ 
-                            scale: [1, 2.5, 1],
-                            opacity: [0.5, 0, 0]
-                          }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeOut"
-                          }}
-                        />
-                      )}
-                      {/* Node dot with type-specific styling */}
-                      <div className={`w-2 h-2 rounded-full transition-all duration-300 
-                        ${node.active 
-                          ? node.type === 'strategist' 
-                            ? 'bg-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.5)]' 
-                            : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]' 
-                          : node.type === 'strategist' 
-                            ? 'bg-[#D4AF37]/60 hover:bg-[#D4AF37]' 
-                            : 'bg-white/60 hover:bg-white' 
-                        }`}
-                      ></div>
-                    </div>
-                    
-                    {/* Label */}
-                    <div className="ml-4 flex-1">
-                      <div className={`text-sm transition-colors font-serif ${node.active ? 'text-white' : 'text-[#888888]'}`}>
-                        {node.label}
+                {/* Iterate through messages to create tree nodes */}
+                {messages.map((message, index) => {
+                  // Skip user messages or show small dot
+                  if (message.role === 'user') {
+                    return (
+                      <div key={`user-${message.id}`} className="flex items-start">
+                        <div className="relative z-10 flex items-center justify-center">
+                          <div className="w-1 h-1 rounded-full bg-[#666666]/50"></div>
+                        </div>
                       </div>
+                    );
+                  }
+                  
+                  // For agent messages, show appropriate icon
+                  return (
+                    <div 
+                      key={`agent-${message.id}`} 
+                      className="flex items-start cursor-pointer group"
+                      onClick={() => {
+                        // Scroll to message
+                        const messageElement = document.getElementById(`message-${message.id}`);
+                        if (messageElement) {
+                          messageElement.scrollIntoView({ behavior: 'smooth' });
+                          setActiveTreeNode(message.id);
+                        }
+                      }}
+                    >
+                      {/* Node with icon based on role */}
+                      <div className="relative z-10 flex items-center justify-center">
+                        {/* Active node with ping animation */}
+                        {activeTreeNode === message.id && (
+                          <motion.div
+                            className={`absolute inset-0 rounded-full ${message.role === 'strategist' ? 'bg-[#D4AF37]/30' : 
+                                      message.role === 'oracle' ? 'bg-[#A0ECD6]/30' : 'bg-[#9D4EDD]/30'}`}
+                            animate={{ 
+                              scale: [1, 2.5, 1],
+                              opacity: [0.5, 0, 0]
+                            }}
+                            transition={{ 
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeOut"
+                            }}
+                          />
+                        )}
+                        
+                        {/* Role-specific icon */}
+                        <div className={`p-1.5 rounded-full ${activeTreeNode === message.id ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}`}>
+                          {message.role === 'strategist' && (
+                            <Star size={12} className="text-[#D4AF37]" />
+                          )}
+                          {message.role === 'oracle' && (
+                            <Moon size={12} className="text-[#A0ECD6]" />
+                          )}
+                          {message.role === 'alchemist' && (
+                            <Flame size={12} className="text-[#9D4EDD]" />
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Connection line for council clusters */}
+                      {/* Check if this is part of a council cluster */}
+                      {index < messages.length - 1 && 
+                       messages[index + 1].role !== 'user' && 
+                       messages[index + 1].role !== message.role && (
+                        <div className="absolute left-1.5 top-4 bottom-12 w-0.5 bg-gradient-to-b from-white/30 to-white/10"></div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 
-                {/* Visual cue for future nodes */}
-                <div className="flex items-start opacity-30">
-                  <div className="relative z-10 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#666666]"></div>
+                {/* Empty state if no messages */}
+                {messages.length === 0 && (
+                  <div className="text-center text-[#888888] text-sm italic py-12">
+                    The journey has just begun...
                   </div>
-                  <div className="ml-4 flex-1">
-                    <div className="text-xs text-[#666666] italic">
-                      More paths will appear as you continue...
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

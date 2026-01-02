@@ -3,27 +3,20 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   console.log("--- API REQUEST RECEIVED ---");
   
-  try {
-    // 1. Parse Body (Wrap in try-catch to prevent JSON parse errors)
-    let body;
-    try {
-      body = await req.json();
-    } catch (e) {
-      console.error("JSON Parse Error:", e);
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
+    // 1. Parse Body (No error handling - let it crash)
+    const body = await req.json();
 
     const { message, astroData, mode = 'council', activeAgent = 'strategist' } = body;
     const apiKey = process.env.GEMINI_API_KEY;
 
     console.log(`Mode: ${mode}, Agent: ${activeAgent}, HasKey: ${!!apiKey}`);
 
+    // 2. Check API Key (No error handling - let it crash)
     if (!apiKey) {
-      console.error("Error: Missing API Key");
-      return NextResponse.json({ error: "Server Configuration Error: Missing API Key" }, { status: 500 });
+      throw new Error("Missing API Key");
     }
 
-    // 2. Construct Prompt
+    // 3. Construct Prompt
     const systemPrompt = `
       You are LUMINA. 
       Mode: ${mode}. Active Agent: ${activeAgent}.
@@ -45,7 +38,7 @@ export async function POST(req: Request) {
       }
     `;
 
-    // 3. Prepare Fetch Config
+    // 4. Prepare Fetch Config
     // Use v1 API and gemini-2.5-flash which is available
     const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
@@ -58,21 +51,16 @@ export async function POST(req: Request) {
 
     console.log("Sending request to Google...");
 
-    // 4. Execute Fetch with explicit Timeout handling (to avoid hanging)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
+    // 5. Execute Fetch without timeout (No error handling - let it crash)
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal
+      body: JSON.stringify(payload)
     });
-    
-    clearTimeout(timeoutId);
 
     console.log("Google Response Status:", response.status);
 
+    // 6. Check Response Status (No error handling - let it crash)
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Google API Error Body:", errorText);
@@ -81,7 +69,7 @@ export async function POST(req: Request) {
 
     const data = await response.json();
     
-    // 5. Parse content safely
+    // 7. Parse content (No error handling - let it crash)
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) {
       throw new Error("No text returned from Gemini candidates");
@@ -90,21 +78,7 @@ export async function POST(req: Request) {
     // Remove Markdown code blocks if present
     const cleanText = rawText.replace(/^```json\n|```$/g, '').trim();
     
+    // 8. Parse JSON Response (No error handling - let it crash)
     const jsonResponse = JSON.parse(cleanText);
     return NextResponse.json(jsonResponse);
-
-  } catch (error: any) {
-    console.error("--- FATAL ERROR IN ROUTE ---");
-    console.error(error);
-    
-    // Return a 500 instead of crashing the process
-    return NextResponse.json(
-      { 
-        error: "Internal Server Error", 
-        details: error.message,
-        hint: "Check server logs. If in China, ensure you have a proxy." 
-      },
-      { status: 500 }
-    );
-  }
 }

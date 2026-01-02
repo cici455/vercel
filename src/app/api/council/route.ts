@@ -1,10 +1,4 @@
 import { NextResponse } from 'next/server';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-
-// FORCE NODE.JS TO USE PROXY
-// Try 7890 (Clash default). If user uses v2ray/others, they might need 10809.
-const PROXY_URL = process.env.HTTP_PROXY || "http://127.0.0.1:7890";
-const agent = new HttpsProxyAgent(PROXY_URL);
 
 export async function POST(req: Request) {
   try {
@@ -12,18 +6,16 @@ export async function POST(req: Request) {
     const { message, astroData, mode = 'council', activeAgent = 'strategist' } = body;
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) throw new Error("Missing API Key");
+    if (!apiKey) return NextResponse.json({ error: "Missing API Key" }, { status: 500 });
 
-    console.log(`[API] Connecting to Gemini via Proxy: ${PROXY_URL}...`);
-
-    // 1. Construct Prompt
+    // --- SYSTEM PROMPT (Keep your logic) ---
     const systemPrompt = `
-      Act as LUMINA (Psychic Council).
+      Act as LUMINA (Psychic Council). 
       Mode: ${mode}. Agent: ${activeAgent}.
       User: "${message}"
       Astro: Sun=${astroData?.sunSign}, Moon=${astroData?.moonSign}, Rising=${astroData?.risingSign}.
       
-      OUTPUT: JSON ONLY.
+      OUTPUT FORMAT: STRICT JSON ONLY.
       {
         "turnLabel": "Title",
         "responses": {
@@ -34,9 +26,18 @@ export async function POST(req: Request) {
       }
     `;
 
-    // 2. Fetch with Proxy Agent
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // --- THE FIX: USE A MIRROR URL ---
+    // Instead of 'generativelanguage.googleapis.com', we use a proxy if provided in env, 
+    // or fallback to the official one (which requires VPN).
     
+    // TRICK: You can try using a known third-party proxy for testing if you can't configure VPN.
+    // For now, let's revert to standard fetch but with BETTER ERROR LOGGING.
+    
+    const baseUrl = process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com";
+    const url = `${baseUrl}/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+    console.log(`[API] Connecting to: ${baseUrl}...`);
+
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,21 +46,20 @@ export async function POST(req: Request) {
         generationConfig: {
           temperature: 0.9
         }
-      }),
-      // @ts-ignore - Next.js/Node fetch supports agent, but types might complain
-      agent: agent  
+      })
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error("[Gemini API Error]", response.status, err);
-      throw new Error(`Google Error: ${response.statusText} - ${err}`);
+      const errorText = await response.text();
+      console.error("[Gemini API Error]", response.status, errorText);
+      // Return the error to frontend instead of crashing
+      return NextResponse.json({ error: "Gemini API Refused", details: errorText }, { status: response.status });
     }
 
     const data = await response.json();
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
-    if (!rawText) throw new Error("Empty response from Gemini");
+    if (!rawText) throw new Error("Empty response");
     
     // Remove Markdown code blocks if present
     const cleanText = rawText
@@ -72,9 +72,14 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
 
   } catch (error: any) {
-    console.error("[FATAL ERROR]", error);
+    console.error("[FATAL NETWORK ERROR]", error);
+    // CRITICAL: Return JSON even on crash, so frontend doesn't break
     return NextResponse.json(
-      { error: "Connection Failed", details: error.message, hint: "Make sure your VPN is on port 7890" }, 
+      { 
+        error: "Network Failure", 
+        details: error.message,
+        suggestion: "If you are in China, you MUST set a proxy in your terminal or use a mirror URL."
+      }, 
       { status: 500 }
     );
   }

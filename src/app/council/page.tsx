@@ -110,7 +110,7 @@ export default function ChronoCouncilPage() {
           },
           history: formattedHistory,
           mode,
-          activeAgent: 'strategist' // Always use strategist as base
+          activeAgent: activeAgent // Use currently selected active agent
         })
       });
 

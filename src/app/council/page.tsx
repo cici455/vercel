@@ -76,6 +76,9 @@ export default function ChronoCouncilPage() {
         content: msg.content
       }));
       
+      // Determine chat mode based on state
+      const chatMode = isCouncilMode ? 'council' : 'solo';
+      
       // Call council API with new mode parameters
       const response = await fetch('/api/council', {
         method: 'POST',
@@ -90,7 +93,7 @@ export default function ChronoCouncilPage() {
             risingSign: 'Libra'
           },
           history: formattedHistory,
-          mode,
+          mode: chatMode,
           activeAgent
         })
       });

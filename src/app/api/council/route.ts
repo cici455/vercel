@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   console.log("--- API REQUEST RECEIVED ---");
   
-    // 1. Parse Body (No error handling - let it crash)
+  try {
+    // 1. Parse Body
     const body = await req.json();
 
     const { message, astroData, mode = 'council', activeAgent = 'strategist' } = body;
@@ -11,12 +12,11 @@ export async function POST(req: Request) {
 
     console.log(`Mode: ${mode}, Agent: ${activeAgent}, HasKey: ${!!apiKey}`);
 
-    // 2. Check API Key (No error handling - let it crash)
     if (!apiKey) {
       throw new Error("Missing API Key");
     }
 
-    // 3. Construct Prompt
+    // 2. Construct Prompt
     const systemPrompt = `
       You are LUMINA. 
       Mode: ${mode}. Active Agent: ${activeAgent}.
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       - Oracle (Moon: ${astroData?.moonSign || 'Unknown'})
       - Alchemist (Rising: ${astroData?.risingSign || 'Unknown'})
 
-      OUTPUT FORMAT: STRICT JSON only.
+      OUTPUT FORMAT: STRICT JSON only. NO MARKDOWN. NO CODE BLOCKS.
       {
         "turnLabel": "Title",
         "responses": {
@@ -38,8 +38,7 @@ export async function POST(req: Request) {
       }
     `;
 
-    // 4. Prepare Fetch Config
-    // Use v1 API and gemini-2.5-flash which is available
+    // 3. Prepare Fetch Config
     const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
     const payload = {
@@ -51,34 +50,86 @@ export async function POST(req: Request) {
 
     console.log("Sending request to Google...");
 
-    // 5. Execute Fetch without timeout (No error handling - let it crash)
+    // 4. Execute Fetch with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
     console.log("Google Response Status:", response.status);
+    console.log("Google Response Headers:", JSON.stringify(Object.fromEntries(response.headers)));
 
-    // 6. Check Response Status (No error handling - let it crash)
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Google API Error Body:", errorText);
       throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    const data = await response.json();
+    // 5. Get raw response text first for debugging
+    const rawResponseText = await response.text();
+    console.log("Google Raw Response:", rawResponseText);
     
-    // 7. Parse content (No error handling - let it crash)
+    // Try to parse as JSON directly first
+    let data;
+    try {
+      data = JSON.parse(rawResponseText);
+    } catch (e) {
+      console.error("Failed to parse Google response as JSON:", e);
+      console.error("Raw response:", rawResponseText);
+      throw new Error(`Invalid JSON from Google: ${rawResponseText.substring(0, 100)}...`);
+    }
+    
+    // 6. Get the text from candidates
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) {
+      console.error("No text found in candidates:", JSON.stringify(data, null, 2));
       throw new Error("No text returned from Gemini candidates");
     }
 
-    // Remove Markdown code blocks if present
-    const cleanText = rawText.replace(/^```json\n|```$/g, '').trim();
+    console.log("Raw text from Gemini:", rawText);
+
+    // 7. Remove ANY Markdown code blocks (more robust pattern)
+    const cleanText = rawText
+      .replace(/^```(json)?\n|```$/g, '')  // Remove ```json and ```
+      .replace(/^\s+/, '')                 // Remove leading whitespace
+      .replace(/\s+$/, '')                 // Remove trailing whitespace
+      .trim();
     
-    // 8. Parse JSON Response (No error handling - let it crash)
-    const jsonResponse = JSON.parse(cleanText);
+    console.log("Cleaned text:", cleanText);
+    
+    // 8. Parse the cleaned JSON
+    let jsonResponse;
+    try {
+      jsonResponse = JSON.parse(cleanText);
+    } catch (e) {
+      console.error("Failed to parse cleaned text as JSON:", e);
+      console.error("Cleaned text:", cleanText);
+      throw new Error(`Invalid JSON after cleaning: ${cleanText.substring(0, 100)}...`);
+    }
+    
+    console.log("Final JSON response:", JSON.stringify(jsonResponse, null, 2));
     return NextResponse.json(jsonResponse);
+  
+  } catch (error: any) {
+    console.error("--- FATAL ERROR IN ROUTE ---");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    
+    // Return a detailed error response
+    return NextResponse.json(
+      { 
+        error: "Internal Server Error", 
+        details: error.message,
+        stack: error.stack
+      },
+      { status: 500 }
+    );
+  }
 }

@@ -119,6 +119,19 @@ export default function ChronoCouncilPage() {
       // Generate timestamps for all responses
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
+      // Check if API returned an error or if responses are missing
+      if (data.error || !data.responses) {
+        // Add error message to chat
+        const errorMessage = {
+          id: messages.length + 1,
+          role: 'strategist', // Use strategist role for error messages
+          content: "The stars are silent right now... Please try again later.",
+          timestamp
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        return; // Exit early, don't update DestinyTree
+      }
+      
       // Add AI responses to chat only for non-null responses
       const nextId = messages.length + 1;
       const aiResponses: typeof messages = [];
@@ -169,6 +182,15 @@ export default function ChronoCouncilPage() {
       }
     } catch (error) {
       console.error('Error calling council API:', error);
+      // Add error message to chat if the fetch itself failed
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const errorMessage = {
+        id: messages.length + 1,
+        role: 'strategist',
+        content: "The stars are silent right now... Please try again later.",
+        timestamp
+      };
+      setMessages(prev => [...prev, errorMessage]);
     }
   };
 

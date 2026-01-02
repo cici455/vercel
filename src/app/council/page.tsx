@@ -349,8 +349,23 @@ export default function ChronoCouncilPage() {
                 <div className="text-xs text-[#888888] uppercase tracking-wider font-serif">
                   CURRENT MODE:
                 </div>
-                <div className="px-3 py-1 rounded-full text-xs bg-[#D4AF37]/20 border border-[#D4AF37]/50">
-                  {isSummonActive ? 'STRATEGIST REPLIED - SUMMON AVAILABLE' : 'STRATEGIST MODE'}
+                {/* Dynamic Mode Badge */}
+                <div className={`px-3 py-1 rounded-full text-xs backdrop-blur-sm font-mono uppercase tracking-wider ${isCouncilMode 
+                  ? 'bg-white/10 border border-white text-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' 
+                  : activeAgent === 'strategist' 
+                    ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.3)]' 
+                    : activeAgent === 'oracle' 
+                    ? 'bg-[#A0ECD6]/20 border border-[#A0ECD6]/50 text-[#A0ECD6] shadow-[0_0_10px_rgba(160,236,214,0.3)]' 
+                    : 'bg-[#9D4EDD]/20 border border-[#9D4EDD]/50 text-[#9D4EDD] shadow-[0_0_10px_rgba(157,78,221,0.3)]' 
+                }`}>
+                  {isCouncilMode 
+                    ? 'COUNCIL SESSION' 
+                    : activeAgent === 'strategist' 
+                    ? 'STRATEGIST MODE' 
+                    : activeAgent === 'oracle' 
+                    ? 'ORACLE MODE' 
+                    : 'ALCHEMIST MODE'
+                  }
                 </div>
               </div>
             </div>

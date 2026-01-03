@@ -350,14 +350,14 @@ export default function RitualChamberPage() {
               
               {/* Confirm button - Frame Awards style */}
               <motion.button
-                onClick={handleBeginSession}
-                className="w-full bg-white text-black py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all"
-                whileHover={{ 
-                  scale: 1.02,
-                  shadow: '0 5px 20px rgba(255,255,255,0.3)'
-                }}
-                whileTap={{ scale: 0.98 }}
-              >
+              onClick={handleBeginSession}
+              className="w-full bg-white text-black py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all"
+              whileHover={{ 
+                scale: 1.02,
+                boxShadow: '0 5px 20px rgba(255,255,255,0.3)'
+              }}
+              whileTap={{ scale: 0.98 }}
+            >
                 BEGIN RITUAL
               </motion.button>
             </div>

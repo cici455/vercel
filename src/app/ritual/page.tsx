@@ -603,7 +603,7 @@ export default function RitualChamberPage() {
             </motion.button>
           </div>
           
-          {/* Custom intention input - Frame Awards style */}
+          {/* Custom intention input - More visible style */}
           <div className="relative z-10 mt-16 w-full max-w-md">
             {/* Input container */}
             <div className="relative">
@@ -613,43 +613,44 @@ export default function RitualChamberPage() {
                 onChange={(e) => setIntention(e.target.value)}
                 placeholder="What do you want to ask? e.g., How can I improve my career luck?"
                 maxLength={200}
-                className="w-full h-14 bg-white/5 backdrop-blur-sm border border-white/15 rounded-lg px-6 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all"
+                className="w-full h-16 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/50 focus:ring-2 focus:ring-white/30 transition-all"
+                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               />
               
               {/* Character count */}
-              <div className="absolute top-3 right-3 text-[10px] text-white/30 font-mono">
+              <div className="absolute top-4 right-4 text-xs text-white/50 font-mono">
                 {intention.length}/200
               </div>
             </div>
           </div>
           
-          {/* Bottom Selector Bar - Frame Awards minimalist style */}
-          <div className="relative z-10 mt-16 w-full max-w-md">
+          {/* Bottom Selector Bar - More visible style */}
+          <div className="relative z-10 mt-12 w-full max-w-md">
             <div className="flex flex-col gap-6">
               {/* Input and domain info */}
-              <div className="flex items-center justify-between bg-white/5 backdrop-blur-sm rounded-full border border-white/15 p-2">
+              <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-full border border-white/30 p-3">
                 {/* Current domain icon */}
-                <div className="p-3 rounded-full bg-white/10 border border-white/20">
-                  <div className="text-white">
+                <div className="p-4 rounded-full bg-white/20 border border-white/30">
+                  <div className="text-white text-lg">
                     {selectedDomain.icon}
                   </div>
                 </div>
                 
                 {/* Current domain name */}
                 <div className="text-center flex-1 mx-4">
-                  <div className="text-sm text-white font-medium">{selectedDomain.title}</div>
+                  <div className="text-base text-white font-medium">{selectedDomain.title}</div>
                 </div>
               </div>
               
-              {/* Confirm button - Frame Awards style */}
+              {/* Confirm button - More visible style */}
               <motion.button
               onClick={handleBeginSession}
-              className="w-full bg-white text-black py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all"
+              className="w-full bg-white text-black py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all"
               whileHover={{ 
-                scale: 1.02,
-                boxShadow: '0 5px 20px rgba(255,255,255,0.3)'
+                scale: 1.05,
+                boxShadow: '0 8px 30px rgba(255,255,255,0.4)'
               }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.97 }}
             >
                 BEGIN RITUAL
               </motion.button>

@@ -144,28 +144,321 @@ export default function RitualChamberPage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-serif relative overflow-hidden">
-      {/* Background layers - Frame Awards style */}
-      <div className="absolute inset-0 z-0">
+      {/* Dynamic background animation based on Dribbble shot */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
         {/* Deep black background */}
         <div className="absolute inset-0 bg-black"></div>
         
-        {/* Enhanced spotlight effect */}
-        <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-[rgba(255,255,255,0.2)] to-transparent opacity-70 blur-3xl"></div>
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-[400px] h-[400px] bg-white opacity-15 blur-3xl rounded-full"></div>
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+        {/* Dynamic particles background - Dribbble style */}
+        <div className="absolute inset-0">
+          {/* Animated gradient orbs with dynamic movement */}
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full blur-3xl animate-floatOrb1"></div>
+          <div className="absolute top-3/4 right-1/3 w-96 h-96 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-full blur-3xl animate-floatOrb2"></div>
+          <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-gradient-to-r from-teal-500/30 to-green-500/30 rounded-full blur-3xl animate-floatOrb3"></div>
+          <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-full blur-3xl animate-floatOrb4"></div>
+          
+          {/* Animated light particles with depth */}
+          <div className="absolute inset-0 opacity-15">
+            {/* Large particles */}
+            <div className="absolute w-full h-full" style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 1px, transparent 1px),
+                radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 30% 10%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 70% 90%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.9) 1px, transparent 1px),
+                radial-gradient(circle at 15% 25%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 85% 75%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 45% 35%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle at 55% 65%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 25% 75%, rgba(255,255,255,0.9) 1px, transparent 1px),
+                radial-gradient(circle at 75% 25%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 10% 10%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle at 90% 90%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 35% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 65% 40%, rgba(255,255,255,0.9) 1px, transparent 1px),
+                radial-gradient(circle at 50% 15%, rgba(255,255,255,0.7) 1px, transparent 1px)
+              `,
+              backgroundSize: '200px 200px',
+              animation: 'particleFloatLarge 20s ease-in-out infinite'
+            }}></div>
+            
+            {/* Small particles */}
+            <div className="absolute w-full h-full" style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 30% 10%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 70% 90%, rgba(255,255,255,0.6) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.9) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 15% 25%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 85% 75%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 45% 35%, rgba(255,255,255,0.6) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 55% 65%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 25% 75%, rgba(255,255,255,0.9) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 75% 25%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 10% 10%, rgba(255,255,255,0.6) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 90% 90%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 35% 60%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 65% 40%, rgba(255,255,255,0.9) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 50% 15%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 30% 70%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 70% 30%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.9) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 40% 10%, rgba(255,255,255,0.6) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 60% 90%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 15% 50%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 85% 50%, rgba(255,255,255,0.9) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 50% 85%, rgba(255,255,255,0.7) 0.5px, transparent 0.5px),
+                radial-gradient(circle at 50% 15%, rgba(255,255,255,0.8) 0.5px, transparent 0.5px)
+              `,
+              backgroundSize: '100px 100px',
+              animation: 'particleFloatSmall 15s ease-in-out infinite'
+            }}></div>
+          </div>
+          
+          {/* Animated light streaks with parallax */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-lightStreak1"></div>
+            <div className="absolute top-1/4 left-0 w-1 h-full bg-gradient-to-b from-transparent via-white/30 to-transparent animate-lightStreak2"></div>
+            <div className="absolute bottom-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-lightStreak3"></div>
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-transparent via-white/30 to-transparent animate-lightStreak4"></div>
+            <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-lightStreak5"></div>
+            <div className="absolute top-0 left-1/3 w-1 h-full bg-gradient-to-b from-transparent via-white/30 to-transparent animate-lightStreak6"></div>
+          </div>
+          
+          {/* Dynamic gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/50 to-transparent opacity-50"></div>
+        </div>
         
-        {/* Subtle particles */}
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
-              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
-              radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px)
-            `,
-            backgroundSize: '200px 200px, 300px 300px, 250px 250px'
-          }}
-        ></div>
+        {/* Add CSS keyframes for Dribbble style animation */}
+        <style jsx global>{`
+          /* Orb floating animations */
+          @keyframes floatOrb1 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.3;
+            }
+            25% {
+              transform: translate(20px, -20px) rotate(90deg);
+              opacity: 0.4;
+            }
+            50% {
+              transform: translate(40px, 0) rotate(180deg);
+              opacity: 0.3;
+            }
+            75% {
+              transform: translate(20px, 20px) rotate(270deg);
+              opacity: 0.4;
+            }
+          }
+          
+          @keyframes floatOrb2 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.3;
+            }
+            25% {
+              transform: translate(-30px, 20px) rotate(90deg);
+              opacity: 0.4;
+            }
+            50% {
+              transform: translate(-60px, 0) rotate(180deg);
+              opacity: 0.3;
+            }
+            75% {
+              transform: translate(-30px, -20px) rotate(270deg);
+              opacity: 0.4;
+            }
+          }
+          
+          @keyframes floatOrb3 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.3;
+            }
+            25% {
+              transform: translate(40px, 30px) rotate(90deg);
+              opacity: 0.4;
+            }
+            50% {
+              transform: translate(80px, 0) rotate(180deg);
+              opacity: 0.3;
+            }
+            75% {
+              transform: translate(40px, -30px) rotate(270deg);
+              opacity: 0.4;
+            }
+          }
+          
+          @keyframes floatOrb4 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.3;
+            }
+            25% {
+              transform: translate(-20px, -30px) rotate(90deg);
+              opacity: 0.4;
+            }
+            50% {
+              transform: translate(-40px, 0) rotate(180deg);
+              opacity: 0.3;
+            }
+            75% {
+              transform: translate(-20px, 30px) rotate(270deg);
+              opacity: 0.4;
+            }
+          }
+          
+          /* Particle floating animations */
+          @keyframes particleFloatLarge {
+            0%, 100% {
+              backgroundPosition: 0% 0%, 50% 50%, 100% 100%, 0% 100%, 100% 0%, 0% 50%, 50% 0%, 100% 50%, 50% 50%, 15% 25%, 85% 75%, 45% 35%, 55% 65%, 25% 75%, 75% 25%, 10% 10%, 90% 90%, 35% 60%, 65% 40%, 50% 15%;
+            }
+            25% {
+              backgroundPosition: 100% 100%, 0% 0%, 50% 50%, 100% 0%, 0% 100%, 50% 0%, 100% 50%, 0% 50%, 0% 0%, 85% 75%, 15% 25%, 55% 65%, 45% 35%, 75% 25%, 25% 75%, 90% 90%, 10% 10%, 65% 40%, 35% 60%, 50% 85%;
+            }
+            50% {
+              backgroundPosition: 50% 50%, 100% 100%, 0% 0%, 50% 0%, 0% 50%, 100% 0%, 0% 100%, 100% 100%, 100% 100%, 45% 35%, 55% 65%, 15% 25%, 85% 75%, 50% 0%, 50% 100%, 35% 60%, 65% 40%, 10% 10%, 90% 90%, 0% 50%;
+            }
+            75% {
+              backgroundPosition: 0% 100%, 50% 50%, 100% 0%, 0% 0%, 100% 100%, 0% 50%, 50% 100%, 100% 0%, 0% 0%, 55% 65%, 45% 35%, 85% 75%, 15% 25%, 50% 100%, 50% 0%, 65% 40%, 35% 60%, 90% 90%, 10% 10%, 100% 50%;
+            }
+          }
+          
+          @keyframes particleFloatSmall {
+            0%, 100% {
+              backgroundPosition: 0% 0%, 50% 50%, 100% 100%, 0% 100%, 100% 0%, 0% 50%, 50% 0%, 100% 50%, 50% 50%, 15% 25%, 85% 75%, 45% 35%, 55% 65%, 25% 75%, 75% 25%, 10% 10%, 90% 90%, 35% 60%, 65% 40%, 50% 15%, 30% 70%, 70% 30%, 20% 80%, 80% 20%, 40% 10%, 60% 90%, 15% 50%, 85% 50%, 50% 85%, 50% 15%;
+            }
+            25% {
+              backgroundPosition: 100% 100%, 0% 0%, 50% 50%, 100% 0%, 0% 100%, 50% 0%, 100% 50%, 0% 50%, 0% 0%, 85% 75%, 15% 25%, 55% 65%, 45% 35%, 75% 25%, 25% 75%, 90% 90%, 10% 10%, 65% 40%, 35% 60%, 50% 85%, 70% 30%, 30% 70%, 80% 20%, 20% 80%, 60% 90%, 40% 10%, 85% 50%, 15% 50%, 50% 15%, 50% 85%;
+            }
+            50% {
+              backgroundPosition: 50% 50%, 100% 100%, 0% 0%, 50% 0%, 0% 50%, 100% 0%, 0% 100%, 100% 100%, 100% 100%, 45% 35%, 55% 65%, 15% 25%, 85% 75%, 50% 0%, 50% 100%, 65% 40%, 35% 60%, 90% 90%, 10% 10%, 0% 50%, 30% 70%, 70% 30%, 20% 80%, 80% 20%, 40% 10%, 60% 90%, 15% 50%, 85% 50%, 50% 85%, 50% 15%;
+            }
+            75% {
+              backgroundPosition: 0% 100%, 50% 50%, 100% 0%, 0% 0%, 100% 100%, 0% 50%, 50% 100%, 100% 0%, 0% 0%, 55% 65%, 45% 35%, 85% 75%, 15% 25%, 50% 100%, 50% 0%, 35% 60%, 65% 40%, 10% 10%, 90% 90%, 100% 50%, 70% 30%, 30% 70%, 80% 20%, 20% 80%, 60% 90%, 40% 10%, 85% 50%, 15% 50%, 50% 15%, 50% 85%;
+            }
+          }
+          
+          /* Light streak animations */
+          @keyframes lightStreak1 {
+            0% {
+              transform: translateX(-100%) translateY(0);
+            }
+            100% {
+              transform: translateX(100%) translateY(100vh);
+            }
+          }
+          
+          @keyframes lightStreak2 {
+            0% {
+              transform: translateX(0) translateY(-100%);
+            }
+            100% {
+              transform: translateX(100vw) translateY(100%);
+            }
+          }
+          
+          @keyframes lightStreak3 {
+            0% {
+              transform: translateX(100%) translateY(0);
+            }
+            100% {
+              transform: translateX(-100%) translateY(-100vh);
+            }
+          }
+          
+          @keyframes lightStreak4 {
+            0% {
+              transform: translateX(0) translateY(100%);
+            }
+            100% {
+              transform: translateX(-100vw) translateY(-100%);
+            }
+          }
+          
+          @keyframes lightStreak5 {
+            0% {
+              transform: translateX(-100%) translateY(0);
+            }
+            100% {
+              transform: translateX(100%) translateY(-100vh);
+            }
+          }
+          
+          @keyframes lightStreak6 {
+            0% {
+              transform: translateX(0) translateY(-100%);
+            }
+            100% {
+              transform: translateX(-100vw) translateY(100%);
+            }
+          }
+          
+          /* Apply animation durations */
+          .animate-floatOrb1 {
+            animation: floatOrb1 25s ease-in-out infinite;
+          }
+          
+          .animate-floatOrb2 {
+            animation: floatOrb2 28s ease-in-out infinite;
+          }
+          
+          .animate-floatOrb3 {
+            animation: floatOrb3 31s ease-in-out infinite;
+          }
+          
+          .animate-floatOrb4 {
+            animation: floatOrb4 34s ease-in-out infinite;
+          }
+          
+          .animate-particleFloatLarge {
+            animation: particleFloatLarge 20s ease-in-out infinite;
+          }
+          
+          .animate-particleFloatSmall {
+            animation: particleFloatSmall 15s ease-in-out infinite;
+          }
+          
+          .animate-lightStreak1 {
+            animation: lightStreak1 20s linear infinite;
+          }
+          
+          .animate-lightStreak2 {
+            animation: lightStreak2 25s linear infinite;
+            animation-delay: 5s;
+          }
+          
+          .animate-lightStreak3 {
+            animation: lightStreak3 30s linear infinite;
+            animation-delay: 10s;
+          }
+          
+          .animate-lightStreak4 {
+            animation: lightStreak4 35s linear infinite;
+            animation-delay: 15s;
+          }
+          
+          .animate-lightStreak5 {
+            animation: lightStreak5 40s linear infinite;
+            animation-delay: 20s;
+          }
+          
+          .animate-lightStreak6 {
+            animation: lightStreak6 45s linear infinite;
+            animation-delay: 25s;
+          }
+        `}</style>
       </div>
       
       <header className="relative z-10 flex justify-between items-center p-6">

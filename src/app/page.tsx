@@ -433,21 +433,73 @@ export default function LandingPage() {
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden flex flex-col justify-center items-center py-12">
-      {/* Background starfield */}
-      <div 
-        className="absolute inset-0 z-0 opacity-15"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
-            radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
-            radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
-            radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
-            radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 1px, transparent 1px),
-            radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 1px, transparent 1px)
-          `,
-          backgroundSize: '200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px, 280px 280px'
-        }}
-      ></div>
+      {/* Dynamic background animation */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Deep black background */}
+        <div className="absolute inset-0 bg-black"></div>
+        
+        {/* Dynamic particles background */}
+        <div className="absolute inset-0">
+          {/* Animated gradient orbs */}
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-3/4 right-1/3 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          
+          {/* Animated light streaks */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[lightMove_15s_linear_infinite]"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-white/30 to-transparent animate-[lightMove_20s_linear_infinite]" style={{ animationDelay: '5s' }}></div>
+            <div className="absolute bottom-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[lightMove_18s_linear_infinite]" style={{ animationDelay: '8s' }}></div>
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-transparent via-white/30 to-transparent animate-[lightMove_22s_linear_infinite]" style={{ animationDelay: '12s' }}></div>
+          </div>
+          
+          {/* Subtle animated particles */}
+          <div 
+            className="absolute inset-0 opacity-15"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 1px, transparent 1px),
+                radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(circle at 30% 10%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 70% 90%, rgba(255,255,255,0.6) 1px, transparent 1px)
+              `,
+              backgroundSize: '200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px, 280px 280px, 150px 150px, 230px 230px',
+              animation: 'particleFloat 20s ease-in-out infinite'
+            }}
+          ></div>
+        </div>
+        
+        {/* Add CSS keyframes */}
+        <style jsx global>{`
+          @keyframes lightMove {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+          
+          @keyframes particleFloat {
+            0%, 100% {
+              backgroundPosition: 0% 0%, 50% 50%, 100% 100%, 0% 100%, 100% 0%, 0% 50%, 50% 0%, 100% 50%;
+            }
+            25% {
+              backgroundPosition: 100% 100%, 0% 0%, 50% 50%, 100% 0%, 0% 100%, 50% 0%, 100% 50%, 0% 50%;
+            }
+            50% {
+              backgroundPosition: 50% 50%, 100% 100%, 0% 0%, 50% 0%, 0% 50%, 100% 0%, 0% 100%, 100% 100%;
+            }
+            75% {
+              backgroundPosition: 0% 100%, 50% 50%, 100% 0%, 0% 0%, 100% 100%, 0% 50%, 50% 100%, 100% 0%;
+            }
+          }
+        `}</style>
+      </div>
       
       {/* Header & Button - Animate out when entered */}
       <AnimatePresence>

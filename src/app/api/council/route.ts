@@ -129,7 +129,8 @@ export async function POST(req: Request) {
     
     // 如果配置了代理，添加代理选项
     if (proxyUrl) {
-      fetchOptions.agent = new HttpsProxyAgent(proxyUrl);
+      // 使用类型断言，因为agent是Node.js特定的扩展属性
+      (fetchOptions as any).agent = new HttpsProxyAgent(proxyUrl);
     }
     
     const response = await fetch(url, fetchOptions);

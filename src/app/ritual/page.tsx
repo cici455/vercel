@@ -144,54 +144,62 @@ export default function RitualChamberPage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-serif relative overflow-hidden">
-      {/* Background layers - Optimized performance */}
+      {/* Background layers - Frame Awards style */}
       <div className="absolute inset-0 z-0">
-        {/* Deep blue vignette */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black/90 backdrop-blur-[1px]"></div>
+        {/* Deep black background */}
+        <div className="absolute inset-0 bg-black"></div>
         
-        {/* Simplified star field using CSS radial gradients */}
+        {/* Enhanced star field */}
         <div 
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-15"
           style={{
             backgroundImage: `
-              radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 1px, transparent 1px),
-              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.6) 1px, transparent 1px),
-              radial-gradient(circle at 40% 60%, rgba(255,255,255,0.7) 1px, transparent 1px),
-              radial-gradient(circle at 60% 20%, rgba(255,255,255,0.5) 1px, transparent 1px),
-              radial-gradient(circle at 90% 40%, rgba(255,255,255,0.9) 1px, transparent 1px),
-              radial-gradient(circle at 10% 80%, rgba(255,255,255,0.6) 1px, transparent 1px)
+              radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
+              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
+              radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
+              radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
+              radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 1px, transparent 1px),
+              radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 1px, transparent 1px),
+              radial-gradient(circle at 30% 10%, rgba(255,255,255,0.8) 1px, transparent 1px),
+              radial-gradient(circle at 70% 90%, rgba(255,255,255,0.6) 1px, transparent 1px)
             `,
-            backgroundSize: '200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px, 280px 280px'
+            backgroundSize: '200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px, 280px 280px, 150px 150px, 230px 230px'
           }}
         ></div>
         
-        {/* Simplified star盘轮廓 */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-20">
-          <div className="w-full max-w-4xl h-full max-h-[600px] bg-gradient-to-br from-[rgba(231,215,182,0.03)] to-[rgba(120,255,230,0.02)] rounded-full"></div>
-        </div>
+        {/* Spotlight effect - Frame Awards style */}
+        <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-transparent opacity-60 blur-3xl"></div>
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-white opacity-20 blur-3xl rounded-full"></div>
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
       </div>
       
-      <header className="relative z-10 flex justify-between items-center p-6 border-b border-[rgba(231,215,182,0.06)]">
-        <div className="flex items-center gap-2">
-          <div className="h-px w-12 bg-[rgba(231,215,182,0.15)]"></div>
-          <h1 className="text-sm font-serif text-[#E7D7B6] tracking-widest">RITUAL CHAMBER</h1>
-          <div className="h-px w-12 bg-[rgba(231,215,182,0.15)]"></div>
-        </div>
-        
+      <header className="relative z-10 flex justify-between items-center p-6">
         <Link 
           href="/" 
-          className="text-xs text-white/60 hover:text-[#E7D7B6] transition-colors flex items-center gap-1"
+          className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
         >
           <ArrowLeft size={14} />
           <span>Back to Chart</span>
         </Link>
+        
+        <div className="flex items-center gap-2">
+          <div className="h-px w-12 bg-white/15"></div>
+          <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
+          <div className="h-px w-12 bg-white/15"></div>
+        </div>
+        
+        <div className="w-8"></div>
       </header>
       
-      <main className="relative z-10 container mx-auto px-4 py-8 min-h-[calc(100vh-80px)]">
-        {/* Top title */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-serif mb-3 text-white/98">Select Exploration Domain</h2>
-          <p className="text-xs text-[#E7D7B6]/70 tracking-[0.25em] uppercase">THE INFINITE ASTRAL SELECTION WHEEL</p>
+      <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)]">
+        {/* Top title - Frame Awards style */}
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-7xl font-serif mb-6 text-white tracking-tight">
+            <span className="text-6xl md:text-8xl italic font-light" style={{ fontFamily: 'serif' }}>Select</span>
+            <br />
+            <span className="font-bold" style={{ letterSpacing: '-0.02em' }}>Exploration Domain</span>
+          </h2>
+          <p className="text-xs text-white/50 tracking-[0.5em] uppercase">THE INFINITE ASTRAL SELECTION WHEEL</p>
         </div>
         
         {/* Main content area with carousel layout */}
@@ -214,26 +222,80 @@ export default function RitualChamberPage() {
                   animate={{
                     x: slot === "prev" ? -300 : slot === "next" ? 300 : 0,
                     y: slot === "active" ? -10 : 0,
-                    opacity: slot === "active" ? 1 : 0.6,
+                    opacity: slot === "active" ? 1 : 0.5,
                     scale: slot === "active" ? 1 : 0.92,
                   }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  whileHover={slot !== "active" ? { scale: 0.95, opacity: 0.75 } : { scale: 1.02 }}
+                  whileHover={slot !== "active" ? { scale: 0.95, opacity: 0.7 } : { scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleDomainClick(index)}
                   style={{
                     zIndex: slot === "active" ? 3 : slot === "prev" ? 2 : 1,
                   }}
                 >
-                  {/* Card container with appropriate styling based on slot */}
+                  {/* Card container with black-white religious card styling */}
                   <div
-                    className={`relative w-[320px] h-[400px] rounded-xl transition-all duration-400 ease-out cursor-pointer
+                    className={`relative w-[320px] h-[400px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
                       ${slot === "active" ? 
-                        'bg-white/5 backdrop-blur-md border border-[#E7D7B6]/30 shadow-[0_10px_40px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]' : 
-                        'bg-white/3 backdrop-blur-sm border border-white/10'}
+                        'bg-black border-2 border-white shadow-[0_15px_40px_rgba(0,0,0,0.8)]' : 
+                        'bg-black border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.6)] opacity-80'}
                     `}
                   >
+                    {/* Religious card border design */}
+                    <div className="absolute inset-0 border-8 border-black p-2">
+                      <div className="w-full h-full border-2 border-white rounded-md flex flex-col">
+                        {/* Card header with decorative elements */}
+                        <div className="h-12 bg-white text-black flex items-center justify-center border-b-2 border-black">
+                          <span className="text-xs font-bold tracking-widest uppercase">{item.accent === 'gold' ? 'DIVINE' : 'SACRED'}</span>
+                        </div>
+                        
+                        {/* Main card content area */}
+                        <div className="flex-1 bg-black flex items-center justify-center p-6">
+                          {/* Central oval frame */}
+                          <div className="relative w-full max-w-xs h-64 border-2 border-white rounded-full flex items-center justify-center overflow-hidden">
+                            {/* Inner background */}
+                            <div className="absolute inset-0 bg-black"></div>
+                            
+                            {/* Star pattern */}
+                            <div className="absolute inset-0 opacity-40" style={{
+                              backgroundImage: `
+                                radial-gradient(circle at 20% 20%, white 1px, transparent 1px),
+                                radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
+                                radial-gradient(circle at 20% 80%, white 1px, transparent 1px),
+                                radial-gradient(circle at 80% 80%, white 1px, transparent 1px),
+                                radial-gradient(circle at 50% 50%, white 1px, transparent 1px)
+                              `,
+                              backgroundSize: '40px 40px'
+                            }}></div>
+                            
+                            {/* Card content */}
+                            <div className="relative z-10 flex flex-col items-center justify-center text-white">
+                              {/* Domain icon */}
+                              <div className={`transition-all duration-400 ${slot === "active" ? 'text-4xl opacity-100' : 'text-3xl opacity-70'}`}>
+                                {item.icon}
+                              </div>
+                              
+                              {/* Domain title */}
+                              <div className="text-center mt-4">
+                                <h3 className={`font-serif mb-2 transition-all duration-400 ${slot === "active" ? 'text-2xl text-white opacity-100' : 'text-xl text-white/80'}`}>
+                                  {item.title}
+                                </h3>
+                                <p className={`tracking-[0.4em] uppercase transition-all duration-400 ${slot === "active" ? 'text-[10px] text-white/90' : 'text-[9px] text-white/60'}`}>
+                                  {item.subtitle}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Card footer */}
+                        <div className="h-10 bg-white text-black flex items-center justify-center border-t-2 border-black">
+                          <span className="text-xs font-bold">{item.accent === 'gold' ? 'PROSPERITY' : 'HARMONY'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     {/* Gradient mask for side cards */}
                     {slot === "prev" && (
                       <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent pointer-events-none"></div>
@@ -241,58 +303,45 @@ export default function RitualChamberPage() {
                     {slot === "next" && (
                       <div className="absolute inset-0 bg-gradient-to-l from-black/50 to-transparent pointer-events-none"></div>
                     )}
-                    
-                    {/* Card content */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 gap-6">
-                      {/* Domain icon */}
-                      <div className={`text-[#E7D7B6] transition-all duration-400 ${slot === "active" ? 'text-2xl' : 'text-xl'}`}>
-                        {item.icon}
-                      </div>
-                      
-                      {/* Domain title */}
-                      <div className="text-center">
-                        <h3 className={`font-serif mb-2 transition-all duration-400 ${slot === "active" ? 'text-3xl text-white/98' : 'text-2xl text-white/70'}`}>
-                          {item.title}
-                        </h3>
-                        <p className={`tracking-widest uppercase transition-all duration-400 ${slot === "active" ? 'text-xs text-[#E7D7B6]/85' : 'text-[10px] text-[#E7D7B6]/50'}`}>
-                          {item.subtitle}
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
           
-          {/* Domain navigation buttons */}
+          {/* Domain navigation buttons - Frame Awards style */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl flex justify-between pointer-events-none">
             <motion.button
               onClick={handlePrevDomain}
-              className="bg-white/2 backdrop-blur-md rounded-full border border-white/8 p-3 text-white/60 hover:bg-white/3 hover:border-white/15 hover:text-[#E7D7B6] transition-all pointer-events-auto"
+              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all pointer-events-auto overflow-hidden group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               aria-label="Previous domain"
             >
-              <ArrowLeft size={20} />
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
+              <div className="absolute inset-0 border border-white/0 group-hover:border-white/40 rounded-full transition-all duration-300"></div>
+              {/* Icon */}
+              <ArrowLeft size={20} className="relative z-10" />
             </motion.button>
             
             <motion.button
               onClick={handleNextDomain}
-              className="bg-white/2 backdrop-blur-md rounded-full border border-white/8 p-3 text-white/60 hover:bg-white/3 hover:border-white/15 hover:text-[#E7D7B6] transition-all pointer-events-auto"
+              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all pointer-events-auto overflow-hidden group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               aria-label="Next domain"
             >
-              <ArrowRight size={20} />
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
+              <div className="absolute inset-0 border border-white/0 group-hover:border-white/40 rounded-full transition-all duration-300"></div>
+              {/* Icon */}
+              <ArrowRight size={20} className="relative z-10" />
             </motion.button>
           </div>
           
-          {/* Custom intention input */}
-          <div className="relative z-10 mt-12 w-full max-w-md">
-            {/* Thin divider line */}
-            <div className="h-px w-full bg-[rgba(231,215,182,0.12)] mb-6"></div>
-            
+          {/* Custom intention input - Frame Awards style */}
+          <div className="relative z-10 mt-16 w-full max-w-md">
             {/* Input container */}
             <div className="relative">
               <input
@@ -301,40 +350,46 @@ export default function RitualChamberPage() {
                 onChange={(e) => setIntention(e.target.value)}
                 placeholder="What do you want to ask? e.g., How can I improve my career luck?"
                 maxLength={200}
-                className="w-full h-12 bg-white/4 border border-white/10 backdrop-blur-md rounded-lg px-5 py-2 text-white placeholder-white/35 focus:outline-none focus:border-[rgba(231,215,182,0.22)] focus:ring-1 focus:ring-white/10 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                className="w-full h-14 bg-white/5 backdrop-blur-sm border border-white/15 rounded-lg px-6 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all"
               />
               
               {/* Character count */}
-              <div className="absolute top-2 right-3 text-[10px] text-white/25 font-mono">
+              <div className="absolute top-3 right-3 text-[10px] text-white/30 font-mono">
                 {intention.length}/200
               </div>
             </div>
           </div>
           
-          {/* Bottom Selector Bar */}
-          <div className="relative z-10 mt-8 w-full max-w-md">
-            <div className="flex items-center justify-between bg-white/2 backdrop-blur-md rounded-full border border-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] p-1">
+          {/* Bottom Selector Bar - Frame Awards style */}
+          <div className="relative z-10 mt-10 w-full max-w-md">
+            <div className="flex items-center justify-between bg-white/5 backdrop-blur-sm rounded-full border border-white/15 p-1.5">
               {/* Current domain icon */}
-              <div className="p-2 rounded-full bg-white/3 border border-[rgba(231,215,182,0.15)]">
-                <div className="text-[#E7D7B6]">
+              <div className="p-2.5 rounded-full bg-white/10 border border-white/20">
+                <div className="text-white">
                   {selectedDomain.icon}
                 </div>
               </div>
               
               {/* Current domain name */}
               <div className="text-center flex-1 mx-4">
-                <div className="text-sm text-white/95 font-medium">{selectedDomain.title}</div>
+                <div className="text-sm text-white font-medium">{selectedDomain.title}</div>
               </div>
               
-              {/* Confirm button */}
+              {/* Confirm button - Glow in Dark style */}
               <motion.button
                 onClick={handleBeginSession}
-                className="bg-white/2 backdrop-blur-sm border border-[rgba(120,255,230,0.22)] text-[#78ffe6] px-5 py-2 rounded-full text-xs font-medium tracking-wider flex items-center gap-1.5 hover:bg-white/3 hover:shadow-[0_0_20px_rgba(120,255,230,0.12)] transition-all"
+                className="relative bg-black/60 backdrop-blur-md rounded-full border border-white/30 px-8 py-2.5 text-xs font-medium tracking-wider text-white/90 flex items-center gap-1.5 overflow-hidden group transition-all"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <span>BEGIN RITUAL</span>
-                <ArrowRight size={12} />
+                {/* Glow effects */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
+                <div className="absolute inset-0 border border-white/0 group-hover:border-white/50 rounded-full transition-all duration-300"></div>
+                <div className="absolute -left-40 -top-40 w-80 h-80 bg-white/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-800"></div>
+                
+                {/* Button text and icon */}
+                <span className="relative z-10">BEGIN RITUAL</span>
+                <ArrowRight size={12} className="relative z-10" />
               </motion.button>
             </div>
           </div>

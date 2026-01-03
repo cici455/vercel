@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export async function POST(req: Request) {
   try {
@@ -35,8 +36,20 @@ export async function POST(req: Request) {
     // 构建对话历史上下文 - 注意：历史记录只用于参考，不在最终prompt中使用，因为Gemini API会处理
     const safeHistory = Array.isArray(history) ? history : [];
     
-    // --- 调用 Gemini API ---
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // --- 配置代理和Gemini API URL ---
+    // 从环境变量读取配置
+    const geminiApiBaseUrl = process.env.GEMINI_API_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
+    const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || '';
+    
+    console.log(`[API] Using Gemini API base URL: ${geminiApiBaseUrl}`);
+    if (proxyUrl) {
+      console.log(`[API] Using proxy: ${proxyUrl}`);
+    }
+    
+    // 构建完整的API URL
+    const url = `${geminiApiBaseUrl}/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    
+
     
     // 构建系统提示词，使用最安全的方式避免JSON转义问题
     // 根据mode参数决定返回哪些agent的回复
@@ -105,13 +118,21 @@ export async function POST(req: Request) {
     console.log(`[API] Calling Gemini API at: ${url}`);
     console.log(`[API] Prompt: ${JSON.stringify(prompt, null, 2)}`);
     
-    const response = await fetch(url, {
+    // 根据环境变量配置构建fetch选项
+    const fetchOptions: RequestInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(prompt) // 只在fetch调用中序列化一次
-    });
+    };
+    
+    // 如果配置了代理，添加代理选项
+    if (proxyUrl) {
+      fetchOptions.agent = new HttpsProxyAgent(proxyUrl);
+    }
+    
+    const response = await fetch(url, fetchOptions);
     
     console.log(`[API] Gemini API response status: ${response.status}`);
     

@@ -603,22 +603,24 @@ export default function RitualChamberPage() {
             </motion.button>
           </div>
           
-          {/* Custom intention input - More visible style */}
-          <div className="relative z-10 mt-16 w-full max-w-md">
-            {/* Input container */}
+          {/* Custom intention input - Highly visible style */}
+          <div className="relative z-20 mt-12 w-full max-w-lg">
+            {/* Input container with glow effect */}
             <div className="relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-white/20 rounded-lg blur-md opacity-50"></div>
               <input
                 type="text"
                 value={intention}
                 onChange={(e) => setIntention(e.target.value)}
                 placeholder="What do you want to ask? e.g., How can I improve my career luck?"
                 maxLength={200}
-                className="w-full h-16 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/50 focus:ring-2 focus:ring-white/30 transition-all"
-                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+                className="relative w-full h-18 bg-white/15 backdrop-blur-md border border-white/40 rounded-lg px-8 py-4 text-white placeholder-white/60 focus:outline-none focus:border-white/70 focus:ring-3 focus:ring-white/40 transition-all"
+                style={{ boxShadow: '0 6px 25px rgba(0,0,0,0.4)' }}
               />
               
               {/* Character count */}
-              <div className="absolute top-4 right-4 text-xs text-white/50 font-mono">
+              <div className="absolute top-5 right-5 text-sm text-white/60 font-mono">
                 {intention.length}/200
               </div>
             </div>

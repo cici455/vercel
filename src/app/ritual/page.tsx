@@ -144,26 +144,24 @@ export default function RitualChamberPage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-serif relative overflow-hidden">
-      {/* Background layers - Frame Awards style */}
+      {/* Background layers - LUMINA Event Horizon style */}
       <div className="absolute inset-0 z-0">
         {/* Deep black background */}
         <div className="absolute inset-0 bg-black"></div>
         
-        {/* Enhanced spotlight effect */}
-        <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-[rgba(255,255,255,0.2)] to-transparent opacity-70 blur-3xl"></div>
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-[400px] h-[400px] bg-white opacity-15 blur-3xl rounded-full"></div>
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-        
-        {/* Subtle particles */}
+        {/* Subtle starfield */}
         <div 
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-15"
           style={{
             backgroundImage: `
               radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
               radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
-              radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px)
+              radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
+              radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
+              radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 1px, transparent 1px),
+              radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 1px, transparent 1px)
             `,
-            backgroundSize: '200px 200px, 300px 300px, 250px 250px'
+            backgroundSize: '200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px, 280px 280px'
           }}
         ></div>
       </div>
@@ -177,192 +175,32 @@ export default function RitualChamberPage() {
           <span>Back to Chart</span>
         </Link>
         
-        <div className="flex items-center gap-2">
-          <div className="h-px w-12 bg-white/15"></div>
-          <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
-          <div className="h-px w-12 bg-white/15"></div>
-        </div>
+        <div className="w-48"></div>
         
         <div className="w-8"></div>
       </header>
       
-      <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)]">
-        {/* Top title - Frame Awards style */}
+      <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)] flex flex-col items-center justify-center">
+        {/* Main title - LUMINA Event Horizon */}
         <div className="text-center mb-24">
-          <h2 className="text-6xl md:text-8xl font-serif mb-6 text-white tracking-tight">
-            <span className="text-7xl md:text-9xl italic font-light" style={{ 
-              fontFamily: 'serif', 
-              fontStyle: 'italic',
-              fontWeight: '300',
-              letterSpacing: '0.05em'
-            }}>Select</span>
-            <br />
-            <span className="font-bold" style={{ 
-              letterSpacing: '-0.02em',
-              fontWeight: '700'
-            }}>EXPLORATION DOMAIN</span>
-          </h2>
-          <p className="text-xs text-white/50 tracking-[0.5em] uppercase">THE INFINITE ASTRAL SELECTION WHEEL</p>
+          <h1 className="text-7xl md:text-9xl font-serif text-white tracking-tighter mb-4">
+            LUMINA
+          </h1>
+          <p className="text-sm text-white/50 tracking-[0.75em] uppercase">THE EVENT HORIZON</p>
         </div>
         
-        {/* Main content area with carousel layout */}
-        <div className="relative flex flex-col items-center justify-center min-h-[500px]">
-          {/* 3-card carousel container */}
-          <div className="relative w-full max-w-4xl flex justify-center items-center">
-            {/* Background circle outline */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-96 h-96 border border-[rgba(231,215,182,0.15)] rounded-full"></div>
-            </div>
-            
-            {/* Carousel cards - Frame Awards modern style */}
-            <AnimatePresence mode="wait">
-              {visible.map(({ slot, item, index }) => (
-                <motion.div
-                  key={`${slot}-${item.id}`}
-                  className="absolute"
-                  layout
-                  initial={slot === "prev" ? { x: -300, opacity: 0, scale: 0.88 } : slot === "next" ? { x: 300, opacity: 0, scale: 0.88 } : { opacity: 0, scale: 0.98 }}
-                  animate={{
-                    x: slot === "prev" ? -300 : slot === "next" ? 300 : 0,
-                    y: slot === "active" ? -10 : 0,
-                    opacity: slot === "active" ? 1 : 0.5,
-                    scale: slot === "active" ? 1 : 0.92,
-                  }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  whileHover={slot !== "active" ? { scale: 0.95, opacity: 0.7 } : { scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleDomainClick(index)}
-                  style={{
-                    zIndex: slot === "active" ? 3 : slot === "prev" ? 2 : 1,
-                  }}
-                >
-                  {/* Modern card container */}
-                  <div
-                    className={`relative w-[320px] h-[400px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
-                      ${slot === "active" ? 
-                        'bg-black/80 backdrop-blur-sm border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.8)]' : 
-                        'bg-black/60 backdrop-blur-sm border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.6)]'}
-                    `}
-                  >
-                    {/* Subtle gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-30"></div>
-                    
-                    {/* Gradient mask for side cards */}
-                    {slot === "prev" && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent pointer-events-none"></div>
-                    )}
-                    {slot === "next" && (
-                      <div className="absolute inset-0 bg-gradient-to-l from-black/50 to-transparent pointer-events-none"></div>
-                    )}
-                    
-                    {/* Card content - Minimalist Frame Awards style */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 gap-8">
-                      {/* Domain icon */}
-                      <div className={`text-white transition-all duration-400 ${slot === "active" ? 'text-5xl opacity-100' : 'text-4xl opacity-80'}`}>
-                        {item.icon}
-                      </div>
-                      
-                      {/* Domain title */}
-                      <div className="text-center">
-                        <h3 className={`font-serif mb-3 transition-all duration-400 ${slot === "active" ? 'text-4xl text-white opacity-100' : 'text-3xl text-white/90'}`} style={{ letterSpacing: '-0.02em' }}>
-                          {item.title}
-                        </h3>
-                        <p className={`tracking-[0.3em] uppercase transition-all duration-400 ${slot === "active" ? 'text-xs text-white/70' : 'text-[10px] text-white/50'}`}>
-                          {item.subtitle}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-          
-          {/* Domain navigation buttons - Frame Awards style */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl flex justify-between pointer-events-none">
-            <motion.button
-              onClick={handlePrevDomain}
-              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all pointer-events-auto overflow-hidden group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Previous domain"
-            >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              <div className="absolute inset-0 border border-white/0 group-hover:border-white/40 rounded-full transition-all duration-300"></div>
-              {/* Icon */}
-              <ArrowLeft size={20} className="relative z-10" />
-            </motion.button>
-            
-            <motion.button
-              onClick={handleNextDomain}
-              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all pointer-events-auto overflow-hidden group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Next domain"
-            >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              <div className="absolute inset-0 border border-white/0 group-hover:border-white/40 rounded-full transition-all duration-300"></div>
-              {/* Icon */}
-              <ArrowRight size={20} className="relative z-10" />
-            </motion.button>
-          </div>
-          
-          {/* Custom intention input - Frame Awards style */}
-          <div className="relative z-10 mt-16 w-full max-w-md">
-            {/* Input container */}
-            <div className="relative">
-              <input
-                type="text"
-                value={intention}
-                onChange={(e) => setIntention(e.target.value)}
-                placeholder="What do you want to ask? e.g., How can I improve my career luck?"
-                maxLength={200}
-                className="w-full h-14 bg-white/5 backdrop-blur-sm border border-white/15 rounded-lg px-6 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all"
-              />
-              
-              {/* Character count */}
-              <div className="absolute top-3 right-3 text-[10px] text-white/30 font-mono">
-                {intention.length}/200
-              </div>
-            </div>
-          </div>
-          
-          {/* Bottom Selector Bar - Frame Awards minimalist style */}
-          <div className="relative z-10 mt-16 w-full max-w-md">
-            <div className="flex flex-col gap-6">
-              {/* Input and domain info */}
-              <div className="flex items-center justify-between bg-white/5 backdrop-blur-sm rounded-full border border-white/15 p-2">
-                {/* Current domain icon */}
-                <div className="p-3 rounded-full bg-white/10 border border-white/20">
-                  <div className="text-white">
-                    {selectedDomain.icon}
-                  </div>
-                </div>
-                
-                {/* Current domain name */}
-                <div className="text-center flex-1 mx-4">
-                  <div className="text-sm text-white font-medium">{selectedDomain.title}</div>
-                </div>
-              </div>
-              
-              {/* Confirm button - Frame Awards style */}
-              <motion.button
-                onClick={handleBeginSession}
-                className="w-full bg-white text-black py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all"
-                whileHover={{ 
-                  scale: 1.02,
-                  boxShadow: '0 5px 20px rgba(255,255,255,0.3)'
-                }}
-                whileTap={{ scale: 0.98 }}
-              >
-                BEGIN RITUAL
-              </motion.button>
-            </div>
-          </div>
-        </div>
+        {/* Enter the Void button */}
+        <motion.button
+          onClick={() => handleBeginSession()}
+          className="bg-transparent border-2 border-white/30 text-white/90 px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all hover:border-white/70 hover:text-white"
+          whileHover={{ 
+            scale: 1.05,
+            boxShadow: '0 0 30px rgba(255,255,255,0.2)'
+          }}
+          whileTap={{ scale: 0.98 }}
+        >
+          ENTER THE VOID
+        </motion.button>
       </main>
     </div>
   );

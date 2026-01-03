@@ -39,22 +39,52 @@ export async function POST(req: Request) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
     // 构建系统提示词，使用最安全的方式避免JSON转义问题
-    const systemPrompt = [
-      "Act as LUMINA (Psychic Council).",
-      `Mode: ${mode}. Agent: ${activeAgent}.`,
-      `User: "${message.replace(/"/g, '\\"')}"`, // 显式转义双引号
-      `Astro: Sun=${astroData?.sunSign || 'Unknown'}, Moon=${astroData?.moonSign || 'Unknown'}, Rising=${astroData?.risingSign || 'Unknown'}.`,
-      "",
-      "OUTPUT FORMAT: STRICT JSON ONLY. No explanations or additional text.",
-      "{",
-      `  \"turnLabel\": \"Title\",`,
-      `  \"responses\": {`,
-      `    "strategist": ${mode === 'solo' && activeAgent !== 'strategist' ? "null" : '"Your strategic advice here"'},`,
-      `    "oracle": ${mode === 'solo' && activeAgent !== 'oracle' ? "null" : '"Your oracle insight here"'},`,
-      `    "alchemist": ${mode === 'solo' && activeAgent !== 'alchemist' ? "null" : '"Your alchemical transformation here"'}` + ",",
-      `  }`,
-      `}`
-    ].join('\n');
+    // 根据mode参数决定返回哪些agent的回复
+    // - solo模式：只返回当前activeAgent的回复
+    // - council模式：返回所有agent的回复
+    let systemPrompt;
+    
+    if (mode === 'solo') {
+      // solo模式：只让模型扮演当前选中的agent角色，减少token消耗
+      systemPrompt = [
+        `Act as ${activeAgent.charAt(0).toUpperCase() + activeAgent.slice(1)} from LUMINA (Psychic Council).`,
+        `User: "${message.replace(/"/g, '\\"')}"`, // 显式转义双引号
+        `Astro: Sun=${astroData?.sunSign || 'Unknown'}, Moon=${astroData?.moonSign || 'Unknown'}, Rising=${astroData?.risingSign || 'Unknown'}.`,
+        "",
+        "OUTPUT FORMAT: STRICT JSON ONLY. No explanations or additional text.",
+        "{",
+        `  \"turnLabel\": \"Title\",`,
+        `  \"responses\": {`,
+        // 只返回当前activeAgent的回复，其他agent返回null
+        `    \"strategist\": ${activeAgent === 'strategist' ? '\"Your strategic advice here\"' : "null"},`,
+        `    \"oracle\": ${activeAgent === 'oracle' ? '\"Your oracle insight here\"' : "null"},`,
+        `    \"alchemist\": ${activeAgent === 'alchemist' ? '\"Your alchemical transformation here\"' : "null"}` + ",",
+        `  }`,
+        `}`
+      ].join('\n');
+    } else {
+      // council模式：让模型为所有三个agent生成独特的回复
+      systemPrompt = [
+        "Act as LUMINA (Psychic Council). Generate unique responses for all three agents.",
+        `User: "${message.replace(/"/g, '\\"')}"`, // 显式转义双引号
+        `Astro: Sun=${astroData?.sunSign || 'Unknown'}, Moon=${astroData?.moonSign || 'Unknown'}, Rising=${astroData?.risingSign || 'Unknown'}.`,
+        "",
+        "RESPONSE GUIDELINES:",
+        "1. STRATEGIST: Practical, actionable advice based on analysis and planning",
+        "2. ORACLE: Intuitive, mystical insights and foresight",
+        "3. ALCHEMIST: Transformational perspectives, turning challenges into opportunities",
+        "",
+        "OUTPUT FORMAT: STRICT JSON ONLY. No explanations or additional text.",
+        "{",
+        `  \"turnLabel\": \"Title\",`,
+        `  \"responses\": {`,
+        `    \"strategist\": \"[Strategist's response]\",`,
+        `    \"oracle\": \"[Oracle's response]\",`,
+        `    \"alchemist\": \"[Alchemist's response]\"` + ",",
+        `  }`,
+        `}`
+      ].join('\n');
+    }
     
     console.log(`[API] System Prompt: ${systemPrompt}`);
     
@@ -142,7 +172,19 @@ export async function POST(req: Request) {
     try {
       parsedResult = JSON.parse(cleanText);
       console.log(`[API] Response parsed successfully. Returning result.`);
-      return NextResponse.json(parsedResult);
+      
+      // 确保返回格式符合预期，特别是在solo模式下
+      const formattedResult = {
+        turnLabel: parsedResult.turnLabel || "Title",
+        responses: {
+          // solo模式下，非activeAgent返回null
+          strategist: mode === 'solo' && activeAgent !== 'strategist' ? null : parsedResult.responses?.strategist,
+          oracle: mode === 'solo' && activeAgent !== 'oracle' ? null : parsedResult.responses?.oracle,
+          alchemist: mode === 'solo' && activeAgent !== 'alchemist' ? null : parsedResult.responses?.alchemist
+        }
+      };
+      
+      return NextResponse.json(formattedResult);
     } catch (parseError) {
       console.error(`[API Council Error] Failed to parse cleaned response as JSON: ${(parseError as Error).message}`);
       console.error(`[API Council Error] Cleaned text: ${cleanText}`);

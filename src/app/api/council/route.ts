@@ -95,7 +95,7 @@ export async function POST(req: Request) {
           console.log(`[API] Gemini API call successful.`);
           return NextResponse.json(result);
         } catch (jsonParseError) {
-          console.error(`[Gemini API JSON Parse Error] ${jsonParseError.message}`);
+          console.error(`[Gemini API JSON Parse Error] ${(jsonParseError as Error).message}`);
           console.error(`[Gemini API Raw Response] ${rawText}`);
           
           // 如果 JSON 解析失败，使用模拟数据
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
         }
       } catch (fetchError) {
         clearTimeout(timeoutId); // 清除超时定时器
-        console.error(`[Gemini API Fetch Error] ${fetchError.message}`);
+        console.error(`[Gemini API Fetch Error] ${(fetchError as Error).message}`);
         return NextResponse.json(mockResponse);
       }
 

@@ -41,7 +41,6 @@ export async function POST(req: Request) {
     `;
 
     // --- GEMINI API CALL --- (使用正确的 API 格式)
-    try {
       // 使用正确的 API 端点、模型名称和 API 版本
       const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
       console.log(`[API] Connecting to Gemini API with model: gemini-2.5-flash...`);

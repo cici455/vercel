@@ -433,6 +433,21 @@ export default function LandingPage() {
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden flex flex-col justify-center items-center py-12">
+      {/* Background starfield */}
+      <div 
+        className="absolute inset-0 z-0 opacity-15"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,0.7) 1px, transparent 1px),
+            radial-gradient(circle at 40% 60%, rgba(255,255,255,0.8) 1px, transparent 1px),
+            radial-gradient(circle at 60% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
+            radial-gradient(circle at 90% 40%, rgba(255,255,255,1) 1px, transparent 1px),
+            radial-gradient(circle at 10% 80%, rgba(255,255,255,0.7) 1px, transparent 1px)
+          `,
+          backgroundSize: '200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px, 280px 280px'
+        }}
+      ></div>
       
       {/* Header & Button - Animate out when entered */}
       <AnimatePresence>
@@ -444,16 +459,15 @@ export default function LandingPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, y: -50 }}
               transition={{ duration: 1 }}
-              className="absolute top-12 z-10 text-center mix-blend-screen w-full"
+              className="absolute top-12 z-10 text-center w-full"
             >
               <h1 
-                className="text-6xl md:text-8xl font-serif font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
-                style={{ fontFamily: "'Cinzel', serif" }}
+                className="text-7xl md:text-9xl font-serif text-white tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
               >
                 LUMINA
               </h1>
-              <p className="mt-4 text-xs text-gray-400 tracking-[0.8em] uppercase">
-                The Event Horizon
+              <p className="mt-4 text-sm text-white/50 tracking-[0.75em] uppercase">
+                THE EVENT HORIZON
               </p>
             </motion.div>
 
@@ -467,10 +481,13 @@ export default function LandingPage() {
             >
               <motion.button
                 onClick={() => setEntered(true)}
-                whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(255,255,255,0.3)" }}
-                className="text-xs text-white border border-white/30 px-10 py-3 rounded-full tracking-[0.3em] uppercase transition-all duration-300 hover:bg-white/10 hover:border-white/60"
+                whileHover={{ 
+                  scale: 1.05, 
+                  boxShadow: "0 0 30px rgba(255,255,255,0.2)"
+                }}
+                className="bg-transparent border-2 border-white/30 text-white/90 px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all hover:border-white/70 hover:text-white"
               >
-                Enter The Void
+                ENTER THE VOID
               </motion.button>
             </motion.div>
           </>

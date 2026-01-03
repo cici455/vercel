@@ -46,59 +46,67 @@ export async function POST(req: Request) {
       const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
       console.log(`[API] Connecting to Gemini API with model: gemini-2.5-flash...`);
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey // 使用正确的 API 密钥头部
-        },
-        body: JSON.stringify({
-          // 使用正确的请求体格式
-          contents: [{
-            parts: [{ text: systemPrompt }]
-          }]
-        }),
-        timeout: 10000 // 10 second timeout
-      });
+      // 实现超时机制
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      if (!response.ok) {
-        console.error(`[Gemini API Error] ${response.status} ${response.statusText}`);
-        const errorText = await response.text();
-        console.error(`[Gemini API Error Details] ${errorText}`);
-        return NextResponse.json(mockResponse);
-      }
-
-      const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (!rawText) {
-        console.warn("[Gemini API Warning] Empty response. Using mock response.");
-        return NextResponse.json(mockResponse);
-      }
-      
-      // 清理响应文本
-      let cleanText = rawText
-        .replace(/^```(json)?\n|```$/g, '')  // Remove ```json and ```
-        .replace(/^\s+/, '')                 // Remove leading whitespace
-        .replace(/\s+$/, '')                 // Remove trailing whitespace
-        .trim();
-      
-      // 尝试解析 JSON
       try {
-        const result = JSON.parse(cleanText);
-        console.log(`[API] Gemini API call successful.`);
-        return NextResponse.json(result);
-      } catch (jsonParseError) {
-        console.error(`[Gemini API JSON Parse Error] ${jsonParseError.message}`);
-        console.error(`[Gemini API Raw Response] ${rawText}`);
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey // 使用正确的 API 密钥头部
+          },
+          body: JSON.stringify({
+            // 使用正确的请求体格式
+            contents: [{
+              parts: [{ text: systemPrompt }]
+            }]
+          }),
+          signal: controller.signal // 使用 AbortController 实现超时
+        });
         
-        // 如果 JSON 解析失败，使用模拟数据
+        clearTimeout(timeoutId); // 清除超时定时器
+
+        if (!response.ok) {
+          console.error(`[Gemini API Error] ${response.status} ${response.statusText}`);
+          const errorText = await response.text();
+          console.error(`[Gemini API Error Details] ${errorText}`);
+          return NextResponse.json(mockResponse);
+        }
+
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!rawText) {
+          console.warn("[Gemini API Warning] Empty response. Using mock response.");
+          return NextResponse.json(mockResponse);
+        }
+        
+        // 清理响应文本
+        let cleanText = rawText
+          .replace(/^```(json)?\n|```$/g, '')  // Remove ```json and ```
+          .replace(/^\s+/, '')                 // Remove leading whitespace
+          .replace(/\s+$/, '')                 // Remove trailing whitespace
+          .trim();
+        
+        // 尝试解析 JSON
+        try {
+          const result = JSON.parse(cleanText);
+          console.log(`[API] Gemini API call successful.`);
+          return NextResponse.json(result);
+        } catch (jsonParseError) {
+          console.error(`[Gemini API JSON Parse Error] ${jsonParseError.message}`);
+          console.error(`[Gemini API Raw Response] ${rawText}`);
+          
+          // 如果 JSON 解析失败，使用模拟数据
+          return NextResponse.json(mockResponse);
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId); // 清除超时定时器
+        console.error(`[Gemini API Fetch Error] ${fetchError.message}`);
         return NextResponse.json(mockResponse);
       }
-    } catch (fetchError) {
-      console.error(`[Gemini API Fetch Error] ${fetchError.message}`);
-      return NextResponse.json(mockResponse);
-    }
 
   } catch (error: any) {
     console.error("[API Council Error]", error);

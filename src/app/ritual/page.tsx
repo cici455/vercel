@@ -480,10 +480,10 @@ export default function RitualChamberPage() {
       </header>
       
       <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)]">
-        {/* Top title - Frame Awards style */}
-        <div className="text-center mb-24">
-          <h2 className="text-6xl md:text-8xl font-serif mb-6 text-white tracking-tight">
-            <span className="text-7xl md:text-9xl italic font-light" style={{ 
+        {/* Top title - Smaller size */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-6xl font-serif mb-4 text-white tracking-tight">
+            <span className="text-5xl md:text-7xl italic font-light" style={{ 
               fontFamily: 'serif', 
               fontStyle: 'italic',
               fontWeight: '300',
@@ -626,8 +626,8 @@ export default function RitualChamberPage() {
             </div>
           </div>
           
-          {/* Bottom Selector Bar - More visible style */}
-          <div className="relative z-10 mt-12 w-full max-w-md">
+          {/* Bottom Selector Bar - Ensure button is visible */}
+          <div className="relative z-20 mt-10 w-full max-w-md">
             <div className="flex flex-col gap-6">
               {/* Input and domain info */}
               <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-full border border-white/30 p-3">
@@ -644,16 +644,17 @@ export default function RitualChamberPage() {
                 </div>
               </div>
               
-              {/* Confirm button - More visible style */}
+              {/* Confirm button - Highly visible */}
               <motion.button
-              onClick={handleBeginSession}
-              className="w-full bg-white text-black py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all"
-              whileHover={{ 
-                scale: 1.05,
-                boxShadow: '0 8px 30px rgba(255,255,255,0.4)'
-              }}
-              whileTap={{ scale: 0.97 }}
-            >
+                onClick={handleBeginSession}
+                className="w-full bg-white text-black py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all"
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: '0 8px 30px rgba(255,255,255,0.4)'
+                }}
+                whileTap={{ scale: 0.97 }}
+                style={{ opacity: 1 }}
+              >
                 BEGIN RITUAL
               </motion.button>
             </div>

@@ -158,7 +158,7 @@ function ConsultationForm() {
             <input 
               required
               type="text" 
-              className="w-full h-12 bg-white rounded-lg px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
               value={formData.firstName}
               onChange={e => setFormData({...formData, firstName: e.target.value})}
             />
@@ -168,7 +168,7 @@ function ConsultationForm() {
             <input 
               required
               type="text" 
-              className="w-full h-12 bg-white rounded-lg px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
               value={formData.lastName}
               onChange={e => setFormData({...formData, lastName: e.target.value})}
             />
@@ -183,7 +183,7 @@ function ConsultationForm() {
               type="text"
               placeholder="MM/DD/YYYY"
               maxLength={10}
-              className="w-full h-12 bg-white rounded-lg px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
               value={formData.date}
               onChange={(e) => {
                 let v = e.target.value.replace(/\D/g, '');
@@ -202,7 +202,7 @@ function ConsultationForm() {
             <input 
               required
               type="time" 
-              className="w-full h-12 bg-white rounded-lg px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
               value={formData.time}
               onChange={e => setFormData({...formData, time: e.target.value})}
             />
@@ -214,7 +214,7 @@ function ConsultationForm() {
           <input 
             required
             type="text" 
-            className="w-full h-12 bg-white rounded-lg px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+            className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
             value={formData.city}
             onChange={handleCityChange}
             onFocus={() => formData.city.length >= 1 && setShowSuggestions(true)}
@@ -222,15 +222,15 @@ function ConsultationForm() {
             autoComplete="off"
           />
           {showSuggestions && citySuggestions.length > 0 && (
-            <ul className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-white rounded-lg shadow-lg z-50 custom-scrollbar">
+            <ul className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-black border-2 border-white rounded-lg shadow-lg z-50 custom-scrollbar">
               {citySuggestions.map((city, i) => (
                 <li 
                   key={i}
-                  className="px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer transition-colors border-b border-gray-200 last:border-0"
+                  className="px-4 py-2 text-sm text-white hover:bg-white/10 cursor-pointer transition-colors border-b border-white/20 last:border-0"
                   onClick={() => selectCity(city)}
                 >
-                  <span className="text-black font-medium">{city.name}</span>
-                  <span className="text-xs text-gray-500 ml-2">{city.country}</span>
+                  <span className="text-white font-medium">{city.name}</span>
+                  <span className="text-xs text-white/70 ml-2">{city.country}</span>
                 </li>
               ))}
             </ul>
@@ -240,7 +240,7 @@ function ConsultationForm() {
         <button 
           type="submit"
           disabled={status === "loading"}
-          className="mt-6 w-full h-12 bg-white rounded-lg text-black font-medium tracking-[0.1em] uppercase hover:shadow-md transition-all disabled:opacity-50"
+          className="mt-6 w-full h-12 bg-black border-2 border-white rounded-lg text-white font-medium tracking-[0.1em] uppercase hover:bg-white/10 transition-all disabled:opacity-50"
         >
           {status === "loading" ? "Transmitting..." : "Submit to the Void"}
         </button>

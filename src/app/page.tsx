@@ -285,11 +285,15 @@ export default function LandingPage() {
               className="absolute top-12 z-10 text-center w-full"
             >
               <h1 
-                className="text-7xl md:text-9xl font-serif text-white tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                className="text-7xl md:text-9xl font-serif tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                style={{ 
+                  mixBlendMode: "difference",
+                  color: "white"
+                }}
               >
                 LUMINA
               </h1>
-              <p className="mt-4 text-sm text-white/50 tracking-[0.75em] uppercase">
+              <p className="mt-4 text-sm text-white/50 tracking-[0.75em] uppercase text-halo">
                 THE EVENT HORIZON
               </p>
             </motion.div>
@@ -308,7 +312,7 @@ export default function LandingPage() {
                   scale: 1.05, 
                   boxShadow: "0 0 30px rgba(255,255,255,0.2)"
                 }}
-                className="bg-transparent border-2 border-white/30 text-white/90 px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all hover:border-white/70 hover:text-white"
+                className="bg-transparent border-2 border-white/30 text-white/90 px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all hover:border-white/70 hover:text-white text-halo"
               >
                 ENTER THE VOID
               </motion.button>

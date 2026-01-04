@@ -1,104 +1,49 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #050505;
-  --foreground: #ededed;
-  
-  /* Celestial Breath Palette */
   --color-void: #050505;
-  --color-starlight: #D4AF37;
-  --color-nebula: #2E004F;
-  --color-holo: rgba(255, 255, 255, 0.1);
-  
-  /* Legacy/Support Colors */
-  --color-star: #ffffff;
-  --color-sun: #fbbf24;
-  --color-moon: #e2e8f0;
-}
-
-/* Define animations at top level */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Add utility classes */
-@layer utilities {
-  .animate-spin-slow {
-    animation: spin-slow 120s linear infinite;
-  }
-}
-
-@theme {
-  --color-void: var(--color-void);
-  --color-starlight: var(--color-starlight);
-  --color-nebula: var(--color-nebula);
-  --color-holo: var(--color-holo);
-
-  --font-cinzel: var(--font-cinzel);
-  --font-inter: var(--font-inter);
-
-  --animate-grain: grain 8s steps(10) infinite;
-
-  @keyframes grain {
-    0%, 100% { transform: translate(0, 0); }
-    10% { transform: translate(-5%, -10%); }
-    20% { transform: translate(-15%, 5%); }
-    30% { transform: translate(7%, -25%); }
-    40% { transform: translate(-5%, 25%); }
-    50% { transform: translate(-15%, 10%); }
-    60% { transform: translate(15%, 0%); }
-    70% { transform: translate(0%, 15%); }
-    80% { transform: translate(3%, 35%); }
-    90% { transform: translate(-10%, 10%); }
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-    50% { box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
-  }
-
-  --animate-shimmer: shimmer 2s infinite;
-  @keyframes shimmer {
-    100% { transform: translateX(100%); }
-  }
+  --color-ethereal: #f8f8ff;
+  --color-council: #1a1a1a;
+  --color-ink: #e2e8f0;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--color-void);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
-  overflow: hidden;
+  background-color: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
 }
 
-@layer utilities {
-  .font-display {
-    font-family: var(--font-display);
-  }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-cinzel), serif;
+}
 
-  .glass-panel {
-    @apply bg-transparent backdrop-blur-none border-none shadow-none; /* Removed card style for ethereal look */
-  }
-  
-  .glass-btn {
-    @apply bg-white/[0.03] border border-white/10 transition-all duration-500 hover:bg-white/[0.1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] cursor-pointer text-white relative overflow-hidden tracking-[0.2em] font-light;
-  }
-  
-  .input-glass {
-    @apply bg-black/40 border border-white/15 text-white transition-colors focus:border-white/40 focus:bg-black/60 focus:outline-none placeholder:text-gray-600;
-  }
-  
-  .glow-gold {
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-  }
+.font-display {
+  font-family: var(--font-display);
+}
 
-  .text-outline {
-    -webkit-text-stroke: 1px rgba(255,255,255,0.1);
-    color: transparent;
-  }
+.glass-panel {
+  @apply bg-transparent backdrop-blur-none border-none shadow-none; /* Removed card style for ethereal look */
+}
+
+.glass-btn {
+  @apply bg-white/[0.03] border border-white/10 transition-all duration-500 hover:bg-white/[0.1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] cursor-pointer text-white relative overflow-hidden tracking-[0.2em] font-light;
+}
+
+.input-glass {
+  @apply bg-black/40 border border-white/15 text-white transition-colors focus:border-white/40 focus:bg-black/60 focus:outline-none placeholder:text-gray-600;
+}
+
+.glow-gold {
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+.text-outline {
+  -webkit-text-stroke: 1px rgba(255,255,255,0.1);
+  color: transparent;
+}
+
+.text-halo {
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.8);
 }

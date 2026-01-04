@@ -143,7 +143,7 @@ export default function RitualChamberPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black text-white font-serif relative">
+    <div className="min-h-screen w-full bg-black text-white font-serif relative pt-20">
       {/* Hide scrollbar */}
       <style jsx global>{`
         ::-webkit-scrollbar {
@@ -156,13 +156,13 @@ export default function RitualChamberPage() {
       `}</style>
       
       {/* Dynamic flowing background animation */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Deep black background */}
-        <div className="absolute inset-0 bg-black"></div>
+        <div className="absolute inset-0 bg-black pointer-events-none"></div>
         
         {/* Animated white flowing orbs using framer-motion */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/25 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/25 rounded-full blur-3xl pointer-events-none"
           animate={{
             x: [0, 80, 20, -60, 0],
             y: [0, -30, 40, -10, 0],
@@ -175,7 +175,7 @@ export default function RitualChamberPage() {
           }}
         />
         <motion.div
-          className="absolute top-3/4 right-1/3 w-[500px] h-[500px] bg-white/18 rounded-full blur-3xl"
+          className="absolute top-3/4 right-1/3 w-[500px] h-[500px] bg-white/18 rounded-full blur-3xl pointer-events-none"
           animate={{
             x: [0, -100, -40, 80, 0],
             y: [0, 50, -20, 30, 0],
@@ -189,7 +189,7 @@ export default function RitualChamberPage() {
           }}
         />
         <motion.div
-          className="absolute top-1/2 left-1/3 w-80 h-80 bg-white/22 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/3 w-80 h-80 bg-white/22 rounded-full blur-3xl pointer-events-none"
           animate={{
             x: [0, 100, 30, -80, 0],
             y: [0, -40, 25, -20, 0],
@@ -203,7 +203,7 @@ export default function RitualChamberPage() {
           }}
         />
         <motion.div
-          className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/15 rounded-full blur-3xl"
+          className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/15 rounded-full blur-3xl pointer-events-none"
           animate={{
             x: [0, -60, 50, -30, 0],
             y: [0, 40, -30, 10, 0],
@@ -238,9 +238,9 @@ export default function RitualChamberPage() {
           <div className="w-8"></div>
         </header>
         
-        <main className="relative z-10 container mx-auto px-4 py-12">
+        <main className="relative z-10 container mx-auto px-4 py-12 pb-40">
           {/* Top title - Smaller size */}
-          <div className="text-center mb-16 pt-8">
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
               <span className="text-4xl md:text-6xl italic font-light" style={{ 
                 fontFamily: 'serif', 

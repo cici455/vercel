@@ -143,102 +143,103 @@ export default function RitualChamberPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black text-white font-serif relative pt-20">
-      {/* Hide scrollbar */}
-      <style jsx global>{`
-        ::-webkit-scrollbar {
-          display: none;
-        }
-        * {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-      
-      {/* Dynamic flowing background animation */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Deep black background */}
-        <div className="absolute inset-0 bg-black pointer-events-none"></div>
+    <div className="min-h-screen w-full overflow-y-auto">
+      <div className="min-h-screen w-full bg-black text-white font-serif relative pt-20">
+        {/* Hide scrollbar */}
+        <style jsx global>{`
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
         
-        {/* Animated white flowing orbs using framer-motion */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/25 rounded-full blur-3xl pointer-events-none"
-          animate={{
-            x: [0, 80, 20, -60, 0],
-            y: [0, -30, 40, -10, 0],
-            scale: [1, 1.1, 0.98, 1.05, 1]
-          }}
-          transition={{
-            duration: 20,
-            ease: "easeInOut",
-            repeat: Infinity
-          }}
-        />
-        <motion.div
-          className="absolute top-3/4 right-1/3 w-[500px] h-[500px] bg-white/18 rounded-full blur-3xl pointer-events-none"
-          animate={{
-            x: [0, -100, -40, 80, 0],
-            y: [0, 50, -20, 30, 0],
-            scale: [1, 1.08, 0.95, 1.02, 1]
-          }}
-          transition={{
-            duration: 30,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 2
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/3 w-80 h-80 bg-white/22 rounded-full blur-3xl pointer-events-none"
-          animate={{
-            x: [0, 100, 30, -80, 0],
-            y: [0, -40, 25, -20, 0],
-            scale: [1, 1.15, 0.92, 1.08, 1]
-          }}
-          transition={{
-            duration: 25,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 4
-          }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/15 rounded-full blur-3xl pointer-events-none"
-          animate={{
-            x: [0, -60, 50, -30, 0],
-            y: [0, 40, -30, 10, 0],
-            scale: [1, 1.05, 0.97, 1.1, 1]
-          }}
-          transition={{
-            duration: 18,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 1
-          }}
-        />
-      </div>
-      
-      {/* Main content - relative positioning to take up space */}
-      <div className="relative z-10 overflow-y-auto border-2 border-red-500">
-        <header className="relative z-10 flex justify-between items-center p-6">
-          <Link 
-            href="/" 
-            className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Chart</span>
-          </Link>
+        {/* Dynamic flowing background animation */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {/* Deep black background */}
+          <div className="absolute inset-0 bg-black pointer-events-none"></div>
           
-          <div className="flex items-center gap-2">
-            <div className="h-px w-12 bg-white/15"></div>
-            <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
-            <div className="h-px w-12 bg-white/15"></div>
-          </div>
-          
-          <div className="w-8"></div>
-        </header>
+          {/* Animated white flowing orbs using framer-motion */}
+          <motion.div
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/25 rounded-full blur-3xl pointer-events-none"
+            animate={{
+              x: [0, 80, 20, -60, 0],
+              y: [0, -30, 40, -10, 0],
+              scale: [1, 1.1, 0.98, 1.05, 1]
+            }}
+            transition={{
+              duration: 20,
+              ease: "easeInOut",
+              repeat: Infinity
+            }}
+          />
+          <motion.div
+            className="absolute top-3/4 right-1/3 w-[500px] h-[500px] bg-white/18 rounded-full blur-3xl pointer-events-none"
+            animate={{
+              x: [0, -100, -40, 80, 0],
+              y: [0, 50, -20, 30, 0],
+              scale: [1, 1.08, 0.95, 1.02, 1]
+            }}
+            transition={{
+              duration: 30,
+              ease: "easeInOut",
+              repeat: Infinity,
+              delay: 2
+            }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/3 w-80 h-80 bg-white/22 rounded-full blur-3xl pointer-events-none"
+            animate={{
+              x: [0, 100, 30, -80, 0],
+              y: [0, -40, 25, -20, 0],
+              scale: [1, 1.15, 0.92, 1.08, 1]
+            }}
+            transition={{
+              duration: 25,
+              ease: "easeInOut",
+              repeat: Infinity,
+              delay: 4
+            }}
+          />
+          <motion.div
+            className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/15 rounded-full blur-3xl pointer-events-none"
+            animate={{
+              x: [0, -60, 50, -30, 0],
+              y: [0, 40, -30, 10, 0],
+              scale: [1, 1.05, 0.97, 1.1, 1]
+            }}
+            transition={{
+              duration: 18,
+              ease: "easeInOut",
+              repeat: Infinity,
+              delay: 1
+            }}
+          />
+        </div>
         
-        <main className="relative z-10 container mx-auto px-4 py-12 pb-40">
+        {/* Main content - relative positioning to take up space */}
+        <div className="relative z-10 overflow-y-auto border-2 border-red-500">
+          <header className="relative z-10 flex justify-between items-center p-6">
+            <Link 
+              href="/" 
+              className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Chart</span>
+            </Link>
+            
+            <div className="flex items-center gap-2">
+              <div className="h-px w-12 bg-white/15"></div>
+              <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
+              <div className="h-px w-12 bg-white/15"></div>
+            </div>
+            
+            <div className="w-8"></div>
+          </header>
+          
+          <main className="relative z-10 container mx-auto px-4 py-12 pb-96">
           {/* Top title - Smaller size */}
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
@@ -474,6 +475,7 @@ export default function RitualChamberPage() {
         </div>
       </main>
       </div>
+    </div>
     </div>
   );
 }

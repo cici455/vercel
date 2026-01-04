@@ -318,35 +318,31 @@ const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil 
   const trinityCards = useMemo(() => {
     if (!chartData) return [];
     
-    return [
-      {
-        id: "trinity-sun",
-        kind: "trinity" as const,
-        slot: "sun" as const,
-        sign: chartData.sunSign,
-        title: chartData.sunCard.title,
-        inscription: chartData.sunCard.subtitle,
-        notes: chartData.sunCard.notes
-      },
-      {
-        id: "trinity-moon",
-        kind: "trinity" as const,
-        slot: "moon" as const,
-        sign: chartData.moonSign,
-        title: chartData.moonCard.title,
-        inscription: chartData.moonCard.subtitle,
-        notes: chartData.moonCard.notes
-      },
-      {
-        id: "trinity-rising",
-        kind: "trinity" as const,
-        slot: "rising" as const,
-        sign: chartData.risingSign,
-        title: chartData.risingCard.title,
-        inscription: chartData.risingCard.subtitle,
-        notes: chartData.risingCard.notes
+    return chartData.trinity.map((card) => {
+      let slot: "sun" | "moon" | "rising" = "sun";
+      
+      switch (card.type) {
+        case "Sun":
+          slot = "sun";
+          break;
+        case "Moon":
+          slot = "moon";
+          break;
+        case "Rising":
+          slot = "rising";
+          break;
       }
-    ];
+      
+      return {
+        id: `trinity-${slot}`,
+        kind: "trinity" as const,
+        slot: slot as const,
+        sign: card.sign,
+        title: card.title,
+        inscription: card.desc,
+        notes: card.notes || { meaning: "", practice: "" }
+      };
+    });
   }, [chartData]);
 
   // Generate Planet Cards
@@ -358,17 +354,21 @@ const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil 
       kind: "planet" as const,
       planet: planet.name.toLowerCase() as any,
       sign: planet.sign,
-      degree: Math.round(planet.longitude),
-      title: planet.epithet,
-      inscription: planet.interpretation,
+      degree: 0, // Default since PlanetRow doesn't have longitude
+      title: planet.behavior,
+      inscription: planet.behavior,
       notes: {
-        meaning: planet.notes.meaning,
-        practice: planet.notes.practice
+        meaning: "",
+        practice: ""
       },
-      today: {
-        status: planet.today.status,
-        why: planet.today.why,
-        guidance: planet.today.guidance
+      today: planet.transit ? {
+        status: planet.transit.type,
+        why: planet.transit.label,
+        guidance: ""
+      } : {
+        status: undefined,
+        why: "",
+        guidance: ""
       }
     }));
   }, [chartData?.planets]);

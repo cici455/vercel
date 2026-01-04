@@ -7,56 +7,101 @@ export default function Background() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error("❌ Canvas 元素未找到！");
-      return;
-    }
+    if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      console.error("❌ 无法获取 2D 上下文！");
-      return;
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let particles: Particle[] = [];
+
+    // 粒子配置
+    const particleCount = 40; // 粒子数量
+    const minRadius = 20;     // 调大半径，确保不被吞没
+    const maxRadius = 40;
+    const speed = 0.5;        // 缓慢移动
+
+    class Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+
+      constructor() {
+        this.radius = Math.random() * (maxRadius - minRadius) + minRadius;
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
+        this.vx = (Math.random() - 0.5) * speed;
+        this.vy = (Math.random() - 0.5) * speed;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // 边界反弹
+        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
+      }
+
+      draw() {
+        if (!ctx) return;
+        ctx.beginPath();
+        // 关键：纯白，不透明
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
-    // 1. 强制设置画布大小 (并在控制台打印)
-    const setSize = () => {
+    const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      console.log(`✅ 画布大小已设置: ${canvas.width}x${canvas.height}`);
-      
-      // 2. 立即填充一个纯红色背景 (不使用 requestAnimationFrame)
-      ctx.fillStyle = "red";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 3. 画一个巨大的蓝色 X，确保能看出位置
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 10;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(canvas.width, canvas.height);
-      ctx.stroke();
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
     };
 
-    setSize();
-    window.addEventListener("resize", setSize);
+    const animate = () => {
+      if (!ctx) return;
+      // 每一帧清空画布，保持透明背景
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    return () => window.removeEventListener("resize", setSize);
+      particles.forEach((particle) => {
+        particle.update();
+        particle.draw();
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    init();
+    animate();
+
+    window.addEventListener("resize", init);
+
+    return () => {
+      window.removeEventListener("resize", init);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
-  // 4. 使用内联样式强制覆盖所有 CSS 类
   return (
     <canvas
       ref={canvasRef}
-      id="debug-canvas"
       style={{
         position: "fixed",
         top: 0,
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 9999, // 甚至比 Header 还高，遮住一切
-        background: "rgba(0, 255, 0, 0.2)", // 如果 JS 挂了，CSS 背景应该是绿色的
+        zIndex: 0, // 确保在文字（LUMINA）的后面
         pointerEvents: "none",
+        background: "transparent", // 画布本身透明
+        // 关键滤镜：让模糊的白色粒子产生粘连效果
+        filter: "blur(15px) contrast(30)",
       }}
     />
   );

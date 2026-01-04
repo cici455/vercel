@@ -134,7 +134,7 @@ const OracleLine = ({ omen }: { omen: OmenOutput }) => {
         <span className="font-cinzel text-[9px] text-white/30 tracking-[0.2em] uppercase">TODAY'S OMEN</span>
       </div>
       <blockquote className="relative mt-4 px-8 text-center font-cormorant text-lg text-white/90 italic">
-        "{omen.text}"
+        "{omen.omen}"
       </blockquote>
     </motion.div>
   );

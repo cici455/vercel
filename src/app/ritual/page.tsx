@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import CosmicButton from '@/components/CosmicButton';
 
 // Type definitions
 type AccentColor = "gold" | "teal";
@@ -50,126 +49,204 @@ const DOMAINS: Domain[] = [
     title: 'Family',
     subtitle: 'Domestic Life',
     icon: <Home size={24} />,
-    accent: 'teal'
+    accent: 'gold'
   },
   {
     id: 'health',
     title: 'Health',
-    subtitle: 'Physical Wellness',
+    subtitle: 'Wellbeing',
     icon: <Activity size={24} />,
     accent: 'teal'
   },
   {
-    id: 'knowledge',
-    title: 'Knowledge',
-    subtitle: 'Learning & Wisdom',
-    icon: <BookOpen size={24} />,
-    accent: 'teal'
+    id: 'study',
+    title: 'Study',
+    subtitle: 'Learning & Growth',
+    icon: <GraduationCap size={24} />,
+    accent: 'gold'
   },
   {
-    id: 'social',
-    title: 'Social',
-    subtitle: 'Network & Connections',
+    id: 'cooperation',
+    title: 'Cooperation',
+    subtitle: 'Teamwork & Partnerships',
     icon: <UsersRound size={24} />,
     accent: 'teal'
   },
   {
-    id: 'travel',
-    title: 'Travel',
-    subtitle: 'Movement & Changes',
+    id: 'decision',
+    title: 'Decision',
+    subtitle: 'Choices & Direction',
     icon: <Compass size={24} />,
-    accent: 'teal'
+    accent: 'gold'
   },
   {
-    id: 'world',
-    title: 'World',
-    subtitle: 'Global Affairs',
+    id: 'travel',
+    title: 'Travel',
+    subtitle: 'Adventure & Change',
     icon: <Globe size={24} />,
     accent: 'teal'
   },
   {
-    id: 'spirit',
-    title: 'Spirit',
+    id: 'spirituality',
+    title: 'Spirituality',
     subtitle: 'Inner Growth',
     icon: <Sparkles size={24} />,
-    accent: 'teal'
-  },
-  {
-    id: 'career2',
-    title: 'Career',
-    subtitle: 'Public Image',
-    icon: <GraduationCap size={24} />,
-    accent: 'teal'
+    accent: 'gold'
   }
 ];
 
-// Carousel state
-const VISIBLE_DOMAINS = 3;
-const TOTAL_DOMAINS = DOMAINS.length;
-
-export default function RitualPage() {
+// Main Ritual Chamber component - 3-card Carousel
+export default function RitualChamberPage() {
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState(Math.floor(TOTAL_DOMAINS / 2));
+  const [activeIndex, setActiveIndex] = useState(0);
   const [intention, setIntention] = useState('');
-  
-  const handlePrevDomain = () => {
-    setSelectedIndex((prev) => (prev - 1 + TOTAL_DOMAINS) % TOTAL_DOMAINS);
-  };
-  
+
+  const selectedDomain = DOMAINS[activeIndex];
+
+  // Calculate visible cards: prev, active, next
+  const prevIndex = (activeIndex - 1 + DOMAINS.length) % DOMAINS.length;
+  const nextIndex = (activeIndex + 1) % DOMAINS.length;
+
+  const visible = [
+    { slot: "prev", item: DOMAINS[prevIndex], index: prevIndex },
+    { slot: "active", item: DOMAINS[activeIndex], index: activeIndex },
+    { slot: "next", item: DOMAINS[nextIndex], index: nextIndex },
+  ];
+
+  // Handle next domain
   const handleNextDomain = () => {
-    setSelectedIndex((prev) => (prev + 1) % TOTAL_DOMAINS);
+    setActiveIndex(nextIndex);
   };
-  
+
+  // Handle previous domain
+  const handlePrevDomain = () => {
+    setActiveIndex(prevIndex);
+  };
+
+  // Handle domain click
   const handleDomainClick = (index: number) => {
-    setSelectedIndex(index);
+    setActiveIndex(index);
   };
-  
+
+  // Handle begin session
   const handleBeginSession = () => {
-    console.log('Beginning ritual with:', {
-      domain: DOMAINS[selectedIndex],
-      intention: intention || 'No intention set'
-    });
-    // router.push('/reading');
+    const payload = {
+      domainId: selectedDomain.id,
+      domainTitle: selectedDomain.title,
+      customIntentText: intention.trim()
+    };
+
+    console.log('Session payload:', payload);
+    // Navigate to council page with payload
+    const encodedPayload = encodeURIComponent(JSON.stringify(payload));
+    router.push(`/council?payload=${encodedPayload}`);
   };
-  
-  // Get visible domains for carousel
-  const getVisibleDomains = () => {
-    const visible = [];
-    for (let i = -1; i <= 1; i++) {
-      const index = (selectedIndex + i + TOTAL_DOMAINS) % TOTAL_DOMAINS;
-      const slot = i === 0 ? 'active' : i < 0 ? 'prev' : 'next';
-      visible.push({ slot, item: DOMAINS[index], index });
-    }
-    return visible;
-  };
-  
-  const selectedDomain = DOMAINS[selectedIndex];
-  const visible = getVisibleDomains();
-  
+
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
-      {/* Ambient background effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=%270 0 400 400%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27noiseFilter%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23noiseFilter)%27 opacity=%270.03%27/%3E%3C/svg%3E')] opacity-50" />
+    <div className="min-h-screen bg-black text-white font-serif relative overflow-hidden">
+      {/* Dynamic flowing background animation */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Deep black background */}
+        <div className="absolute inset-0 bg-black"></div>
+        
+        {/* Animated white flowing orbs using framer-motion */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/25 rounded-full blur-3xl"
+          animate={{
+            x: [0, 80, 20, -60, 0],
+            y: [0, -30, 40, -10, 0],
+            scale: [1, 1.1, 0.98, 1.05, 1]
+          }}
+          transition={{
+            duration: 20,
+            ease: "easeInOut",
+            repeat: Infinity
+          }}
+        />
+        <motion.div
+          className="absolute top-3/4 right-1/3 w-[500px] h-[500px] bg-white/18 rounded-full blur-3xl"
+          animate={{
+            x: [0, -100, -40, 80, 0],
+            y: [0, 50, -20, 30, 0],
+            scale: [1, 1.08, 0.95, 1.02, 1]
+          }}
+          transition={{
+            duration: 30,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 2
+          }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/3 w-80 h-80 bg-white/22 rounded-full blur-3xl"
+          animate={{
+            x: [0, 100, 30, -80, 0],
+            y: [0, -40, 25, -20, 0],
+            scale: [1, 1.15, 0.92, 1.08, 1]
+          }}
+          transition={{
+            duration: 25,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 4
+          }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/15 rounded-full blur-3xl"
+          animate={{
+            x: [0, -60, 50, -30, 0],
+            y: [0, 40, -30, 10, 0],
+            scale: [1, 1.05, 0.97, 1.1, 1]
+          }}
+          transition={{
+            duration: 18,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 1
+          }}
+        />
+      </div>
       
-      <main className="relative z-10 w-full h-full flex flex-col">
-        {/* Top navigation */}
-        <div className="flex items-center justify-between w-full px-8 pt-8">
-          <Link href="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm uppercase tracking-widest">Back</span>
-          </Link>
-          
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-white/40 mb-1">The Ritual</div>
-            <div className="text-lg font-serif text-white">{selectedDomain.title}</div>
-          </div>
-          
-          <div className="w-24" /> {/* Spacer for centering */}
+      <header className="relative z-10 flex justify-between items-center p-6">
+        <Link 
+          href="/" 
+          className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
+        >
+          <ArrowLeft size={14} />
+          <span>Back to Chart</span>
+        </Link>
+        
+        <div className="flex items-center gap-2">
+          <div className="h-px w-12 bg-white/15"></div>
+          <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
+          <div className="h-px w-12 bg-white/15"></div>
         </div>
         
-        {/* Central Carousel */}
-        <div className="flex-1 flex items-center justify-center w-full">
+        <div className="w-8"></div>
+      </header>
+      
+      <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)]">
+        {/* Top title - Smaller size */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
+            <span className="text-4xl md:text-6xl italic font-light" style={{ 
+              fontFamily: 'serif', 
+              fontStyle: 'italic',
+              fontWeight: '300',
+              letterSpacing: '0.05em'
+            }}>Select</span>
+            <br />
+            <span className="font-bold" style={{ 
+              letterSpacing: '-0.02em',
+              fontWeight: '700'
+            }}>EXPLORATION DOMAIN</span>
+          </h2>
+          <p className="text-xs text-white/50 tracking-[0.5em] uppercase">THE INFINITE ASTRAL SELECTION WHEEL</p>
+        </div>
+        
+        {/* Main content area with carousel layout */}
+        <div className="relative flex flex-col items-center justify-center pb-12">
+          {/* 3-card carousel container */}
           <div className="relative w-full max-w-4xl flex justify-center items-center">
             {/* Background circle outline */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -201,7 +278,7 @@ export default function RitualPage() {
                 >
                   {/* Modern card container */}
                   <div
-                    className={`relative w-[280px] h-[340px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
+                    className={`relative w-[240px] sm:w-[280px] h-[300px] sm:h-[340px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
                       ${slot === "active" ? 
                         'bg-black/80 backdrop-blur-sm border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.8)]' : 
                         'bg-black/60 backdrop-blur-sm border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.6)]'}
@@ -242,10 +319,10 @@ export default function RitualPage() {
           </div>
           
           {/* Domain navigation buttons */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl flex justify-between pointer-events-none">
+          <div className="relative w-full max-w-5xl flex justify-between mt-12">
             <motion.button
               onClick={handlePrevDomain}
-              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all pointer-events-auto overflow-hidden group"
+              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all overflow-hidden group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               aria-label="Previous domain"
@@ -259,7 +336,7 @@ export default function RitualPage() {
             
             <motion.button
               onClick={handleNextDomain}
-              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all pointer-events-auto overflow-hidden group"
+              className="relative bg-black/40 backdrop-blur-md rounded-full border border-white/30 p-3 text-white/90 transition-all overflow-hidden group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               aria-label="Next domain"
@@ -271,49 +348,57 @@ export default function RitualPage() {
               <ArrowRight size={20} className="relative z-10" />
             </motion.button>
           </div>
-        </div>
-        
-        {/* Custom intention input */}
-        <div className="relative z-20 mt-28 w-full max-w-lg mx-auto">
-          <div className="relative flex items-center w-full">
-            <input
-              type="text"
-              value={intention}
-              onChange={(e) => setIntention(e.target.value)}
-              placeholder="What do you want to ask? e.g., How can I improve my career luck?"
-              maxLength={200}
-              className="w-full h-14 bg-white/05 border border-white/20 rounded-lg px-6 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
-            />
-            
-            {/* Character count */}
-            <div className="absolute right-6 text-xs text-white/60 font-mono">
-              {intention.length}/200
+          
+          {/* Custom intention input */}
+          <div className="relative z-20 mt-28 w-full max-w-lg">
+            <div className="relative flex items-center w-full">
+              <input
+                type="text"
+                value={intention}
+                onChange={(e) => setIntention(e.target.value)}
+                placeholder="What do you want to ask? e.g., How can I improve my career luck?"
+                maxLength={200}
+                className="w-full h-14 bg-white/05 border border-white/20 rounded-lg px-6 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
+              />
+              
+              {/* Character count */}
+              <div className="absolute right-6 text-xs text-white/60 font-mono">
+                {intention.length}/200
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Bottom Selector Bar */}
-        <div className="relative z-20 mt-16 w-full max-w-md mx-auto mb-12">
-          <div className="flex flex-col gap-6">
-            {/* Input and domain info */}
-            <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-full border border-white/30 p-3">
-              {/* Current domain icon */}
-              <div className="p-4 rounded-full bg-white/20 border border-white/30">
-                <div className="text-white text-lg">
-                  {selectedDomain.icon}
+          
+          {/* Bottom Selector Bar */}
+          <div className="relative z-20 mt-16 w-full max-w-md mb-12">
+            <div className="flex flex-col gap-6">
+              {/* Input and domain info */}
+              <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-full border border-white/30 p-3">
+                {/* Current domain icon */}
+                <div className="p-4 rounded-full bg-white/20 border border-white/30">
+                  <div className="text-white text-lg">
+                    {selectedDomain.icon}
+                  </div>
+                </div>
+                
+                {/* Current domain name */}
+                <div className="text-center flex-1 mx-4">
+                  <div className="text-base text-white font-medium">{selectedDomain.title}</div>
                 </div>
               </div>
               
-              {/* Current domain name */}
-              <div className="text-center flex-1 mx-4">
-                <div className="text-base text-white font-medium">{selectedDomain.title}</div>
-              </div>
+              {/* Confirm button */}
+              <motion.button
+                onClick={handleBeginSession}
+                className="w-full bg-white text-black py-5 rounded-full text-sm font-bold tracking-widest uppercase transition-all"
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: '0 8px 30px rgba(255,255,255,0.4)'
+                }}
+                whileTap={{ scale: 0.97 }}
+              >
+                BEGIN RITUAL
+              </motion.button>
             </div>
-            
-            {/* Confirm button */}
-            <CosmicButton onClick={handleBeginSession}>
-              BEGIN RITUAL
-            </CosmicButton>
           </div>
         </div>
       </main>

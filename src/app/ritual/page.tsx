@@ -175,9 +175,9 @@ export default function RitualChamberPage() {
       
       <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)]">
         {/* Top title - Smaller size */}
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-6xl font-serif mb-4 text-white tracking-tight">
-            <span className="text-5xl md:text-7xl italic font-light" style={{ 
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
+            <span className="text-4xl md:text-6xl italic font-light" style={{ 
               fontFamily: 'serif', 
               fontStyle: 'italic',
               fontWeight: '300',
@@ -193,7 +193,7 @@ export default function RitualChamberPage() {
         </div>
         
         {/* Main content area with carousel layout */}
-        <div className="relative flex flex-col items-center justify-center min-h-[600px]">
+        <div className="relative flex flex-col items-center justify-center pb-12">
           {/* 3-card carousel container */}
           <div className="relative w-full max-w-4xl flex justify-center items-center">
             {/* Background circle outline */}
@@ -226,7 +226,7 @@ export default function RitualChamberPage() {
                 >
                   {/* Modern card container */}
                   <div
-                    className={`relative w-[320px] h-[400px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
+                    className={`relative w-[280px] h-[340px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
                       ${slot === "active" ? 
                         'bg-black/80 backdrop-blur-sm border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.8)]' : 
                         'bg-black/60 backdrop-blur-sm border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.6)]'}
@@ -244,15 +244,15 @@ export default function RitualChamberPage() {
                     )}
                     
                     {/* Card content */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 gap-8">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 gap-6">
                       {/* Domain icon */}
-                      <div className={`text-white transition-all duration-400 ${slot === "active" ? 'text-5xl opacity-100' : 'text-4xl opacity-80'}`}>
+                      <div className={`text-white transition-all duration-400 ${slot === "active" ? 'text-4xl opacity-100' : 'text-3xl opacity-80'}`}>
                         {item.icon}
                       </div>
                       
                       {/* Domain title */}
                       <div className="text-center">
-                        <h3 className={`font-serif mb-3 transition-all duration-400 ${slot === "active" ? 'text-4xl text-white opacity-100' : 'text-3xl text-white/90'}`} style={{ letterSpacing: '-0.02em' }}>
+                        <h3 className={`font-serif mb-2 transition-all duration-400 ${slot === "active" ? 'text-3xl text-white opacity-100' : 'text-2xl text-white/90'}`} style={{ letterSpacing: '-0.02em' }}>
                           {item.title}
                         </h3>
                         <p className={`tracking-[0.3em] uppercase transition-all duration-400 ${slot === "active" ? 'text-xs text-white/70' : 'text-[10px] text-white/50'}`}>
@@ -298,7 +298,7 @@ export default function RitualChamberPage() {
           </div>
           
           {/* Custom intention input */}
-          <div className="relative z-20 mt-20 w-full max-w-lg">
+          <div className="relative z-20 mt-28 w-full max-w-lg">
             <div className="relative">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-white/20 rounded-lg blur-md opacity-50"></div>
@@ -320,7 +320,7 @@ export default function RitualChamberPage() {
           </div>
           
           {/* Bottom Selector Bar */}
-          <div className="relative z-20 mt-16 w-full max-w-md">
+          <div className="relative z-20 mt-16 w-full max-w-md mb-12">
             <div className="flex flex-col gap-6">
               {/* Input and domain info */}
               <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-full border border-white/30 p-3">

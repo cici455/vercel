@@ -143,7 +143,7 @@ export default function RitualChamberPage() {
   };
 
   return (
-    <div className="h-screen w-full overflow-hidden flex flex-col bg-black text-white font-serif relative">
+    <div className="min-h-screen w-full bg-black text-white font-serif relative">
       {/* Hide scrollbar */}
       <style jsx global>{`
         ::-webkit-scrollbar {
@@ -218,49 +218,47 @@ export default function RitualChamberPage() {
         />
       </div>
       
-      {/* Scrollable Wrapper - This is where scrolling happens */}
-      <div className="flex-1 h-full overflow-y-auto relative z-10">
-        {/* Content Container - Can grow with min-h-screen */}
-        <div className="min-h-screen pb-20">
-          <header className="relative z-10 flex justify-between items-center p-6">
-            <Link 
-              href="/" 
-              className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
-            >
-              <ArrowLeft size={14} />
-              <span>Back to Chart</span>
-            </Link>
-            
-            <div className="flex items-center gap-2">
-              <div className="h-px w-12 bg-white/15"></div>
-              <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
-              <div className="h-px w-12 bg-white/15"></div>
-            </div>
-            
-            <div className="w-8"></div>
-          </header>
+      {/* Main content - relative positioning to take up space */}
+      <div className="relative z-10">
+        <header className="relative z-10 flex justify-between items-center p-6">
+          <Link 
+            href="/" 
+            className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Chart</span>
+          </Link>
           
-          <main className="relative z-10 container mx-auto px-4 py-12">
-        {/* Top title - Smaller size */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
-            <span className="text-4xl md:text-6xl italic font-light" style={{ 
-              fontFamily: 'serif', 
-              fontStyle: 'italic',
-              fontWeight: '300',
-              letterSpacing: '0.05em'
-            }}>Select</span>
-            <br />
-            <span className="font-bold" style={{ 
-              letterSpacing: '-0.02em',
-              fontWeight: '700'
-            }}>EXPLORATION DOMAIN</span>
-          </h2>
-          <p className="text-xs text-white/50 tracking-[0.5em] uppercase">THE INFINITE ASTRAL SELECTION WHEEL</p>
-        </div>
+          <div className="flex items-center gap-2">
+            <div className="h-px w-12 bg-white/15"></div>
+            <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
+            <div className="h-px w-12 bg-white/15"></div>
+          </div>
+          
+          <div className="w-8"></div>
+        </header>
         
-        {/* Main content area with carousel layout */}
-        <div className="relative flex flex-col items-center justify-center pb-12">
+        <main className="relative z-10 container mx-auto px-4 py-12">
+          {/* Top title - Smaller size */}
+          <div className="text-center mb-16 pt-8">
+            <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
+              <span className="text-4xl md:text-6xl italic font-light" style={{ 
+                fontFamily: 'serif', 
+                fontStyle: 'italic',
+                fontWeight: '300',
+                letterSpacing: '0.05em'
+              }}>Select</span>
+              <br />
+              <span className="font-bold" style={{ 
+                letterSpacing: '-0.02em',
+                fontWeight: '700'
+              }}>EXPLORATION DOMAIN</span>
+            </h2>
+            <p className="text-xs text-white/50 tracking-[0.5em] uppercase">THE INFINITE ASTRAL SELECTION WHEEL</p>
+          </div>
+          
+          {/* Main content area with carousel layout */}
+          <div className="relative flex flex-col items-center pb-12">
           {/* 3-card carousel container */}
           <div className="relative w-full max-w-4xl flex justify-center items-center">
             {/* Background circle outline */}
@@ -475,8 +473,7 @@ export default function RitualChamberPage() {
           </div>
         </div>
       </main>
+      </div>
     </div>
-  </div>
-</div>
   );
 }

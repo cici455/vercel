@@ -94,7 +94,7 @@ function ConsultationForm() {
   };
 
   if (showDashboard) {
-    return <DashboardView formData={formData} onBack={() => setShowDashboard(false)} />;
+    return <DashboardView userData={formData} onEnterCouncil={() => console.log('Entering Council...')} onBack={() => setShowDashboard(false)} />;
   }
 
   return (

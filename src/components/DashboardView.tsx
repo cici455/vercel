@@ -49,6 +49,7 @@ export type FocusedCard = CardItem | null;
 export interface DashboardViewProps {
   userData: any;
   onEnterCouncil: () => void;
+  onBack: () => void;
 }
 
 // --- 0. 全局样式 (字体 & 旋转动画) ---
@@ -196,7 +197,7 @@ const PlanetRow = ({ item, onClick }: { item: CardItem; onClick: (item: CardItem
 };
 
 // --- 4. Ritual Focus Modal Component ---
-const RitualFocusModal = ({ item, onClose, onEnterCouncil }: { item: CardItem; onClose: () => void; onEnterCouncil: () => void }) => {
+const RitualFocusModal = ({ item, onClose, onEnterCouncil, onBack }: { item: CardItem; onClose: () => void; onEnterCouncil: () => void; onBack: () => void }) => {
   const getIcon = () => {
     if (item.kind === 'trinity') {
       switch (item.slot) {
@@ -291,9 +292,14 @@ const RitualFocusModal = ({ item, onClose, onEnterCouncil }: { item: CardItem; o
           >
             ENTER COUNCIL
           </button>
-          <button onClick={onClose} className="text-white/60 hover:text-white text-sm font-cinzel">
-            CLOSE
-          </button>
+          <div className="flex gap-4">
+            <button onClick={onBack} className="text-white/60 hover:text-white text-sm font-cinzel">
+              BACK TO FORM
+            </button>
+            <button onClick={onClose} className="text-white/60 hover:text-white text-sm font-cinzel">
+              CLOSE
+            </button>
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -434,16 +440,23 @@ const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil 
               item={focusedCard} 
               onClose={handleCloseModal} 
               onEnterCouncil={onEnterCouncil} 
+              onBack={onBack}
             />
           )}
           
-          {/* Enter Council Button */}
+          {/* Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="mt-12 relative z-10"
+            className="mt-12 relative z-10 flex gap-6"
           >
+            <button
+              onClick={onBack}
+              className="bg-black/50 border border-white/30 text-white py-5 px-12 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-black/80 transition-all"
+            >
+              BACK TO FORM
+            </button>
             <button
               onClick={onEnterCouncil}
               className="bg-white text-black py-5 px-12 rounded-full text-sm font-bold tracking-widest uppercase hover:scale-105 transition-all"

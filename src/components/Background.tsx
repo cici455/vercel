@@ -15,12 +15,11 @@ export default function Background() {
     let animationFrameId: number;
     let particles: Particle[] = [];
 
-    // --- 关键参数配置 ---
-    // 数量极少，尺寸巨大，才能形成"流体"
-    const particleCount = 5;
-    const minRadius = 300;
-    const maxRadius = 500;
-    const speed = 1.5; // 速度稍快一点，让形态变化更明显
+    // --- 黄金平衡参数 ---
+    const particleCount = 7; // 数量适中
+    const minRadius = 80;    // 最小像橙子
+    const maxRadius = 160;   // 最大像西瓜，留出足够的黑色空间
+    const speed = 0.6;       // 慢速流动，优雅一点
 
     class Particle {
       x: number;
@@ -31,7 +30,6 @@ export default function Background() {
 
       constructor() {
         this.radius = Math.random() * (maxRadius - minRadius) + minRadius;
-        // 让粒子初始位置分散在屏幕各个角落
         this.x = Math.random() * canvas!.width;
         this.y = Math.random() * canvas!.height;
         this.vx = (Math.random() - 0.5) * speed;
@@ -42,7 +40,6 @@ export default function Background() {
         this.x += this.vx;
         this.y += this.vy;
 
-        // 碰到边界反弹
         if (this.x - this.radius < 0 || this.x + this.radius > canvas!.width) this.vx *= -1;
         if (this.y - this.radius < 0 || this.y + this.radius > canvas!.height) this.vy *= -1;
       }
@@ -50,7 +47,6 @@ export default function Background() {
       draw() {
         if (!ctx) return;
         ctx.beginPath();
-        // 纯白色
         ctx.fillStyle = "rgba(255, 255, 255, 1)";
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
@@ -101,11 +97,8 @@ export default function Background() {
         zIndex: 0,
         pointerEvents: "none",
         background: "transparent",
-        // 这里的 Blur 和 Contrast 必须配合巨大的粒子半径
-        // Blur 60px 把球体模糊成云
-        // Contrast 50 把云的边缘切得锐利，形成液态感
-        filter: "blur(60px) contrast(50)",
-        mixBlendMode: "screen",
+        filter: "blur(30px) contrast(20)", // 降低模糊半径，让黑白分明
+        mixBlendMode: "normal", // 去掉 screen，防止背景发灰
       }}
     />
   );

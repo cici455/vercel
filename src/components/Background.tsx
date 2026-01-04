@@ -96,7 +96,7 @@ const Background: React.FC = () => {
 
       // Step 3: Draw all particles with blur and contrast effects
       ctx.save();
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Pure white with good opacity
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Pure white with high opacity (0.9)
       
       particles.current.forEach(particle => {
         ctx.beginPath();
@@ -134,7 +134,8 @@ const Background: React.FC = () => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          filter: 'blur(80px) contrast(5)'
+          backgroundColor: 'transparent',
+          filter: 'blur(40px) contrast(20)'
         }}
       />
     </div>

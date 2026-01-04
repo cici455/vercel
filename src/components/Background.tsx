@@ -94,11 +94,11 @@ export default function Background() {
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 0,
+        zIndex: -1, // 关键：设为 -1，作为真正的壁纸
         pointerEvents: "none",
         background: "transparent",
-        filter: "blur(30px) contrast(20)", // 降低模糊半径，让黑白分明
-        mixBlendMode: "normal", // 去掉 screen，防止背景发灰
+        filter: "blur(30px) contrast(20)",
+        mixBlendMode: "normal",
       }}
     />
   );

@@ -6,8 +6,7 @@ import { Sphere, Points, PointMaterial } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import DashboardView from "@/components/DashboardView";
-import ConstellationBackground from "@/components/canvas/ConstellationBackground"; // Import new background
-import Background from "@/components/Background"; // Import interactive background
+import ConstellationBackground from "@/components/canvas/ConstellationBackground";
 
 // --- Camera Rig for Transitions ---
 function CameraRig({ entered }: { entered: boolean }) {
@@ -48,32 +47,39 @@ function ConsultationForm() {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     
     if (value.length >= 1) {
-      searchTimeout.current = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/cities?q=${encodeURIComponent(value)}`);
-          if (!res.ok) throw new Error('Failed to fetch cities');
-          const data = await res.json();
-          setCitySuggestions(data);
-          setShowSuggestions(true);
-        } catch (err) {
-          console.error(err);
-          setCitySuggestions([]); // Clear on error
-        }
+      setShowSuggestions(true);
+      searchTimeout.current = setTimeout(() => {
+        // Simple mock suggestions - in production, use an actual city API
+        const mockCities = [
+          { name: "New York", lat: 40.7128, lng: -74.0060 },
+          { name: "Los Angeles", lat: 34.0522, lng: -118.2437 },
+          { name: "London", lat: 51.5074, lng: -0.1278 },
+          { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
+          { name: "Paris", lat: 48.8566, lng: 2.3522 },
+          { name: "Berlin", lat: 52.5200, lng: 13.4050 },
+          { name: "Sydney", lat: -33.8688, lng: 151.2093 },
+          { name: "Dubai", lat: 25.2048, lng: 55.2708 },
+          { name: "Singapore", lat: 1.3521, lng: 103.8198 },
+          { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
+          { name: "Shanghai", lat: 31.2304, lng: 121.4737 },
+          { name: "Beijing", lat: 39.9042, lng: 116.4074 },
+          { name: "Moscow", lat: 55.7558, lng: 37.6173 },
+          { name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729 },
+          { name: "Cape Town", lat: -33.9249, lng: 18.4241 },
+        ].filter(city => 
+          city.name.toLowerCase().includes(value.toLowerCase())
+        );
+        
+        setCitySuggestions(mockCities);
       }, 300);
     } else {
-      setCitySuggestions([]);
       setShowSuggestions(false);
+      setCitySuggestions([]);
     }
   };
 
-  const selectCity = (city: any) => {
-    // Store lat/lng from the selected city object
-    setFormData({
-      ...formData, 
-      city: `${city.name}, ${city.country}`,
-      lat: city.lat || 0,
-      lng: city.lng || 0
-    });
+  const handleCitySelect = (city: any) => {
+    setFormData({...formData, city: city.name, lat: city.lat, lng: city.lng});
     setShowSuggestions(false);
   };
 
@@ -81,351 +87,183 @@ function ConsultationForm() {
     e.preventDefault();
     setStatus("loading");
     
-    // Simulate API call or call the real API
-    try {
-      const res = await fetch('/api/consult', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-      console.log(data);
-      setStatus("success");
-      // Short delay before showing dashboard to allow "success" state to trigger animations if needed
-      // But for now, we can switch immediately or let the parent handle it.
-      // Actually, we should let the user see "Fate Aligned" for a moment, then transition?
-      // Or just replace the form content directly.
-      // Let's modify the parent to handle the view switching based on status.
-      
-      // For this implementation, we'll keep the "Fate Aligned" message for 2 seconds, then switch.
-      setTimeout(() => setShowDashboard(true), 2000);
-      
-    } catch (err) {
-      console.error(err);
-      setStatus("idle");
-    }
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setStatus("success");
   };
 
   if (showDashboard) {
-    return (
-      <div className="relative w-full h-screen bg-black overflow-hidden">
-        {/* Background Layer - Independent of 3D Scene */}
-        <ConstellationBackground />
-        
-        {/* Foreground Content - Allow Scrolling */}
-        <div className="relative z-10 w-full h-full overflow-y-auto pointer-events-auto">
-           <DashboardView userData={formData} onEnterCouncil={() => console.log("Enter Council")} />
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "success") {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0 }}
-        className="relative z-20 text-center text-white p-8 border border-white/20 rounded-2xl backdrop-blur-md bg-black/40 max-w-md mx-4"
-      >
-        <h2 className="text-2xl font-serif mb-4" style={{ fontFamily: "'Cinzel', serif" }}>
-          Fate Aligned
-        </h2>
-        <p className="text-gray-300 tracking-widest text-sm leading-relaxed">
-          Your request has been received by the cosmos.
-          <br/>
-          Initializing Astral Audit...
-        </p>
-      </motion.div>
-    );
+    return <DashboardView formData={formData} onBack={() => setShowDashboard(false)} />;
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -50 }}
-      transition={{ duration: 1, delay: 0.5 }}
-      className={`relative z-20 w-full ${showDashboard ? 'max-w-4xl' : 'max-w-lg'} px-8`}
-    >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-8 rounded-2xl border-2 border-white/30 bg-black/30 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.05)_0_0_30px_rgba(255,255,255,0.02)]">
-        <h2 className="text-xl text-center text-white/80 font-serif tracking-[0.2em] mb-4" style={{ fontFamily: "'Cinzel', serif" }}>
-          Identify Yourself
-        </h2>
+    <div className="w-full max-w-2xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden"
+      >
+        {/* Ambient glow effects */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">First Name</label>
-            <input 
-              required
-              type="text" 
-              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
-              value={formData.firstName}
-              onChange={e => setFormData({...formData, firstName: e.target.value})}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Last Name</label>
-            <input 
-              required
-              type="text" 
-              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
-              value={formData.lastName}
-              onChange={e => setFormData({...formData, lastName: e.target.value})}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Birth Date</label>
-            <input 
-              required
-              type="text"
-              placeholder="MM/DD/YYYY"
-              maxLength={10}
-              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
-              value={formData.date}
-              onChange={(e) => {
-                let v = e.target.value.replace(/\D/g, '');
-                if (v.length > 8) v = v.slice(0, 8);
-                if (v.length >= 5) {
-                  v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
-                } else if (v.length >= 3) {
-                  v = `${v.slice(0, 2)}/${v.slice(2)}`;
-                }
-                setFormData({...formData, date: v});
-              }}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Birth Time</label>
-            <input 
-              required
-              type="time" 
-              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
-              value={formData.time}
-              onChange={e => setFormData({...formData, time: e.target.value})}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Birth City</label>
-          <input 
-            required
-            type="text" 
-            className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
-            value={formData.city}
-            onChange={handleCityChange}
-            onFocus={() => formData.city.length >= 1 && setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            autoComplete="off"
-          />
-          {showSuggestions && citySuggestions.length > 0 && (
-            <ul className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-black/80 border border-white/20 rounded-lg shadow-lg z-50 custom-scrollbar backdrop-blur-sm">
-              {citySuggestions.map((city, i) => (
-                <li 
-                  key={i}
-                  className="px-4 py-2 text-sm text-white hover:bg-white/10 cursor-pointer transition-colors border-b border-white/10 last:border-0"
-                  onClick={() => selectCity(city)}
+        <div className="relative z-10">
+          <motion.h2 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-3xl md:text-4xl font-serif text-white mb-8 text-center tracking-wide"
+          >
+            ENTER YOUR MARK
+          </motion.h2>
+          
+          {status === "success" ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-12"
+            >
+              <div className="text-6xl mb-4">✦</div>
+              <h3 className="text-2xl font-serif text-white mb-4">FATE SEALED</h3>
+              <p className="text-white/60 mb-8">The Council will review your consultation.</p>
+              <button 
+                onClick={() => setShowDashboard(true)}
+                className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full transition-all border border-white/20"
+              >
+                VIEW YOUR CHART
+              </button>
+            </motion.div>
+          ) : status === "loading" ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12"
+            >
+              <div className="inline-block w-16 h-16 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mb-4"></div>
+              <p className="text-white/60 animate-pulse">CONSULTING THE COUNCIL...</p>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
                 >
-                  <span className="text-white font-medium">{city.name}</span>
-                  <span className="text-xs text-white/70 ml-2">{city.country}</span>
-                </li>
-              ))}
-            </ul>
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Name</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                      placeholder="FIRST"
+                      required
+                    />
+                  </div>
+                </motion.div>
+                
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Surname</label>
+                  <input 
+                    type="text" 
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder="LAST"
+                    required
+                  />
+                </motion.div>
+              </div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Place of Birth</label>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={formData.city}
+                    onChange={handleCityChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder="CITY"
+                    required
+                  />
+                  {showSuggestions && citySuggestions.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute top-full left-0 w-full bg-black/90 backdrop-blur-lg border border-white/10 rounded-lg mt-1 max-h-48 overflow-y-auto z-50"
+                    >
+                      {citySuggestions.map((city, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleCitySelect(city)}
+                          className="w-full text-left px-4 py-3 text-white/80 hover:bg-white/10 transition-colors text-sm"
+                        >
+                          {city.name}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="grid grid-cols-2 gap-6"
+              >
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Date</label>
+                  <input 
+                    type="date" 
+                    value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Time</label>
+                  <input 
+                    type="time" 
+                    value={formData.time}
+                    onChange={(e) => setFormData({...formData, time: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+                    required
+                  />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <button 
+                  type="submit"
+                  className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-lg transition-all border border-white/20 mt-4 text-sm uppercase tracking-widest"
+                >
+                  REQUEST COUNSEL
+                </button>
+              </motion.div>
+            </form>
           )}
         </div>
-
-        <button 
-          type="submit"
-          disabled={status === "loading"}
-          className="mt-6 w-full h-12 bg-white/05 border border-white/30 rounded-lg text-white font-medium tracking-[0.1em] uppercase hover:bg-white/10 hover:border-white/50 transition-all disabled:opacity-50"
-        >
-          {status === "loading" ? "Transmitting..." : "Submit to the Void"}
-        </button>
-      </form>
-    </motion.div>
-  );
-}
-
-// --- 1. The Hollow Cylinder Star Tunnel ---
-function StarTunnel() {
-  const count = 500; // Reduced for performance
-  const ref = useRef<THREE.Points>(null); // Changed mesh -> ref to match Drei usage
-  const planetZ = -12;
-  const planetRadius = 2.2;
-  const speed = 0.2; // Define speed here
-  
-  // Use a soft circle texture instead of square points
-  const starTexture = useMemo(() => {
-    // Check if we're on the client side
-    if (typeof window === 'undefined' || typeof document === 'undefined') return null;
-    
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 32;
-      canvas.height = 32;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-      
-      // Draw a soft glow circle
-      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 32, 32);
-      
-      const texture = new THREE.CanvasTexture(canvas);
-      return texture;
-    } catch (e) {
-      console.error("Failed to create star texture", e);
-      return null;
-    }
-  }, []);
-
-  // Initial positions: Sharp Hollow Cylinder reaching near the planet rim
-  const positions = useMemo(() => { // Renamed particles -> positions to match Drei prop
-    const temp = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      // Bias the distribution towards a hollow cylinder whose inner wall
-      // is slightly larger than the planet radius (so stars "touch" the rim visually)
-      const angle = Math.random() * Math.PI * 2;
-      // 65% in the inner wall close to the rim, 35% in the outer fade
-      const innerMin = planetRadius + 0.25;   // just outside the planet
-      const innerMax = planetRadius + 1.8;
-      const outerMin = innerMax;
-      const outerMax = 12.0;
-      const r = Math.random() > 0.35
-        ? innerMin + Math.random() * (innerMax - innerMin)
-        : outerMin + Math.random() * (outerMax - outerMin);
-
-      const x = r * Math.cos(angle);
-      const y = r * Math.sin(angle);
-      const z = (Math.random() - 0.5) * 80; // Long tunnel depth
-      
-      temp[i * 3] = x;
-      temp[i * 3 + 1] = y;
-      temp[i * 3 + 2] = z;
-    }
-    return temp;
-  }, [count]);
-
-  // Per-vertex colors not needed for Points/PointMaterial in this way usually, 
-  // but if we want per-star color, we pass it to geometry, not implemented in simple PointMaterial.
-  // We'll skip complex per-vertex color updates for now to save perf.
-  const texture = starTexture;
-
-  useFrame((state, delta) => {
-    if (!ref.current) return;
-    
-    // Rotate tunnel slowly
-    ref.current.rotation.z += delta * 0.05;
-
-    // Get positions array
-    const positions = ref.current.geometry.attributes.position.array as Float32Array;
-    
-    // Update each star
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      
-      // Move star towards center (z-axis)
-      positions[i3 + 2] -= speed * (1 + Math.random()); // Move along Z
-
-      // Reset if too far
-      if (positions[i3 + 2] < -20) {
-        positions[i3 + 2] = 10 + Math.random() * 5;
-        // Reset x/y to random cylinder rim
-        const r = 3.5 + Math.random() * 8; 
-        const theta = Math.random() * Math.PI * 2;
-        positions[i3] = Math.cos(theta) * r;
-        positions[i3 + 1] = Math.sin(theta) * r;
-      }
-    }
-    
-    ref.current.geometry.attributes.position.needsUpdate = true;
-    
-    // HACK: Invalidate loop to force re-render when animating
-    // Since we set frameloop="demand", we must manually request frames
-    state.invalidate();
-  });
-
-  return (
-    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
-        transparent
-        color="#ffffff"
-        size={0.03}
-        sizeAttenuation={true}
-        depthWrite={false}
-        map={texture}
-        alphaMap={texture}
-      />
-    </Points>
-  );
-}
-
-// --- 2. The Obsidian Sphere & Atmosphere ---
-function ObsidianPlanet() {
-  return (
-    <group position={[0, 0, -12]}>
-      {/* 
-        1. Core Sphere (Obsidian)
-        High polish, black, reflective.
-      */}
-      <Sphere args={[2.2, 32, 32]}>
-        <meshPhysicalMaterial 
-          color="#000000"
-          roughness={0.0}
-          metalness={0.3}
-          clearcoat={1.0} // Glass-like coating
-          clearcoatRoughness={0.1}
-          ior={1.4}
-        />
-      </Sphere>
-
-      {/* 
-        2. Volumetric Glow (Atmosphere)
-        A slightly larger sphere with a custom Fresnel-like gradient using opacity.
-        We simulate this with a simple transparent material and a back-light.
-      */}
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[2.25, 32, 32]} />
-        <meshBasicMaterial 
-          color="#444444" 
-          transparent 
-          opacity={0.15} 
-          side={THREE.BackSide} // Render inside to create depth
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      {/* 
-        3. Rim Light Ring (The "Event Horizon" Edge) 
-        Facing camera, creates the sharp white outline.
-      */}
-      <mesh position={[0, 0, -0.05]} rotation={[0, 0, 0]}>
-         <ringGeometry args={[2.2, 2.25, 128]} />
-         <meshBasicMaterial color="#ffffff" transparent opacity={0.8} side={THREE.DoubleSide} />
-      </mesh>
-
-      {/* 
-        4. Outer Halo (Soft diffuse glow)
-      */}
-      <mesh position={[0, 0, -0.1]}>
-         <ringGeometry args={[2.2, 2.8, 128]} />
-         <meshBasicMaterial color="#ffffff" transparent opacity={0.05} side={THREE.DoubleSide} />
-      </mesh>
-      
-      {/* Lights */}
-      <pointLight position={[5, 5, 5]} intensity={2} color="#ffffff" distance={20} />
-      <pointLight position={[-5, -5, 5]} intensity={1} color="#aaccff" distance={20} />
-      {/* Strong backlight for rim */}
-      <pointLight position={[0, 0, -5]} intensity={10} color="white" distance={10} />
-    </group>
+      </motion.div>
+    </div>
   );
 }
 
@@ -433,10 +271,7 @@ export default function LandingPage() {
   const [entered, setEntered] = useState(false);
 
   return (
-    <div className="relative w-full h-screen relative overflow-hidden flex flex-col justify-center items-center py-12">
-      {/* Interactive background with mouse repulsion effect */}
-      <Background />
-      
+    <div className="relative w-full h-screen relative overflow-hidden flex flex-col justify-center items-center py-12 bg-transparent">
       {/* Header & Button - Animate out when entered */}
       <AnimatePresence>
         {!entered && (

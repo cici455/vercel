@@ -77,6 +77,12 @@ const Background: React.FC = () => {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw a big red circle in the center for testing
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 100, 0, Math.PI * 2);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+
     // Draw and update particles
     particlesRef.current.forEach((particle, index) => {
       // Calculate distance from mouse
@@ -167,10 +173,15 @@ const Background: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full z-[-1]"
       onMouseMove={handleMouseMove}
       style={{
-        backgroundColor: 'black',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        zIndex: 0,
         opacity: isLoaded ? 1 : 0,
         transition: 'opacity 1s ease-in-out'
       }}

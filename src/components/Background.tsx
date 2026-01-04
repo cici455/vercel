@@ -1,163 +1,113 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 
-interface Orb {
+interface Particle {
   x: number;
   y: number;
   vx: number;
   vy: number;
   radius: number;
-  opacity: number;
-  color: string;
 }
 
 const Background: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const orbsRef = useRef<Orb[]>([]);
-  const animationRef = useRef<number | undefined>(undefined);
-
-  // Initialize glowing orbs
-  const initOrbs = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const orbs: Orb[] = [];
-    const orbCount = 12; // 10-15 glowing orbs for more dynamic effect
-
-    for (let i = 0; i < orbCount; i++) {
-      orbs.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.8, // Faster base speed for noticeable flow
-        vy: (Math.random() - 0.5) * 0.8,
-        radius: Math.random() * 200 + 100, // 100-300px radius for more orbs
-        opacity: Math.random() * 0.08 + 0.08, // 0.08-0.16 opacity for better visibility
-        color: `rgba(255, 255, 255, ${Math.random() * 0.08 + 0.08})` // Slightly brighter color
-      });
-    }
-
-    orbsRef.current = orbs;
-  };
-
-  // Handle mouse movement for repulsion effect
-  const handleMouseMove = (e: MouseEvent) => {
-    // Get mouse position relative to window
-    mouseRef.current = {
-      x: e.clientX,
-      y: e.clientY
-    };
-  };
-
-  // Handle resize
-  const handleResize = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    initOrbs();
-  };
-
-  // Animation loop
-  const animate = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw and update orbs
-    orbsRef.current.forEach((orb) => {
-      // Calculate distance from mouse for repulsion
-      const dx = mouseRef.current.x - orb.x;
-      const dy = mouseRef.current.y - orb.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const maxRepulsionDistance = 300;
-
-      // Repulsion effect - strong push when mouse is close
-      if (distance < maxRepulsionDistance && distance > 0) {
-        // Calculate repulsion force
-        const force = (maxRepulsionDistance - distance) / maxRepulsionDistance * 2;
-        
-        // Calculate angle away from mouse
-        const angle = Math.atan2(dy, dx);
-        
-        // Apply repulsion force to velocity
-        orb.vx -= Math.cos(angle) * force;
-        orb.vy -= Math.sin(angle) * force;
-      }
-
-      // Update position with base velocity
-      orb.x += orb.vx;
-      orb.y += orb.vy;
-
-      // Apply friction to slow down over time, but keep momentum
-      orb.vx *= 0.96;
-      orb.vy *= 0.96;
-
-      // Boundary check - wrap around edges smoothly
-      if (orb.x < -orb.radius) orb.x = canvas.width + orb.radius;
-      if (orb.x > canvas.width + orb.radius) orb.x = -orb.radius;
-      if (orb.y < -orb.radius) orb.y = canvas.height + orb.radius;
-      if (orb.y > canvas.height + orb.radius) orb.y = -orb.radius;
-
-      // Draw glowing orb with strong blur effect
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen'; // Additive blending for glow effect
-      
-      // Create gradient for soft edge
-      const gradient = ctx.createRadialGradient(
-        orb.x, orb.y, orb.radius * 0.2,
-        orb.x, orb.y, orb.radius
-      );
-      gradient.addColorStop(0, orb.color);
-      gradient.addColorStop(0.5, orb.color.replace(/[\d.]+\)$/, `${orb.opacity * 0.5})`));
-      gradient.addColorStop(1, orb.color.replace(/[\d.]+\)$/, '0)'));
-      
-      // Draw the orb
-      ctx.beginPath();
-      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
-      ctx.fill();
-      
-      ctx.restore();
-    });
-
-    // Recursively call animate with requestAnimationFrame
-    animationRef.current = requestAnimationFrame(animate);
-  };
+  const particles = useRef<Particle[]>([]);
+  const mouse = useRef({ x: 0, y: 0 });
+  const animationFrameId = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set canvas size
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Set canvas size to window size
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-    // Initialize orbs
-    initOrbs();
-    setIsLoaded(true);
+    // Initialize 20 particles
+    const initParticles = () => {
+      const particleArray: Particle[] = [];
+      for (let i = 0; i < 20; i++) {
+        particleArray.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5), // Random speed -0.5 to 0.5
+          vy: (Math.random() - 0.5),
+          radius: Math.random() * 200 + 100 // Radius 100-300px
+        });
+      }
+      particles.current = particleArray;
+    };
+    initParticles();
 
-    // Start animation loop
+    // Mouse move event listener
+    const handleMouseMove = (e: MouseEvent) => {
+      mouse.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Animation function
+    const animate = () => {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Step 1: Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Step 2: Update particles
+      particles.current.forEach(particle => {
+        // Base movement
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Boundary check - reverse velocity if out of bounds
+        if (particle.x - particle.radius < 0 || particle.x + particle.radius > canvas.width) {
+          particle.vx = -particle.vx;
+        }
+        if (particle.y - particle.radius < 0 || particle.y + particle.radius > canvas.height) {
+          particle.vy = -particle.vy;
+        }
+
+        // Mouse repulsion logic
+        const dx = mouse.current.x - particle.x;
+        const dy = mouse.current.y - particle.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const interactionRadius = 300;
+        const force = 3;
+
+        if (dist < interactionRadius) {
+          const angle = Math.atan2(dy, dx);
+          particle.x += Math.cos(angle) * force;
+          particle.y += Math.sin(angle) * force;
+        }
+
+        // Step 3: Draw particle with blur effect
+        ctx.save();
+        ctx.filter = 'blur(60px)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Step 4: Loop animation
+      animationFrameId.current = requestAnimationFrame(animate);
+    };
+
+    // Start animation
     animate();
 
-    // Add event listeners to window for mouse movement and resize
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup event listeners and animation
+    // Cleanup
     return () => {
+      window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
       }
     };
   }, []);
@@ -169,12 +119,8 @@ const Background: React.FC = () => {
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '100vw',
-        height: '100vh',
         pointerEvents: 'none',
-        zIndex: 0,
-        opacity: isLoaded ? 1 : 0,
-        transition: 'opacity 1s ease-in-out'
+        zIndex: 0
       }}
     />
   );

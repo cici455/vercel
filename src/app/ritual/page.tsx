@@ -351,21 +351,18 @@ export default function RitualChamberPage() {
           
           {/* Custom intention input */}
           <div className="relative z-20 mt-28 w-full max-w-lg">
-            <div className="relative">
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-white/20 rounded-lg blur-md opacity-50"></div>
+            <div className="relative flex items-center w-full">
               <input
                 type="text"
                 value={intention}
                 onChange={(e) => setIntention(e.target.value)}
                 placeholder="What do you want to ask? e.g., How can I improve my career luck?"
                 maxLength={200}
-                className="relative w-full h-18 bg-white/15 backdrop-blur-md border border-white/40 rounded-lg px-8 py-4 text-white placeholder-white/60 focus:outline-none focus:border-white/70 focus:ring-3 focus:ring-white/40 transition-all"
-                style={{ boxShadow: '0 6px 25px rgba(0,0,0,0.4)' }}
+                className="w-full h-14 bg-white rounded-lg px-6 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
               />
               
               {/* Character count */}
-              <div className="absolute top-5 right-5 text-sm text-white/60 font-mono">
+              <div className="absolute right-6 text-xs text-gray-500 font-mono">
                 {intention.length}/200
               </div>
             </div>

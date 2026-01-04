@@ -336,7 +336,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil 
       return {
         id: `trinity-${slot}`,
         kind: "trinity" as const,
-        slot: slot as const,
+        slot: slot,
         sign: card.sign,
         title: card.title,
         inscription: card.desc,

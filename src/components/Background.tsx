@@ -25,17 +25,19 @@ const Background: React.FC = () => {
     if (!canvas) return;
 
     const particles: Particle[] = [];
-    const particleCount = 150;
+    const particleCount = 200;
 
     for (let i = 0; i < particleCount; i++) {
+      // Use cyan color with higher opacity
+      const opacity = Math.random() * 0.7 + 0.5;
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 3 + 1,
-        opacity: Math.random() * 0.5 + 0.1,
-        color: `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.1})`
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
+        radius: Math.random() * 6 + 3,
+        opacity: opacity,
+        color: `rgba(0, 255, 255, ${opacity})`
       });
     }
 
@@ -119,12 +121,14 @@ const Background: React.FC = () => {
         const dy = particle.y - otherParticle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < 100) {
+        if (distance < 120) {
           ctx.beginPath();
           ctx.moveTo(particle.x, particle.y);
           ctx.lineTo(otherParticle.x, otherParticle.y);
-          ctx.strokeStyle = `rgba(255, 255, 255, ${(100 - distance) / 100 * 0.15})`;
-          ctx.lineWidth = 0.5;
+          // Use cyan color for connections with higher opacity
+          const connectionOpacity = (120 - distance) / 120 * 0.3;
+          ctx.strokeStyle = `rgba(0, 255, 255, ${connectionOpacity})`;
+          ctx.lineWidth = 1;
           ctx.stroke();
         }
       });

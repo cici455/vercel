@@ -307,7 +307,7 @@ const RitualFocusModal = ({ item, onClose, onEnterCouncil, onBack }: { item: Car
 };
 
 // --- Main Dashboard Component ---
-const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil }) => {
+const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil, onBack }) => {
   // --- Data Fetching ---
   const { chartData, loading, error } = useUserChart(userData);
   

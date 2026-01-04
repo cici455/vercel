@@ -138,9 +138,9 @@ export async function POST(req: Request) {
         `  \"turnLabel\": \"Brief, punchy title like a mission briefing\",`,
         `  \"responses\": {`,
         // 只返回当前activeAgent的回复，其他agent返回null
-        `    \"strategist\": ${activeAgent === 'strategist' ? '{\\"analysis\\": \\"Briefly state the logical conflict based on Sun sign characteristics.\\", \\"advice\\": \\"The specific strategic advice using corporate/military metaphors.\\"}' : "null"},`,
-        `    \"oracle\": ${activeAgent === 'oracle' ? '{\\"analysis\\": \\"Briefly state the emotional conflict based on Moon sign characteristics.\\", \\"advice\\": \\"The specific intuitive advice using poetic/mystical metaphors.\\"}' : "null"},`,
-        `    \"alchemist\": ${activeAgent === 'alchemist' ? '{\\"analysis\\": \\"Briefly state the synthesis of strategic and emotional perspectives.\\", \\"advice\\": \\"The specific micro-action using gaming/tech metaphors.\\"}' : "null"}` + ",",
+        `    \"strategist\": ${activeAgent === 'strategist' ? '{\\\"analysis\\\": \\"Briefly state the logical conflict based on Sun sign characteristics.\\\", \\"advice\\\": \\"The specific strategic advice using corporate/military metaphors.\\\"}' : "null"},`,
+        `    \"oracle\": ${activeAgent === 'oracle' ? '{\\\"analysis\\\": \\"Briefly state the emotional conflict based on Moon sign characteristics.\\\", \\"advice\\\": \\"The specific intuitive advice using poetic/mystical metaphors.\\\"}' : "null"},`,
+        `    \"alchemist\": ${activeAgent === 'alchemist' ? '{\\\"analysis\\\": \\"Briefly state the synthesis of strategic and emotional perspectives.\\\", \\"advice\\\": \\"The specific micro-action using gaming/tech metaphors.\\\"}' : "null"},`,
         `  }`,
         `}`
       ].join('\n');
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
         `  \"responses\": {`,
         `    \"strategist\": \"Focus on logic/risk. Start with 'Look at the data...' or 'Strategically speaking...'\",`,
         `    \"oracle\": \"Focus on feelings/shadow. Start with 'Ignore him...' or 'I feel a disturbance...'\",`,
-        `    \"alchemist\": \"Focus on synthesis/action. Start with 'Enough noise...' or 'Here is the hack...'\"` + ",",
+        `    \"alchemist\": \"Focus on synthesis/action. Start with 'Enough noise...' or 'Here is the hack...'\"`,
         `  }`,
         `}`
       ].join('\n');

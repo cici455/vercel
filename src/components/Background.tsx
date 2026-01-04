@@ -15,11 +15,12 @@ export default function Background() {
     let animationFrameId: number;
     let particles: Particle[] = [];
 
-    // 粒子配置
-    const particleCount = 6; // 只有6个巨大的光团
-    const minRadius = 250;   // 巨大
-    const maxRadius = 450;   // 更加巨大
-    const speed = 0.8;       // 稍微加快一点流动感
+    // --- 关键参数配置 ---
+    // 数量极少，尺寸巨大，才能形成"流体"
+    const particleCount = 5;
+    const minRadius = 300;
+    const maxRadius = 500;
+    const speed = 1.5; // 速度稍快一点，让形态变化更明显
 
     class Particle {
       x: number;
@@ -30,6 +31,7 @@ export default function Background() {
 
       constructor() {
         this.radius = Math.random() * (maxRadius - minRadius) + minRadius;
+        // 让粒子初始位置分散在屏幕各个角落
         this.x = Math.random() * canvas!.width;
         this.y = Math.random() * canvas!.height;
         this.vx = (Math.random() - 0.5) * speed;
@@ -40,16 +42,16 @@ export default function Background() {
         this.x += this.vx;
         this.y += this.vy;
 
-        // 边界反弹
-        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
+        // 碰到边界反弹
+        if (this.x - this.radius < 0 || this.x + this.radius > canvas!.width) this.vx *= -1;
+        if (this.y - this.radius < 0 || this.y + this.radius > canvas!.height) this.vy *= -1;
       }
 
       draw() {
         if (!ctx) return;
         ctx.beginPath();
-        // 稍微保留一点透明度让叠加处更亮
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        // 纯白色
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -66,7 +68,6 @@ export default function Background() {
 
     const animate = () => {
       if (!ctx) return;
-      // 每一帧清空画布，保持透明背景
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((particle) => {
@@ -100,9 +101,11 @@ export default function Background() {
         zIndex: 0,
         pointerEvents: "none",
         background: "transparent",
-        // 关键：大模糊 + 高对比 = 液态变形
-        filter: "blur(80px) contrast(40)",
-        mixBlendMode: "screen", // 确保光斑叠加时更亮
+        // 这里的 Blur 和 Contrast 必须配合巨大的粒子半径
+        // Blur 60px 把球体模糊成云
+        // Contrast 50 把云的边缘切得锐利，形成液态感
+        filter: "blur(60px) contrast(50)",
+        mixBlendMode: "screen",
       }}
     />
   );

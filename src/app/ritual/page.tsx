@@ -219,7 +219,7 @@ export default function RitualChamberPage() {
       </div>
       
       {/* Main content - relative positioning to take up space */}
-      <div className="relative z-10">
+      <div className="relative z-10 overflow-y-auto border-2 border-red-500">
         <header className="relative z-10 flex justify-between items-center p-6">
           <Link 
             href="/" 

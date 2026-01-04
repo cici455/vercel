@@ -35,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} h-full m-0 p-0 bg-black text-[#e2e8f0] antialiased`}>
+    <html lang="en">
+      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-[#e2e8f0] antialiased`}>
         {/* Global liquid background */}
         <Background />
         

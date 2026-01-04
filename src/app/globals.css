@@ -3,51 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --color-void: #050505;
-  --color-ethereal: #f8f8ff;
-  --color-council: #1a1a1a;
-  --color-ink: #e2e8f0;
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
 }
 
 body {
-  background-color: var(--color-void);
-  color: var(--color-ink);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  /* 确保背景是黑色的，配合 Canvas 使用 */
+  background-color: black;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-cinzel), serif;
-}
+/* --- 自定义工具类 --- */
 
-.font-display {
-  font-family: var(--font-display);
-}
-
-.glass-panel {
-  @apply bg-transparent backdrop-blur-none border-none shadow-none;
-}
-
-.glass-btn {
-  @apply bg-white/[0.03] border border-white/10 transition-all duration-500 hover:bg-white/[0.1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] cursor-pointer text-white relative overflow-hidden tracking-[0.2em] font-light;
-}
-
-.input-glass {
-  @apply bg-black/40 border border-white/15 text-white transition-colors focus:border-white/40 focus:bg-black/60 focus:outline-none placeholder:text-gray-600;
-}
-
-.glow-gold {
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-}
-
-.text-outline {
-  -webkit-text-stroke: 1px rgba(255,255,255,0.1);
-  color: transparent;
-}
-
+/* 用于普通文字的黑色光晕（防背景吞字） */
 .text-halo {
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
+/* 用于 CosmicButton 的白色发光文字 */
 .text-shadow-glow {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
 }

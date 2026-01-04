@@ -4,11 +4,13 @@ interface CosmicButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   className?: string;
+  type?: 'button' | 'submit' | 'reset';
 }
 
-const CosmicButton: React.FC<CosmicButtonProps> = ({ children, onClick, className = "" }) => {
+const CosmicButton: React.FC<CosmicButtonProps> = ({ children, onClick, className = "", type = "button" }) => {
   return (
     <button
+      type={type}
       onClick={onClick}
       className={`
         relative group overflow-hidden rounded-full 

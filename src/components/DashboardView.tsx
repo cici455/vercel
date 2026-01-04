@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CosmicButton from './CosmicButton';
 import { 
   Sun, 
   Moon, 
@@ -47,8 +48,8 @@ export type FocusedCard = CardItem | null;
 
 // --- Types ---
 interface DashboardViewProps {
-  userData: any;
-  onEnterCouncil: () => void;
+  formData: any;
+  onBack: () => void;
 }
 
 // --- 0. 全局样式 (字体 & 旋转动画) ---
@@ -56,28 +57,29 @@ const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@400;600;700&display=swap');
     
-    .font-cinzel { font-family: 'Cinzel', serif; }
-    .font-cormorant { font-family: 'Cormorant Garamond', serif; }
-
-    /* 定义星空旋转动画 */
+    @keyframes shimmer {
+      to {
+        transform: translateX(100%);
+      }
+    }
+    
     @keyframes star-rotate {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
     
-    /* 星星闪烁 */
     @keyframes twinkle {
       0%, 100% { opacity: 0.3; transform: scale(0.8); }
       50% { opacity: 1; transform: scale(1.2); }
     }
-
+    
     .star-layer {
       position: absolute;
       top: -50%;
       left: -50%;
       width: 200%;
       height: 200%;
-      animation: star-rotate 240s linear infinite; /* 缓慢旋转 */
+      animation: star-rotate 240s linear infinite;
       background-image: 
         radial-gradient(1px 1px at 10% 10%, white 100%, transparent),
         radial-gradient(1px 1px at 20% 30%, white 100%, transparent),
@@ -110,13 +112,9 @@ const SpaceEnvironment = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[60vh] bg-gradient-to-b from-indigo-900/10 to-transparent blur-3xl" />
 
       {/* 1.3 巨大的星球地平线 (The Planet Surface) */}
-      {/* 这是一个推到屏幕底部的巨大圆形，模拟地平线弧度 */}
       <div className="absolute bottom-[-60vh] left-1/2 -translate-x-1/2 w-[150vw] h-[80vh] bg-[#050510] rounded-[100%] planet-glow border-t border-white/5 overflow-hidden">
-         {/* 地表纹理 */}
          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-         {/* 大气层发光 */}
          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-cyan-900/20 to-transparent blur-xl"></div>
-         {/* Rim Light */}
          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E7D7B6]/40 to-transparent blur-[1px] shadow-[0_0_20px_rgba(231,215,182,0.1)]"></div>
       </div>
       
@@ -141,7 +139,7 @@ const OracleLine = ({ omen }: { omen: OmenOutput }) => {
         {omen.headline}
       </span>
       <p className="font-cormorant text-xl text-white/90 italic tracking-wide drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-        “{omen.omen}”
+        "{omen.omen}"
       </p>
     </motion.div>
   );
@@ -162,7 +160,7 @@ const TrinityCard = ({ item, onClick }: { item: CardItem; onClick: (item: CardIt
     <motion.div
       layoutId={item.id}
       onClick={() => onClick(item)}
-      className="bg-white/[0.04] backdrop-blur-xl border border-white/10 border-t-white/20 rounded-2xl overflow-hidden shadow-2xl hover:bg-white/[0.06] transition-all duration-500 cursor-pointer hover:shadow-[0_0_30px_rgba(231,215,182,0.05)]"
+      className="bg-white/4 backdrop-blur-xl border border-white/10 border-t-white/20 rounded-2xl overflow-hidden shadow-2xl hover:bg-white/6 transition-all duration-500 cursor-pointer hover:shadow-[0_0_30px_rgba(231,215,182,0.05)]"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
@@ -212,7 +210,7 @@ const PlanetRow = ({ item, onClick }: { item: CardItem; onClick: (item: CardItem
     <motion.div
       layoutId={item.id}
       onClick={() => onClick(item)}
-      className="bg-[#0a0a12]/40 backdrop-blur-md border border-white/5 border-t-white/10 rounded-xl overflow-hidden shadow-xl hover:bg-white/[0.03] transition-all duration-500 cursor-pointer hover:shadow-[0_0_20px_rgba(231,215,182,0.05)]"
+      className="bg-[#0a0a12]/40 backdrop-blur-md border border-white/5 border-t-white/10 rounded-xl overflow-hidden shadow-xl hover:bg-white/3 transition-all duration-500 cursor-pointer hover:shadow-[0_0_20px_rgba(231,215,182,0.05)]"
       whileHover={{ scale: 1.01 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -425,12 +423,12 @@ const RitualFocusModal = ({ item, onClose, onEnterCouncil }: { item: CardItem; o
 
               {/* Today's Influence */}
               {item.today?.status && (
-                <div className="space-y-2 p-4 bg-white/[0.03] rounded-lg border border-white/5">
+                <div className="space-y-2 p-4 bg-white/3 rounded-lg border border-white/5">
                   <h3 className="font-cinzel text-[10px] text-white/30 tracking-[0.2em] uppercase">
                     TODAY'S INFLUENCE
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`text-[9px] border rounded-full px-2 py-0.5 tracking-wider uppercase opacity-80 ${item.today.status === 'BLESSED' ? 'border-[#E7D7B6]/40 text-[#E7D7B6] bg-[#E7D7B6]/10' :
+                    <span className={`text-[9px] border rounded-full px-2 py-0.5 tracking-wider uppercase opacity-80 ${item.today?.status === 'BLESSED' ? 'border-[#E7D7B6]/40 text-[#E7D7B6] bg-[#E7D7B6]/10' :
                       item.today.status === 'PRESSURE' ? 'border-white/30 text-white/70 bg-white/5' :
                       'border-white/30 text-white/70 bg-white/5'}`}>
                       {item.today.status === 'BLESSED' ? '✨ BLESSED' :
@@ -495,8 +493,8 @@ const RitualFocusModal = ({ item, onClose, onEnterCouncil }: { item: CardItem; o
 
 
 // --- 主程序 ---
-export default function DashboardView({ userData, onEnterCouncil }: DashboardViewProps) {
-  const { chartData, loading, error } = useUserChart(userData);
+export default function DashboardView({ formData, onBack }: DashboardViewProps) {
+  const { chartData, loading, error } = useUserChart(formData);
   const [focusedCard, setFocusedCard] = useState<FocusedCard>(null);
 
   // Convert chart data to CardItem format
@@ -580,7 +578,7 @@ export default function DashboardView({ userData, onEnterCouncil }: DashboardVie
            <h1 className="font-cinzel text-lg text-white tracking-[0.4em] uppercase drop-shadow-lg">Celestial Chart</h1>
            <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/50"></div>
         </div>
-        <p className="font-cormorant text-gray-400 italic">Looking up from {userData?.city || "Unknown Origin"}</p>
+        <p className="font-cormorant text-gray-400 italic">Looking up from {formData?.city || "Unknown Origin"}</p>
       </motion.header>
 
       {/* 3. 主要内容区 */}
@@ -620,44 +618,20 @@ export default function DashboardView({ userData, onEnterCouncil }: DashboardVie
             <RitualFocusModal 
               item={focusedCard} 
               onClose={handleCloseModal} 
-              onEnterCouncil={onEnterCouncil} 
+              onEnterCouncil={() => {}}
             />
           )}
           
-          {/* Part B: Floating Primary CTA */}
+          {/* Back Button */}
           <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-             <a href="/ritual">
-               <motion.button
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ 
-                   opacity: 1, 
-                   y: 0,
-                   boxShadow: ["0 0 0px rgba(255,255,255,0)", "0 0 20px rgba(255,255,255,0.05)", "0 0 0px rgba(255,255,255,0)"]
-                 }}
-                 transition={{ 
-                   opacity: { delay: 1, duration: 0.8 },
-                   y: { delay: 1, duration: 0.8 },
-                   boxShadow: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-                 }}
-                 whileHover={{ 
-                   scale: 1.02, 
-                   borderColor: "rgba(231, 215, 182, 0.4)",
-                   boxShadow: "0 0 20px rgba(231, 215, 182, 0.1)" // Champagne glow
-                 }}
-                 whileTap={{ scale: 0.98 }}
-                 className="group relative flex flex-col items-center justify-center px-12 py-3 bg-[#0a0a12] border border-white/20 rounded-full transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_rgba(0,0,0,0.6)]"
-               >
-                 {/* Shine effect */}
-                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#E7D7B6]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
-                 
-                 <span className="font-cinzel text-xs text-[#E7D7B6] font-bold tracking-[0.2em] uppercase z-10 drop-shadow-md">
-                   CHOOSE YOUR OMEN
-                 </span>
-                 <span className="text-[9px] text-white/30 tracking-widest uppercase mt-0.5 font-sans z-10 group-hover:text-white/50 transition-colors">
-                   Draw a card to set today’s session
-                 </span>
-               </motion.button>
-             </a>
+            <CosmicButton onClick={onBack} className="flex flex-col items-center justify-center px-12 py-3">
+              <span className="font-cinzel text-xs text-[#E7D7B6] font-bold tracking-[0.2em] uppercase z-10">
+                BACK TO FORM
+              </span>
+              <span className="text-[9px] text-white/30 tracking-widest uppercase mt-0.5 font-sans z-10 group-hover:text-white/50 transition-colors">
+                Return to consultation form
+              </span>
+            </CosmicButton>
           </div>
         </>
       )}

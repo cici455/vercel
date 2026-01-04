@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import DashboardView from "@/components/DashboardView";
 import ConstellationBackground from "@/components/canvas/ConstellationBackground"; // Import new background
+import Background from "@/components/Background"; // Import interactive background
 
 // --- Camera Rig for Transitions ---
 function CameraRig({ entered }: { entered: boolean }) {
@@ -433,68 +434,8 @@ export default function LandingPage() {
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden flex flex-col justify-center items-center py-12">
-      {/* Dynamic flowing white background animation */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {/* Deep black background */}
-        <div className="absolute inset-0 bg-black"></div>
-        
-        {/* Animated white flowing orbs using framer-motion */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/25 rounded-full blur-3xl"
-          animate={{
-            x: [0, 80, 20, -60, 0],
-            y: [0, -30, 40, -10, 0],
-            scale: [1, 1.1, 0.98, 1.05, 1]
-          }}
-          transition={{
-            duration: 20,
-            ease: "easeInOut",
-            repeat: Infinity
-          }}
-        />
-        <motion.div
-          className="absolute top-3/4 right-1/3 w-[500px] h-[500px] bg-white/18 rounded-full blur-3xl"
-          animate={{
-            x: [0, -100, -40, 80, 0],
-            y: [0, 50, -20, 30, 0],
-            scale: [1, 1.08, 0.95, 1.02, 1]
-          }}
-          transition={{
-            duration: 30,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 2
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/3 w-80 h-80 bg-white/22 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 30, -80, 0],
-            y: [0, -40, 25, -20, 0],
-            scale: [1, 1.15, 0.92, 1.08, 1]
-          }}
-          transition={{
-            duration: 25,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 4
-          }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/15 rounded-full blur-3xl"
-          animate={{
-            x: [0, -60, 50, -30, 0],
-            y: [0, 40, -30, 10, 0],
-            scale: [1, 1.05, 0.97, 1.1, 1]
-          }}
-          transition={{
-            duration: 18,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 1
-          }}
-        />
-      </div>
+      {/* Interactive background with mouse repulsion effect */}
+      <Background />
       
       {/* Header & Button - Animate out when entered */}
       <AnimatePresence>

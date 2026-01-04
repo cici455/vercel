@@ -25,17 +25,17 @@ const Background: React.FC = () => {
     if (!canvas) return;
 
     const orbs: Orb[] = [];
-    const orbCount = 8; // 6-10 glowing orbs
+    const orbCount = 12; // 10-15 glowing orbs for more dynamic effect
 
     for (let i = 0; i < orbCount; i++) {
       orbs.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.2, // Slow movement
-        vy: (Math.random() - 0.5) * 0.2,
-        radius: Math.random() * 250 + 150, // 150-400px radius
-        opacity: Math.random() * 0.05 + 0.05, // 0.05-0.1 opacity
-        color: `rgba(255, 255, 255, ${Math.random() * 0.05 + 0.05})` // Very light color
+        vx: (Math.random() - 0.5) * 0.5, // Faster movement for noticeable flow
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 200 + 100, // 100-300px radius for more orbs
+        opacity: Math.random() * 0.08 + 0.08, // 0.08-0.16 opacity for better visibility
+        color: `rgba(255, 255, 255, ${Math.random() * 0.08 + 0.08})` // Slightly brighter color
       });
     }
 
@@ -95,9 +95,9 @@ const Background: React.FC = () => {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Apply friction to slow down over time
-      orb.vx *= 0.96;
-      orb.vy *= 0.96;
+      // Apply friction to slow down over time, but keep more momentum
+      orb.vx *= 0.98;
+      orb.vy *= 0.98;
 
       // Wrap around edges
       if (orb.x < -orb.radius * 2) orb.x = canvas.width + orb.radius * 2;

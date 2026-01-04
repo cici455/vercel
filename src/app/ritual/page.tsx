@@ -143,7 +143,18 @@ export default function RitualChamberPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-serif relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white font-serif relative overflow-y-auto pb-20">
+      {/* Hide scrollbar */}
+      <style jsx global>{`
+        ::-webkit-scrollbar {
+          display: none;
+        }
+        * {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+      
       {/* Dynamic flowing background animation */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {/* Deep black background */}
@@ -225,7 +236,7 @@ export default function RitualChamberPage() {
         <div className="w-8"></div>
       </header>
       
-      <main className="relative z-10 container mx-auto px-4 py-12 min-h-[calc(100vh-80px)]">
+      <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Top title - Smaller size */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">

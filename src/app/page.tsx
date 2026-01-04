@@ -7,17 +7,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import DashboardView from "@/components/DashboardView";
 import ConstellationBackground from "@/components/canvas/ConstellationBackground";
+import CosmicButton from "@/components/CosmicButton";
 
 // --- Camera Rig for Transitions ---
 function CameraRig({ entered }: { entered: boolean }) {
   useFrame((state) => {
-    // Zoom in when entered
     const targetZ = entered ? 3.5 : 15;
-    // Smooth lerp
     state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 0.03);
-    
-    // Optional: look at mouse or just stay centered
-    // state.camera.lookAt(0, 0, 0);
   });
   return null;
 }
@@ -41,7 +37,6 @@ function ConsultationForm() {
 
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Reset coords if user types manually, forcing them to re-select or we need geocoding
     setFormData({...formData, city: value, lat: 0, lng: 0});
     
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
@@ -49,7 +44,6 @@ function ConsultationForm() {
     if (value.length >= 1) {
       setShowSuggestions(true);
       searchTimeout.current = setTimeout(() => {
-        // Simple mock suggestions - in production, use an actual city API
         const mockCities = [
           { name: "New York", lat: 40.7128, lng: -74.0060 },
           { name: "Los Angeles", lat: 34.0522, lng: -118.2437 },
@@ -87,7 +81,6 @@ function ConsultationForm() {
     e.preventDefault();
     setStatus("loading");
     
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     setStatus("success");
@@ -105,7 +98,6 @@ function ConsultationForm() {
         exit={{ opacity: 0, y: -20 }}
         className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden"
       >
-        {/* Ambient glow effects */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
@@ -129,12 +121,9 @@ function ConsultationForm() {
               <div className="text-6xl mb-4">✦</div>
               <h3 className="text-2xl font-serif text-white mb-4">FATE SEALED</h3>
               <p className="text-white/60 mb-8">The Council will review your consultation.</p>
-              <button 
-                onClick={() => setShowDashboard(true)}
-                className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full transition-all border border-white/20"
-              >
+              <CosmicButton onClick={() => setShowDashboard(true)}>
                 VIEW YOUR CHART
-              </button>
+              </CosmicButton>
             </motion.div>
           ) : status === "loading" ? (
             <motion.div
@@ -252,12 +241,9 @@ function ConsultationForm() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <button 
-                  type="submit"
-                  className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-lg transition-all border border-white/20 mt-4 text-sm uppercase tracking-widest"
-                >
+                <CosmicButton type="submit" className="w-full mt-4">
                   REQUEST COUNSEL
-                </button>
+                </CosmicButton>
               </motion.div>
             </form>
           )}
@@ -272,11 +258,9 @@ export default function LandingPage() {
 
   return (
     <div className="relative w-full h-screen relative overflow-hidden flex flex-col justify-center items-center py-12 bg-transparent">
-      {/* Header & Button - Animate out when entered */}
       <AnimatePresence>
         {!entered && (
           <>
-            {/* Header */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -298,7 +282,6 @@ export default function LandingPage() {
               </p>
             </motion.div>
 
-            {/* Footer Button */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -306,22 +289,14 @@ export default function LandingPage() {
               transition={{ duration: 1 }}
               className="absolute bottom-16 z-10"
             >
-              <motion.button
-                onClick={() => setEntered(true)}
-                whileHover={{ 
-                  scale: 1.05, 
-                  boxShadow: "0 0 30px rgba(255,255,255,0.2)"
-                }}
-                className="bg-transparent border-2 border-white/30 text-white/90 px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all hover:border-white/70 hover:text-white text-halo"
-              >
+              <CosmicButton onClick={() => setEntered(true)}>
                 ENTER THE VOID
-              </motion.button>
+              </CosmicButton>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Consultation Form - Animate in when entered */}
       <AnimatePresence>
         {entered && (
           <div className="pointer-events-auto">
@@ -330,29 +305,7 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      {/* 3D Scene - Render ON DEMAND and LOW DPR */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Temporarily disabled for stability */}
-        {/* <Canvas 
-          camera={{ position: [0, 0, 15], fov: 40 }}
-          dpr={[0.5, 1]} // LOWER DPR to 0.5 for stability
-          frameloop="demand" // ONLY RENDER WHEN NEEDED (saves GPU)
-          gl={{ 
-            antialias: false,
-            alpha: false,
-            preserveDrawingBuffer: false, // Disable screenshot for perf
-            powerPreference: "low-power" // Prefer stability over perf
-          }}
-        > 
-          <color attach="background" args={["#000000"]} />
-          <fog attach="fog" args={["#000000", 15, 50]} />
-          
-          <ambientLight intensity={0.2} />
-          
-          <CameraRig entered={entered} />
-          <StarTunnel />
-          
-        </Canvas> */}
       </div>
     </div>
   );

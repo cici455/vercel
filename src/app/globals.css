@@ -24,7 +24,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .glass-panel {
-  @apply bg-transparent backdrop-blur-none border-none shadow-none; /* Removed card style for ethereal look */
+  @apply bg-transparent backdrop-blur-none border-none shadow-none;
 }
 
 .glass-btn {
@@ -46,4 +46,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-halo {
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.text-shadow-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
 }

@@ -147,28 +147,28 @@ function ConsultationForm() {
       transition={{ duration: 1, delay: 0.5 }}
       className={`relative z-20 w-full ${showDashboard ? 'max-w-4xl' : 'max-w-lg'} px-8`}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-8 rounded-2xl border border-white/10 bg-black/30 backdrop-blur-md shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-8 rounded-2xl border-2 border-white/30 bg-black/30 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.05)_0_0_30px_rgba(255,255,255,0.02)]">
         <h2 className="text-xl text-center text-white/80 font-serif tracking-[0.2em] mb-4" style={{ fontFamily: "'Cinzel', serif" }}>
           Identify Yourself
         </h2>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-widest text-gray-500">First Name</label>
+            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">First Name</label>
             <input 
               required
               type="text" 
-              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
+              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
               value={formData.firstName}
               onChange={e => setFormData({...formData, firstName: e.target.value})}
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-widest text-gray-500">Last Name</label>
+            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Last Name</label>
             <input 
               required
               type="text" 
-              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
+              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
               value={formData.lastName}
               onChange={e => setFormData({...formData, lastName: e.target.value})}
             />
@@ -177,13 +177,13 @@ function ConsultationForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-widest text-gray-500">Birth Date</label>
+            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Birth Date</label>
             <input 
               required
               type="text"
               placeholder="MM/DD/YYYY"
               maxLength={10}
-              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
+              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
               value={formData.date}
               onChange={(e) => {
                 let v = e.target.value.replace(/\D/g, '');
@@ -198,11 +198,11 @@ function ConsultationForm() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] uppercase tracking-widest text-gray-500">Birth Time</label>
+            <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Birth Time</label>
             <input 
               required
               type="time" 
-              className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
+              className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
               value={formData.time}
               onChange={e => setFormData({...formData, time: e.target.value})}
             />
@@ -210,11 +210,11 @@ function ConsultationForm() {
         </div>
 
         <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] uppercase tracking-widest text-gray-500">Birth City</label>
+          <label className="text-[10px] uppercase tracking-[0.1em] font-medium text-white/80">Birth City</label>
           <input 
             required
             type="text" 
-            className="w-full h-12 bg-black border-2 border-white rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
+            className="w-full h-12 bg-white/05 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
             value={formData.city}
             onChange={handleCityChange}
             onFocus={() => formData.city.length >= 1 && setShowSuggestions(true)}
@@ -222,11 +222,11 @@ function ConsultationForm() {
             autoComplete="off"
           />
           {showSuggestions && citySuggestions.length > 0 && (
-            <ul className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-black border-2 border-white rounded-lg shadow-lg z-50 custom-scrollbar">
+            <ul className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-black/80 border border-white/20 rounded-lg shadow-lg z-50 custom-scrollbar backdrop-blur-sm">
               {citySuggestions.map((city, i) => (
                 <li 
                   key={i}
-                  className="px-4 py-2 text-sm text-white hover:bg-white/10 cursor-pointer transition-colors border-b border-white/20 last:border-0"
+                  className="px-4 py-2 text-sm text-white hover:bg-white/10 cursor-pointer transition-colors border-b border-white/10 last:border-0"
                   onClick={() => selectCity(city)}
                 >
                   <span className="text-white font-medium">{city.name}</span>
@@ -240,7 +240,7 @@ function ConsultationForm() {
         <button 
           type="submit"
           disabled={status === "loading"}
-          className="mt-6 w-full h-12 bg-black border-2 border-white rounded-lg text-white font-medium tracking-[0.1em] uppercase hover:bg-white/10 transition-all disabled:opacity-50"
+          className="mt-6 w-full h-12 bg-white/05 border border-white/30 rounded-lg text-white font-medium tracking-[0.1em] uppercase hover:bg-white/10 hover:border-white/50 transition-all disabled:opacity-50"
         >
           {status === "loading" ? "Transmitting..." : "Submit to the Void"}
         </button>

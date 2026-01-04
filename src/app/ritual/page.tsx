@@ -358,7 +358,7 @@ export default function RitualChamberPage() {
                 onChange={(e) => setIntention(e.target.value)}
                 placeholder="What do you want to ask? e.g., How can I improve my career luck?"
                 maxLength={200}
-                className="w-full h-14 bg-black border-2 border-white rounded-lg px-6 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-sm"
+                className="w-full h-14 bg-white/05 border border-white/20 rounded-lg px-6 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all shadow-sm"
               />
               
               {/* Character count */}

@@ -251,10 +251,30 @@ export default function RitualChamberPage() {
             {/* Background circle outline */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-96 h-96 border border-[rgba(231,215,182,0.15)] rounded-full"></div>
+              {/* Rotating ring animation */}
+              <motion.div 
+                className="absolute w-96 h-96 border-2 border-[rgba(231,215,182,0.1)] rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ 
+                  duration: 20, 
+                  ease: "linear", 
+                  repeat: Infinity 
+                }}
+              />
+              {/* Inner rotating ring */}
+              <motion.div 
+                className="absolute w-80 h-80 border border-[rgba(231,215,182,0.05)] rounded-full"
+                animate={{ rotate: -360 }}
+                transition={{ 
+                  duration: 25, 
+                  ease: "linear", 
+                  repeat: Infinity 
+                }}
+              />
             </div>
             
             {/* Carousel cards */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
               {visible.map(({ slot, item, index }) => (
                 <motion.div
                   key={`${slot}-${item.id}`}
@@ -268,7 +288,13 @@ export default function RitualChamberPage() {
                     scale: slot === "active" ? 1 : 0.92,
                   }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: "easeOut",
+                    type: "spring",
+                    damping: 15,
+                    stiffness: 100
+                  }}
                   whileHover={slot !== "active" ? { scale: 0.95, opacity: 0.7 } : { scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleDomainClick(index)}
@@ -276,13 +302,17 @@ export default function RitualChamberPage() {
                     zIndex: slot === "active" ? 3 : slot === "prev" ? 2 : 1,
                   }}
                 >
-                  {/* Modern card container */}
-                  <div
+                  {/* Modern card container with 3D effect */}
+                  <motion.div
                     className={`relative w-[240px] sm:w-[280px] h-[300px] sm:h-[340px] rounded-lg transition-all duration-400 ease-out cursor-pointer overflow-hidden shadow-lg
                       ${slot === "active" ? 
                         'bg-black/80 backdrop-blur-sm border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.8)]' : 
                         'bg-black/60 backdrop-blur-sm border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.6)]'}
                     `}
+                    animate={{
+                      rotateY: slot === "active" ? 0 : slot === "prev" ? 10 : -10,
+                    }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
                   >
                     {/* Subtle gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-30"></div>
@@ -297,10 +327,20 @@ export default function RitualChamberPage() {
                     
                     {/* Card content */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-6 gap-6">
-                      {/* Domain icon */}
-                      <div className={`text-white transition-all duration-400 ${slot === "active" ? 'text-4xl opacity-100' : 'text-3xl opacity-80'}`}>
+                      {/* Domain icon with pulse animation */}
+                      <motion.div 
+                        className={`text-white transition-all duration-400 ${slot === "active" ? 'text-4xl opacity-100' : 'text-3xl opacity-80'}`}
+                        animate={{
+                          scale: slot === "active" ? [1, 1.1, 1] : 1
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatType: "reverse"
+                        }}
+                      >
                         {item.icon}
-                      </div>
+                      </motion.div>
                       
                       {/* Domain title */}
                       <div className="text-center">
@@ -312,13 +352,13 @@ export default function RitualChamberPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
           
-          {/* Domain navigation buttons */}
+          {/* Wheel navigation controls */}
           <div className="relative w-full max-w-5xl flex justify-between mt-12">
             <motion.button
               onClick={handlePrevDomain}
@@ -333,6 +373,24 @@ export default function RitualChamberPage() {
               {/* Icon */}
               <ArrowLeft size={20} className="relative z-10" />
             </motion.button>
+            
+            {/* Wheel spinner indicator */}
+            <div className="flex items-center justify-center">
+              <motion.div 
+                className="w-12 h-12 rounded-full border-2 border-white/20 border-t-white flex items-center justify-center"
+                animate={{
+                  rotate: [0, 360]
+                }}
+                transition={{
+                  duration: 1,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatDelay: 1
+                }}
+              >
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </motion.div>
+            </div>
             
             <motion.button
               onClick={handleNextDomain}

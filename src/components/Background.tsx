@@ -31,15 +31,15 @@ const Background: React.FC = () => {
     // Initialize 30-40 particles
     const initParticles = () => {
       const particleArray: Particle[] = [];
-      const particleCount = Math.floor(Math.random() * 11) + 30; // 30-40 particles
+      const particleCount = Math.floor(Math.random() * 11) + 30;
       
       for (let i = 0; i < particleCount; i++) {
         particleArray.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.2, // Very slow random speed
+          vx: (Math.random() - 0.5) * 0.2,
           vy: (Math.random() - 0.5) * 0.2,
-          radius: Math.random() * 100 + 50 // Radius 50-150px
+          radius: Math.random() * 100 + 50
         });
       }
       
@@ -48,22 +48,20 @@ const Background: React.FC = () => {
     
     initParticles();
 
-    // Mouse move event listener
     const handleMouseMove = (e: MouseEvent) => {
       mouse.current = { x: e.clientX, y: e.clientY };
     };
     
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Animation function
     const animate = () => {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Step 1: Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Step 2: Update particles
+      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+      
       particles.current.forEach(particle => {
         // Mouse repulsion logic
         const dx = mouse.current.x - particle.x;
@@ -74,46 +72,31 @@ const Background: React.FC = () => {
 
         if (dist < interactionRadius) {
           const force = (interactionRadius - dist) / interactionRadius;
-          // Push particle in the opposite direction
           particle.vx -= (dx / dist) * force * strength;
           particle.vy -= (dy / dist) * force * strength;
         }
 
-        // Apply friction to slow down over time
         particle.vx *= 0.98;
         particle.vy *= 0.98;
 
-        // Base movement
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Boundary check - wrap around edges
         if (particle.x < -particle.radius) particle.x = canvas.width + particle.radius;
         if (particle.x > canvas.width + particle.radius) particle.x = -particle.radius;
         if (particle.y < -particle.radius) particle.y = canvas.height + particle.radius;
         if (particle.y > canvas.height + particle.radius) particle.y = -particle.radius;
-      });
 
-      // Step 3: Draw all particles with blur and contrast effects
-      ctx.save();
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Pure white with high opacity (0.9)
-      
-      particles.current.forEach(particle => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
         ctx.fill();
       });
-      
-      ctx.restore();
 
-      // Step 4: Loop animation
       animationFrameId.current = requestAnimationFrame(animate);
     };
 
-    // Start animation
     animate();
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('mousemove', handleMouseMove);
@@ -124,18 +107,27 @@ const Background: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black z-[-1]">
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: -1,
+      pointerEvents: 'none'
+    }}>
       <canvas
         ref={canvasRef}
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
+          width: '100vw',
+          height: '100vh',
           pointerEvents: 'none',
-          backgroundColor: 'transparent',
-          filter: 'blur(40px) contrast(20)'
+          zIndex: 0,
+          backgroundColor: 'rgba(255, 0, 0, 0.3)',
+          filter: 'none'
         }}
       />
     </div>

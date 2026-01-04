@@ -28,26 +28,31 @@ const Background: React.FC = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Initialize 20 particles
+    // Initialize 30-40 particles
     const initParticles = () => {
       const particleArray: Particle[] = [];
-      for (let i = 0; i < 20; i++) {
+      const particleCount = Math.floor(Math.random() * 11) + 30; // 30-40 particles
+      
+      for (let i = 0; i < particleCount; i++) {
         particleArray.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5), // Random speed -0.5 to 0.5
-          vy: (Math.random() - 0.5),
-          radius: Math.random() * 200 + 100 // Radius 100-300px
+          vx: (Math.random() - 0.5) * 0.2, // Very slow random speed
+          vy: (Math.random() - 0.5) * 0.2,
+          radius: Math.random() * 100 + 50 // Radius 50-150px
         });
       }
+      
       particles.current = particleArray;
     };
+    
     initParticles();
 
     // Mouse move event listener
     const handleMouseMove = (e: MouseEvent) => {
       mouse.current = { x: e.clientX, y: e.clientY };
     };
+    
     window.addEventListener('mousemove', handleMouseMove);
 
     // Animation function
@@ -60,40 +65,46 @@ const Background: React.FC = () => {
 
       // Step 2: Update particles
       particles.current.forEach(particle => {
-        // Base movement
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        // Boundary check - reverse velocity if out of bounds
-        if (particle.x - particle.radius < 0 || particle.x + particle.radius > canvas.width) {
-          particle.vx = -particle.vx;
-        }
-        if (particle.y - particle.radius < 0 || particle.y + particle.radius > canvas.height) {
-          particle.vy = -particle.vy;
-        }
-
         // Mouse repulsion logic
         const dx = mouse.current.x - particle.x;
         const dy = mouse.current.y - particle.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const interactionRadius = 300;
-        const force = 3;
+        const strength = 0.1;
 
         if (dist < interactionRadius) {
-          const angle = Math.atan2(dy, dx);
-          particle.x += Math.cos(angle) * force;
-          particle.y += Math.sin(angle) * force;
+          const force = (interactionRadius - dist) / interactionRadius;
+          // Push particle in the opposite direction
+          particle.vx -= (dx / dist) * force * strength;
+          particle.vy -= (dy / dist) * force * strength;
         }
 
-        // Step 3: Draw particle with blur effect
-        ctx.save();
-        ctx.filter = 'blur(60px)';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        // Apply friction to slow down over time
+        particle.vx *= 0.98;
+        particle.vy *= 0.98;
+
+        // Base movement
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Boundary check - wrap around edges
+        if (particle.x < -particle.radius) particle.x = canvas.width + particle.radius;
+        if (particle.x > canvas.width + particle.radius) particle.x = -particle.radius;
+        if (particle.y < -particle.radius) particle.y = canvas.height + particle.radius;
+        if (particle.y > canvas.height + particle.radius) particle.y = -particle.radius;
+      });
+
+      // Step 3: Draw all particles with blur and contrast effects
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Pure white with good opacity
+      
+      particles.current.forEach(particle => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
       });
+      
+      ctx.restore();
 
       // Step 4: Loop animation
       animationFrameId.current = requestAnimationFrame(animate);
@@ -113,16 +124,20 @@ const Background: React.FC = () => {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        pointerEvents: 'none',
-        zIndex: 0
-      }}
-    />
+    <div className="fixed top-0 left-0 w-full h-full bg-black z-[-1]">
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          filter: 'blur(80px) contrast(5)'
+        }}
+      />
+    </div>
   );
 };
 

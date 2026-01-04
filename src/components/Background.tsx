@@ -16,10 +16,10 @@ export default function Background() {
     let particles: Particle[] = [];
 
     // 粒子配置
-    const particleCount = 40; // 粒子数量
-    const minRadius = 20;     // 调大半径，确保不被吞没
-    const maxRadius = 40;
-    const speed = 0.5;        // 缓慢移动
+    const particleCount = 6; // 只有6个巨大的光团
+    const minRadius = 250;   // 巨大
+    const maxRadius = 450;   // 更加巨大
+    const speed = 0.8;       // 稍微加快一点流动感
 
     class Particle {
       x: number;
@@ -48,8 +48,8 @@ export default function Background() {
       draw() {
         if (!ctx) return;
         ctx.beginPath();
-        // 关键：纯白，不透明
-        ctx.fillStyle = "rgba(255, 255, 255, 1)";
+        // 稍微保留一点透明度让叠加处更亮
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -97,11 +97,12 @@ export default function Background() {
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 0, // 确保在文字（LUMINA）的后面
+        zIndex: 0,
         pointerEvents: "none",
-        background: "transparent", // 画布本身透明
-        // 关键滤镜：让模糊的白色粒子产生粘连效果
-        filter: "blur(15px) contrast(30)",
+        background: "transparent",
+        // 关键：大模糊 + 高对比 = 液态变形
+        filter: "blur(80px) contrast(40)",
+        mixBlendMode: "screen", // 确保光斑叠加时更亮
       }}
     />
   );

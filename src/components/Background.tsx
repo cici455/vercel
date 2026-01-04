@@ -20,7 +20,6 @@ const Background: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set canvas size to window size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -28,7 +27,6 @@ const Background: React.FC = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Initialize 30-40 particles
     const initParticles = () => {
       const particleArray: Particle[] = [];
       const particleCount = Math.floor(Math.random() * 11) + 30;
@@ -63,7 +61,6 @@ const Background: React.FC = () => {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       
       particles.current.forEach(particle => {
-        // Mouse repulsion logic
         const dx = mouse.current.x - particle.x;
         const dy = mouse.current.y - particle.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -107,30 +104,20 @@ const Background: React.FC = () => {
   }, []);
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      zIndex: -1,
-      pointerEvents: 'none'
-    }}>
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          pointerEvents: 'none',
-          zIndex: 0,
-          backgroundColor: 'rgba(255, 0, 0, 0.3)',
-          filter: 'none'
-        }}
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        zIndex: -1,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        filter: 'none'
+      }}
+    />
   );
 };
 

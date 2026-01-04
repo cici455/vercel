@@ -143,7 +143,7 @@ export default function RitualChamberPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-serif relative overflow-y-auto pb-20">
+    <div className="h-screen w-full overflow-hidden flex flex-col bg-black text-white font-serif relative">
       {/* Hide scrollbar */}
       <style jsx global>{`
         ::-webkit-scrollbar {
@@ -218,25 +218,29 @@ export default function RitualChamberPage() {
         />
       </div>
       
-      <header className="relative z-10 flex justify-between items-center p-6">
-        <Link 
-          href="/" 
-          className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
-        >
-          <ArrowLeft size={14} />
-          <span>Back to Chart</span>
-        </Link>
-        
-        <div className="flex items-center gap-2">
-          <div className="h-px w-12 bg-white/15"></div>
-          <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
-          <div className="h-px w-12 bg-white/15"></div>
-        </div>
-        
-        <div className="w-8"></div>
-      </header>
-      
-      <main className="relative z-10 container mx-auto px-4 py-12">
+      {/* Scrollable Wrapper - This is where scrolling happens */}
+      <div className="flex-1 h-full overflow-y-auto relative z-10">
+        {/* Content Container - Can grow with min-h-screen */}
+        <div className="min-h-screen pb-20">
+          <header className="relative z-10 flex justify-between items-center p-6">
+            <Link 
+              href="/" 
+              className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Chart</span>
+            </Link>
+            
+            <div className="flex items-center gap-2">
+              <div className="h-px w-12 bg-white/15"></div>
+              <h1 className="text-sm font-serif text-white/70 tracking-widest">RITUAL CHAMBER</h1>
+              <div className="h-px w-12 bg-white/15"></div>
+            </div>
+            
+            <div className="w-8"></div>
+          </header>
+          
+          <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Top title - Smaller size */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-serif mb-4 text-white tracking-tight">
@@ -472,5 +476,7 @@ export default function RitualChamberPage() {
         </div>
       </main>
     </div>
+  </div>
+</div>
   );
 }

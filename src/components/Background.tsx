@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 
-interface Particle {
+interface Orb {
   x: number;
   y: number;
   vx: number;
@@ -16,32 +16,30 @@ const Background: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const particlesRef = useRef<Particle[]>([]);
+  const orbsRef = useRef<Orb[]>([]);
   const animationRef = useRef<number | undefined>(undefined);
 
-  // Initialize particles
-  const initParticles = () => {
+  // Initialize glowing orbs
+  const initOrbs = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const particles: Particle[] = [];
-    const particleCount = 200;
+    const orbs: Orb[] = [];
+    const orbCount = 8; // 6-10 glowing orbs
 
-    for (let i = 0; i < particleCount; i++) {
-      // Use cyan color with higher opacity
-      const opacity = Math.random() * 0.7 + 0.5;
-      particles.push({
+    for (let i = 0; i < orbCount; i++) {
+      orbs.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
-        radius: Math.random() * 6 + 3,
-        opacity: opacity,
-        color: `rgba(0, 255, 255, ${opacity})`
+        vx: (Math.random() - 0.5) * 0.2, // Slow movement
+        vy: (Math.random() - 0.5) * 0.2,
+        radius: Math.random() * 250 + 150, // 150-400px radius
+        opacity: Math.random() * 0.05 + 0.05, // 0.05-0.1 opacity
+        color: `rgba(255, 255, 255, ${Math.random() * 0.05 + 0.05})` // Very light color
       });
     }
 
-    particlesRef.current = particles;
+    orbsRef.current = orbs;
   };
 
   // Handle mouse movement for repulsion effect
@@ -63,7 +61,7 @@ const Background: React.FC = () => {
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    initParticles();
+    initOrbs();
   };
 
   // Animation loop
@@ -77,67 +75,56 @@ const Background: React.FC = () => {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw a big red circle in the center for testing
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, 100, 0, Math.PI * 2);
-    ctx.fillStyle = 'red';
-    ctx.fill();
-
-    // Draw and update particles
-    particlesRef.current.forEach((particle, index) => {
-      // Calculate distance from mouse
-      const dx = mouseRef.current.x - particle.x;
-      const dy = mouseRef.current.y - particle.y;
+    // Draw and update orbs
+    orbsRef.current.forEach((orb) => {
+      // Calculate distance from mouse for repulsion
+      const dx = mouseRef.current.x - orb.x;
+      const dy = mouseRef.current.y - orb.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const maxDistance = 150;
+      const maxRepulsionDistance = 300;
 
       // Repulsion effect
-      if (distance < maxDistance) {
-        const force = (maxDistance - distance) / maxDistance;
+      if (distance < maxRepulsionDistance) {
+        const force = (maxRepulsionDistance - distance) / maxRepulsionDistance;
         const angle = Math.atan2(dy, dx);
-        particle.vx -= Math.cos(angle) * force * 0.5;
-        particle.vy -= Math.sin(angle) * force * 0.5;
+        orb.vx -= Math.cos(angle) * force * 0.8;
+        orb.vy -= Math.sin(angle) * force * 0.8;
       }
 
       // Update position
-      particle.x += particle.vx;
-      particle.y += particle.vy;
+      orb.x += orb.vx;
+      orb.y += orb.vy;
 
-      // Apply friction
-      particle.vx *= 0.98;
-      particle.vy *= 0.98;
+      // Apply friction to slow down over time
+      orb.vx *= 0.96;
+      orb.vy *= 0.96;
 
       // Wrap around edges
-      if (particle.x < 0) particle.x = canvas.width;
-      if (particle.x > canvas.width) particle.x = 0;
-      if (particle.y < 0) particle.y = canvas.height;
-      if (particle.y > canvas.height) particle.y = 0;
+      if (orb.x < -orb.radius * 2) orb.x = canvas.width + orb.radius * 2;
+      if (orb.x > canvas.width + orb.radius * 2) orb.x = -orb.radius * 2;
+      if (orb.y < -orb.radius * 2) orb.y = canvas.height + orb.radius * 2;
+      if (orb.y > canvas.height + orb.radius * 2) orb.y = -orb.radius * 2;
 
-      // Draw particle
+      // Draw glowing orb with strong blur effect
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen'; // Additive blending for glow effect
+      
+      // Create gradient for soft edge
+      const gradient = ctx.createRadialGradient(
+        orb.x, orb.y, orb.radius * 0.2,
+        orb.x, orb.y, orb.radius
+      );
+      gradient.addColorStop(0, orb.color);
+      gradient.addColorStop(0.5, orb.color.replace(/[\d.]+\)$/, `${orb.opacity * 0.5})`));
+      gradient.addColorStop(1, orb.color.replace(/[\d.]+\)$/, '0)'));
+      
+      // Draw the orb
       ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-      ctx.fillStyle = particle.color;
+      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
       ctx.fill();
-
-      // Draw connections between particles
-      particlesRef.current.forEach((otherParticle, otherIndex) => {
-        if (index === otherIndex) return;
-
-        const dx = particle.x - otherParticle.x;
-        const dy = particle.y - otherParticle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 120) {
-          ctx.beginPath();
-          ctx.moveTo(particle.x, particle.y);
-          ctx.lineTo(otherParticle.x, otherParticle.y);
-          // Use cyan color for connections with higher opacity
-          const connectionOpacity = (120 - distance) / 120 * 0.3;
-          ctx.strokeStyle = `rgba(0, 255, 255, ${connectionOpacity})`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-      });
+      
+      ctx.restore();
     });
 
     animationRef.current = requestAnimationFrame(animate);
@@ -151,8 +138,8 @@ const Background: React.FC = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Initialize particles
-    initParticles();
+    // Initialize orbs
+    initOrbs();
     setIsLoaded(true);
 
     // Start animation

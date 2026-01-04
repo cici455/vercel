@@ -433,7 +433,7 @@ export default function LandingPage() {
   const [entered, setEntered] = useState(false);
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden flex flex-col justify-center items-center py-12">
+    <div className="relative w-full h-screen relative overflow-hidden flex flex-col justify-center items-center py-12">
       {/* Interactive background with mouse repulsion effect */}
       <Background />
       

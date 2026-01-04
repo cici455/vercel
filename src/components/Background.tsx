@@ -107,15 +107,18 @@ const Background: React.FC = () => {
     <canvas
       ref={canvasRef}
       style={{
+        /* 强制覆盖在一切之上，利用 mix-blend-mode 让黑底透明 */
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100vw',
         height: '100vh',
-        pointerEvents: 'none',
-        zIndex: -1,
-        backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        filter: 'none'
+        zIndex: 50,  /* 改为正数，确保在最上层 */
+        pointerEvents: 'none', /* 让鼠标穿透，不影响点击按钮 */
+        mixBlendMode: 'screen', /* 关键：让黑底变透明，白点发光 */
+        filter: 'blur(10px) contrast(100)', /* 液态滤镜 */
+        opacity: 1,
+        backgroundColor: 'transparent' /* 透明背景 */
       }}
     />
   );

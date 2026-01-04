@@ -31,8 +31,8 @@ const Background: React.FC = () => {
       orbs.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5, // Faster movement for noticeable flow
-        vy: (Math.random() - 0.5) * 0.5,
+        vx: (Math.random() - 0.5) * 0.8, // Faster base speed for noticeable flow
+        vy: (Math.random() - 0.5) * 0.8,
         radius: Math.random() * 200 + 100, // 100-300px radius for more orbs
         opacity: Math.random() * 0.08 + 0.08, // 0.08-0.16 opacity for better visibility
         color: `rgba(255, 255, 255, ${Math.random() * 0.08 + 0.08})` // Slightly brighter color
@@ -43,14 +43,11 @@ const Background: React.FC = () => {
   };
 
   // Handle mouse movement for repulsion effect
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
+  const handleMouseMove = (e: MouseEvent) => {
+    // Get mouse position relative to window
     mouseRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: e.clientX,
+      y: e.clientY
     };
   };
 
@@ -83,27 +80,32 @@ const Background: React.FC = () => {
       const distance = Math.sqrt(dx * dx + dy * dy);
       const maxRepulsionDistance = 300;
 
-      // Repulsion effect
-      if (distance < maxRepulsionDistance) {
-        const force = (maxRepulsionDistance - distance) / maxRepulsionDistance;
+      // Repulsion effect - strong push when mouse is close
+      if (distance < maxRepulsionDistance && distance > 0) {
+        // Calculate repulsion force
+        const force = (maxRepulsionDistance - distance) / maxRepulsionDistance * 2;
+        
+        // Calculate angle away from mouse
         const angle = Math.atan2(dy, dx);
-        orb.vx -= Math.cos(angle) * force * 0.8;
-        orb.vy -= Math.sin(angle) * force * 0.8;
+        
+        // Apply repulsion force to velocity
+        orb.vx -= Math.cos(angle) * force;
+        orb.vy -= Math.sin(angle) * force;
       }
 
-      // Update position
+      // Update position with base velocity
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Apply friction to slow down over time, but keep more momentum
-      orb.vx *= 0.98;
-      orb.vy *= 0.98;
+      // Apply friction to slow down over time, but keep momentum
+      orb.vx *= 0.96;
+      orb.vy *= 0.96;
 
-      // Wrap around edges
-      if (orb.x < -orb.radius * 2) orb.x = canvas.width + orb.radius * 2;
-      if (orb.x > canvas.width + orb.radius * 2) orb.x = -orb.radius * 2;
-      if (orb.y < -orb.radius * 2) orb.y = canvas.height + orb.radius * 2;
-      if (orb.y > canvas.height + orb.radius * 2) orb.y = -orb.radius * 2;
+      // Boundary check - wrap around edges smoothly
+      if (orb.x < -orb.radius) orb.x = canvas.width + orb.radius;
+      if (orb.x > canvas.width + orb.radius) orb.x = -orb.radius;
+      if (orb.y < -orb.radius) orb.y = canvas.height + orb.radius;
+      if (orb.y > canvas.height + orb.radius) orb.y = -orb.radius;
 
       // Draw glowing orb with strong blur effect
       ctx.save();
@@ -127,6 +129,7 @@ const Background: React.FC = () => {
       ctx.restore();
     });
 
+    // Recursively call animate with requestAnimationFrame
     animationRef.current = requestAnimationFrame(animate);
   };
 
@@ -142,14 +145,16 @@ const Background: React.FC = () => {
     initOrbs();
     setIsLoaded(true);
 
-    // Start animation
+    // Start animation loop
     animate();
 
-    // Event listeners
+    // Add event listeners to window for mouse movement and resize
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('resize', handleResize);
 
-    // Cleanup
+    // Cleanup event listeners and animation
     return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -160,7 +165,6 @@ const Background: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      onMouseMove={handleMouseMove}
       style={{
         position: 'fixed',
         top: 0,

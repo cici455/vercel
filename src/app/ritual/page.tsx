@@ -219,7 +219,7 @@ export default function RitualChamberPage() {
       </div>
       
       {/* Layer 2: Main content - separate from background */}
-      <div className="relative z-10 w-full min-h-screen pt-20 pb-64">
+      <div className="relative z-10 w-full min-h-screen pt-20 pb-64 overflow-y-auto">
         <header className="relative z-10 flex justify-between items-center p-6">
           <Link 
             href="/" 
@@ -471,7 +471,6 @@ export default function RitualChamberPage() {
               </motion.button>
             </div>
           </div>
-        </div>
         </main>
       </div>
     </div>

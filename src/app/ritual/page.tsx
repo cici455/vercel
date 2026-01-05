@@ -239,7 +239,7 @@ export default function RitualChamberPage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleDomainClick(index)}
                     style={{
-                      zIndex: slot === "active" ? 3 : slot === "prev" ? 2 : 1,
+                      zIndex: slot === "active" ? 3 : 2,
                     }}
                   >
                     {/* Modern card container with 3D effect */}

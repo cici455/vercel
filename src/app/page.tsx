@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Points, PointMaterial } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
@@ -94,7 +95,7 @@ function ConsultationForm() {
   };
 
   if (showDashboard) {
-    return <DashboardView userData={formData} onEnterCouncil={() => console.log('Entering Council...')} onBack={() => setShowDashboard(false)} />;
+    return <DashboardView userData={formData} onEnterCouncil={() => router.push('/council')} onBack={() => setShowDashboard(false)} />;
   }
 
   return (

@@ -424,7 +424,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil,
           <OracleLine omen={chartData.omen} />
 
           {/* Planet Cards */}
-          <div className="w-full max-w-2xl space-y-4 relative z-10">
+          <div className="w-full max-w-2xl space-y-2 relative z-10">
             <div className="text-center mb-6">
               <span className="font-cinzel text-[9px] text-white/30 tracking-[0.2em] uppercase">Planetary Alignments</span>
             </div>
@@ -449,7 +449,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil,
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="mt-12 relative z-10 flex gap-6"
+            className="mt-12 relative z-50 flex gap-6"
           >
             <button
               onClick={onBack}

@@ -1,49 +1,15 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sun, 
-  Moon, 
-  Sparkles, 
-  Orbit, 
-  Circle, 
-  Star,
-  MessageCircle,
-  Heart,
-  Swords,
-  Shield,
-  Zap,
-  Waves,
-  Skull,
-  ArrowUpRight,
-  Info,
-  X
+  Heart, 
+  Coins, 
+  Star, 
+  Zap, 
+  ArrowLeft, 
+  ChevronLeft, 
+  ChevronRight,
+  Send
 } from 'lucide-react';
-import { useUserChart } from '../hooks/useUserChart';
-import { OmenOutput } from '../utils/narrativeGenerator';
-
-// --- Types ---
-export type CardItem = {
-  id: string;
-  kind: "trinity" | "planet";
-  slot?: "sun"|"moon"|"rising";
-  planet?: "mercury"|"venus"|"mars"|"jupiter"|"saturn";
-  sign: string;
-  degree?: number;
-  title: string;
-  inscription: string;
-  notes: {
-    meaning: string;
-    practice: string;
-  };
-  today?: {
-    status?: "BLESSED"|"PRESSURE"|"ACTIVE";
-    why?: string;
-    guidance?: string;
-  };
-  tags?: string[];
-};
-
-export type FocusedCard = CardItem | null;
 
 // --- Types ---
 export interface DashboardViewProps {
@@ -52,420 +18,283 @@ export interface DashboardViewProps {
   onBack: () => void;
 }
 
-// --- 0. 全局样式 (字体 & 旋转动画) ---
-const GlobalStyles = () => (
-  <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@400;600;700&display=swap');
-    
-    .font-cinzel { font-family: 'Cinzel', serif; }
-    .font-cormorant { font-family: 'Cormorant Garamond', serif; }
+type TarotTheme = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  color: string;
+};
 
-    /* 定义星空旋转动画 */
-    @keyframes star-rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    /* 星星闪烁 */
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; transform: scale(0.8); }
-      50% { opacity: 1; transform: scale(1.2); }
-    }
+// --- Mock Data ---
+const TAROT_THEMES: TarotTheme[] = [
+  { 
+    id: 'love', 
+    title: 'LOVE & RELATIONSHIPS', 
+    subtitle: 'VENUS ALIGNMENT',
+    icon: <Heart size={48} strokeWidth={1} />, 
+    color: 'border-pink-500 shadow-[0_0_30px_rgba(236,72,153,0.3)]' 
+  },
+  { 
+    id: 'career', 
+    title: 'CAREER & WEALTH', 
+    subtitle: 'SATURN RETURN',
+    icon: <Coins size={48} strokeWidth={1} />, 
+    color: 'border-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.3)]' 
+  },
+  { 
+    id: 'destiny', 
+    title: 'DESTINY & PATH', 
+    subtitle: 'SOLAR GUIDANCE',
+    icon: <Star size={48} strokeWidth={1} />, 
+    color: 'border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.3)]' 
+  },
+  { 
+    id: 'chaos', 
+    title: 'CHAOS & CHANGE', 
+    subtitle: 'URANUS STORM',
+    icon: <Zap size={48} strokeWidth={1} />, 
+    color: 'border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]' 
+  },
+];
 
-    .star-layer {
-      background-image: 
-        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
-        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
-        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
-        radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px);
-      background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
-      background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
-      background-repeat: repeat;
-      animation: star-rotate linear infinite;
-    }
-    
-    .planet-glow {
-      box-shadow: 0 -40px 100px rgba(100, 180, 255, 0.15);
-    }
-  `}</style>
-);
+// --- Components ---
 
-// --- 1. Big Three Card Component ---
-const TrinityCard = ({ item, onClick }: { item: CardItem; onClick: (item: CardItem) => void }) => {
-  const getIcon = () => {
-    switch (item.slot) {
-      case 'sun': return <Sun size={32} className="text-[#E7D7B6] opacity-80" strokeWidth={1} />;
-      case 'moon': return <Moon size={32} className="text-white opacity-80" strokeWidth={1} />;
-      case 'rising': return <Sparkles size={32} className="text-white opacity-80" strokeWidth={1} />;
-      default: return <Star size={32} className="text-white opacity-80" strokeWidth={1} />;
-    }
-  };
-
+// 1. The Cosmic Stage (Background)
+const CosmicStage = () => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-black/60 backdrop-blur-sm border border-white/15 rounded-lg p-6 shadow-lg hover:shadow-2xl hover:border-white/30 transition-all cursor-pointer"
-      onClick={() => onClick(item)}
-    >
-      <div className="flex flex-col items-center text-center">
-        <div className="mb-4 text-[#E7D7B6] opacity-80">
-          {getIcon()}
-        </div>
-        <h3 className="font-cinzel text-xl mb-1 text-white">{item.title}</h3>
-        <p className="text-xs text-white/40 tracking-[0.2em] uppercase mb-3">{item.slot?.toUpperCase()}</p>
-        <p className="font-cormorant text-white/70 text-sm">{item.inscription}</p>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Deep Space Background */}
+      <div className="absolute inset-0 bg-[#050505]">
+        {/* Star Dust */}
+        <div className="absolute inset-0 opacity-30 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
+        {/* Distant Stars */}
+        {[...Array(20)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute rounded-full bg-white animate-pulse"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              width: `${Math.random() * 2 + 1}px`,
+              height: `${Math.random() * 2 + 1}px`,
+              opacity: Math.random() * 0.5 + 0.1,
+              animationDuration: `${Math.random() * 3 + 2}s`
+            }}
+          />
+        ))}
       </div>
-    </motion.div>
+
+      {/* Giant Purple Planet */}
+      <div className="absolute bottom-[-20%] left-1/2 -translate-x-1/2 w-[150vw] h-[150vw] rounded-full opacity-80 mix-blend-screen">
+        <motion.div 
+          className="w-full h-full rounded-full bg-gradient-to-b from-purple-900/40 via-purple-950/20 to-black"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 200, repeat: Infinity, ease: "linear" }}
+        >
+          {/* Planet Texture Details */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.2),transparent_70%)]"></div>
+          <div className="absolute inset-0 rounded-full border-t border-purple-500/10"></div>
+        </motion.div>
+      </div>
+
+      {/* The Rift (Gate) */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[30vh] flex justify-center items-end">
+        <div className="relative w-2 h-40 bg-white/80 blur-md shadow-[0_0_50px_20px_rgba(168,85,247,0.5)] animate-pulse"></div>
+        <div className="absolute bottom-0 w-60 h-20 bg-purple-500/20 blur-[60px]"></div>
+      </div>
+    </div>
   );
 };
 
-// --- 2. Oracle Line Component ---
-const OracleLine = ({ omen }: { omen: OmenOutput }) => {
+// 2. Holographic Card
+const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme; isActive: boolean; index: number; offset: number }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.6, duration: 0.8 }}
-      className="w-full max-w-2xl relative z-10 mb-12"
+      layout
+      className={`absolute w-[280px] h-[420px] rounded-xl border backdrop-blur-md overflow-hidden cursor-pointer transition-all duration-500
+        ${isActive 
+          ? `z-20 scale-110 opacity-100 ${theme.color} bg-black/40` 
+          : `z-10 scale-90 opacity-40 border-white/10 bg-black/60 blur-[2px] grayscale-[0.5]`
+        }
+      `}
+      initial={false}
+      animate={{
+        x: offset * 320, // Distance between cards
+        z: Math.abs(offset) * -100, // Depth effect
+        rotateY: offset * -15, // Rotation effect
+        scale: isActive ? 1.1 : 0.9 - Math.abs(offset) * 0.1,
+        opacity: isActive ? 1 : 0.6 - Math.abs(offset) * 0.2,
+      }}
+      style={{
+        transformStyle: 'preserve-3d',
+      }}
     >
-      <div className="text-center">
-        <span className="font-cinzel text-[9px] text-white/30 tracking-[0.2em] uppercase">TODAY'S OMEN</span>
-      </div>
-      <blockquote className="relative mt-4 px-8 text-center font-cormorant text-lg text-white/90 italic">
-        "{omen.omen}"
-      </blockquote>
-    </motion.div>
-  );
-};
-
-// --- 3. Planet Row Component ---
-const PlanetRow = ({ item, onClick }: { item: CardItem; onClick: (item: CardItem) => void }) => {
-  const getPlanetIcon = () => {
-    switch (item.planet) {
-      case 'mercury': return <MessageCircle size={18} strokeWidth={1.5} />;
-      case 'venus': return <Heart size={18} strokeWidth={1.5} />;
-      case 'mars': return <Swords size={18} strokeWidth={1.5} />;
-      case 'jupiter': return <Orbit size={18} strokeWidth={1.5} />;
-      case 'saturn': return <Shield size={18} strokeWidth={1.5} />;
-      default: return <Star size={18} strokeWidth={1.5} />;
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (item.today?.status) {
-      case 'BLESSED': return 'text-yellow-400';
-      case 'PRESSURE': return 'text-red-400';
-      case 'ACTIVE': return 'text-blue-400';
-      default: return 'text-gray-400';
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.7, duration: 0.5 }}
-      className="bg-black/50 backdrop-blur-sm border border-white/15 rounded-lg p-4 hover:border-white/30 hover:shadow-xl transition-all cursor-pointer"
-      onClick={() => onClick(item)}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-8 h-8 text-white/70">
-            {getPlanetIcon()}
-          </div>
-          <div>
-            <div className="font-cinzel text-sm text-white">{item.planet?.toUpperCase()}</div>
-            <div className="text-[10px] text-white/40">{item.degree}° {item.sign}</div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {item.today?.status && (
-            <div className={`flex items-center gap-1.5 text-xs ${getStatusColor()}`}>
-              <span className="font-medium">{item.today.status}</span>
-            </div>
-          )}
-          <div className="text-right">
-            <div className="font-cinzel text-sm text-white">{item.title}</div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-// --- 4. Ritual Focus Modal Component ---
-const RitualFocusModal = ({ item, onClose, onEnterCouncil, onBack }: { item: CardItem; onClose: () => void; onEnterCouncil: () => void; onBack: () => void }) => {
-  const getIcon = () => {
-    if (item.kind === 'trinity') {
-      switch (item.slot) {
-        case 'sun': return <Sun size={32} className="text-[#E7D7B6] opacity-80" strokeWidth={1} />;
-        case 'moon': return <Moon size={32} className="text-white opacity-80" strokeWidth={1} />;
-        case 'rising': return <Sparkles size={32} className="text-white opacity-80" strokeWidth={1} />;
-        default: return <Sun size={32} className="text-[#E7D7B6] opacity-80" strokeWidth={1} />;
-      }
-    } else {
-      switch (item.planet) {
-        case 'mercury': return <MessageCircle size={32} className="text-white opacity-80" strokeWidth={1.5} />;
-        case 'venus': return <Heart size={32} className="text-white opacity-80" strokeWidth={1.5} />;
-        case 'mars': return <Swords size={32} className="text-white opacity-80" strokeWidth={1.5} />;
-        case 'jupiter': return <Orbit size={32} className="text-white opacity-80" strokeWidth={1.5} />;
-        case 'saturn': return <Shield size={32} className="text-white opacity-80" strokeWidth={1.5} />;
-        default: return <Star size={32} className="text-white opacity-80" strokeWidth={1.5} />;
-      }
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="bg-black/90 border border-white/30 rounded-xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Card Content */}
+      <div className="relative h-full flex flex-col items-center justify-between p-6">
         {/* Header */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex items-center gap-4">
-            <div className="text-[#E7D7B6] opacity-90">
-              {getIcon()}
-            </div>
-            <div>
-              <h2 className="font-cinzel text-2xl text-white">{item.title}</h2>
-              <p className="text-xs text-white/40 tracking-[0.2em] uppercase">{item.slot?.toUpperCase() || item.planet?.toUpperCase()}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
-            <X size={20} />
-          </button>
+        <div className="w-full flex justify-between items-center opacity-50">
+          <div className="text-[10px] font-mono tracking-widest">NO. 0{index + 1}</div>
+          <div className="text-[10px] font-mono tracking-widest">ARCANA</div>
         </div>
 
-        {/* Content */}
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-cinzel text-sm text-white/60 mb-2">YOUR INSIGHT</h3>
-            <p className="font-cormorant text-white/80">{item.inscription}</p>
+        {/* Center Symbol */}
+        <div className="relative flex-1 flex items-center justify-center w-full">
+          {/* Glowing Orb Background */}
+          <div className={`absolute w-32 h-32 rounded-full blur-[40px] opacity-40 transition-colors duration-500
+            ${theme.id === 'love' ? 'bg-pink-500' : 
+              theme.id === 'career' ? 'bg-cyan-500' : 
+              theme.id === 'destiny' ? 'bg-yellow-500' : 'bg-purple-500'
+            }
+          `}></div>
+          
+          {/* Icon */}
+          <div className="relative z-10 text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+            {theme.icon}
           </div>
-
-          <div className="border-t border-white/10 pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-cinzel text-sm text-white/60 mb-2">MEANING</h3>
-                <p className="font-cormorant text-white/80 text-sm">{item.notes.meaning}</p>
-              </div>
-              <div>
-                <h3 className="font-cinzel text-sm text-white/60 mb-2">PRACTICE</h3>
-                <p className="font-cormorant text-white/80 text-sm">{item.notes.practice}</p>
-              </div>
-            </div>
-          </div>
-
-          {item.today && (
-            <div className="border-t border-white/10 pt-6">
-              <h3 className="font-cinzel text-sm text-white/60 mb-2">TODAY</h3>
-              <div className="bg-black/50 border border-white/15 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="h-2 w-2 rounded-full bg-yellow-400"></div>
-                  <div className="text-sm font-medium text-yellow-400">{item.today.status}</div>
-                </div>
-                {item.today.why && <p className="text-white/70 mb-3 text-sm">{item.today.why}</p>}
-                {item.today.guidance && <p className="text-white/60 text-sm italic">{item.today.guidance}</p>}
-              </div>
-            </div>
-          )}
+          
+          {/* Tech Ring */}
+          <div className="absolute w-40 h-40 border border-white/10 rounded-full animate-[spin_10s_linear_infinite]"></div>
+          <div className="absolute w-48 h-48 border border-white/5 rounded-full border-dashed animate-[spin_15s_linear_infinite_reverse]"></div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-center">
-          <button 
-            onClick={onEnterCouncil}
-            className="bg-white text-black py-3 px-6 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-white/90 transition-colors"
-          >
-            ENTER COUNCIL
-          </button>
-          <div className="flex gap-4">
-            <button onClick={onBack} className="text-white/60 hover:text-white text-sm font-cinzel">
-              BACK TO FORM
-            </button>
-            <button onClick={onClose} className="text-white/60 hover:text-white text-sm font-cinzel">
-              CLOSE
-            </button>
-          </div>
+        {/* Footer Text */}
+        <div className="text-center space-y-2">
+          <h3 className="font-cinzel text-xl text-white tracking-widest font-bold drop-shadow-md">
+            {theme.title}
+          </h3>
+          <p className="text-[10px] text-white/50 font-mono tracking-[0.3em] uppercase">
+            {theme.subtitle}
+          </p>
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4"></div>
+          <p className="text-[8px] text-cyan-400/80 font-mono tracking-widest pt-2 animate-pulse">
+            YOU ARE ONE STEP CLOSER
+          </p>
         </div>
-      </motion.div>
+      </div>
+      
+      {/* Scanline Effect */}
+      <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] opacity-10 pointer-events-none"></div>
     </motion.div>
   );
 };
 
-// --- Main Dashboard Component ---
+// --- Main Component ---
 const DashboardView: React.FC<DashboardViewProps> = ({ userData, onEnterCouncil, onBack }) => {
-  // --- Data Fetching ---
-  const { chartData, loading, error } = useUserChart(userData);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [customInput, setCustomInput] = useState("");
   
-  // --- State ---
-  const [focusedCard, setFocusedCard] = useState<FocusedCard>(null);
-
-  // --- Generate Cards from Chart Data ---
-  const trinityCards = useMemo(() => {
-    if (!chartData) return [];
-    
-    return chartData.trinity.map((card) => {
-      let slot: "sun" | "moon" | "rising" = "sun";
-      
-      switch (card.type) {
-        case "Sun":
-          slot = "sun";
-          break;
-        case "Moon":
-          slot = "moon";
-          break;
-        case "Rising":
-          slot = "rising";
-          break;
-      }
-      
-      return {
-        id: `trinity-${slot}`,
-        kind: "trinity" as const,
-        slot: slot,
-        sign: card.sign,
-        title: card.title,
-        inscription: card.desc,
-        notes: card.notes || { meaning: "", practice: "" }
-      };
-    });
-  }, [chartData]);
-
-  // Generate Planet Cards
-  const planetCards = useMemo(() => {
-    if (!chartData?.planets) return [];
-    
-    return chartData.planets.map((planet, index) => ({
-      id: `planet-${index}`,
-      kind: "planet" as const,
-      planet: planet.name.toLowerCase() as any,
-      sign: planet.sign,
-      degree: 0, // Default since PlanetRow doesn't have longitude
-      title: planet.behavior,
-      inscription: planet.behavior,
-      notes: {
-        meaning: "",
-        practice: ""
-      },
-      today: planet.transit ? {
-        status: planet.transit.type,
-        why: planet.transit.label,
-        guidance: ""
-      } : {
-        status: undefined,
-        why: "",
-        guidance: ""
-      }
-    }));
-  }, [chartData?.planets]);
-
-  // Handle card click
-  const handleCardClick = (card: CardItem) => {
-    setFocusedCard(card);
+  // Navigation handlers
+  const handlePrev = () => {
+    setActiveIndex((prev) => (prev - 1 + TAROT_THEMES.length) % TAROT_THEMES.length);
+  };
+  
+  const handleNext = () => {
+    setActiveIndex((prev) => (prev + 1) % TAROT_THEMES.length);
   };
 
-  // Handle close modal
-  const handleCloseModal = () => {
-    setFocusedCard(null);
-  };
+  const activeTheme = TAROT_THEMES[activeIndex];
 
   return (
-    <div className="relative w-full min-h-screen bg-transparent text-white flex flex-col items-center p-4 pb-48">
-      <GlobalStyles />
-      
-      {/* 2. Page Header */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="relative z-10 text-center mb-8 mt-12"
-      >
-        <div className="flex items-center justify-center gap-2 mb-2">
-           <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/50"></div>
-           <h1 className="font-cinzel text-lg text-white tracking-[0.4em] uppercase drop-shadow-lg">Celestial Chart</h1>
-           <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/50"></div>
-        </div>
-        <p className="font-cormorant text-gray-400 italic">Looking up from {userData?.city || "Unknown Origin"}</p>
-      </motion.header>
+    <div className="fixed inset-0 w-full h-full bg-[#050505] overflow-hidden flex flex-col items-center">
+      {/* 1. Background Environment */}
+      <CosmicStage />
 
-      {/* 3. 主要内容区 */}
-      {error ? (
-        <div className="text-red-400 font-cinzel text-center relative z-10">
-            <p>STAR SYSTEM ERROR</p>
-            <p className="text-xs mt-2 opacity-70">{error}</p>
-            <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 border border-white/20 hover:bg-white/10 text-xs uppercase">Reset</button>
-        </div>
-      ) : loading || !chartData ? (
-        <div className="text-white/50 font-cinzel animate-pulse relative z-10">Calculating Star Chart...</div>
-      ) : (
-        <>
-          {/* Big Three Cards */}
-          <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 relative z-10">
-            {trinityCards.map((card) => (
-              <TrinityCard key={card.id} item={card} onClick={handleCardClick} />
-            ))}
+      {/* Top Navigation */}
+      <div className="absolute top-0 left-0 w-full p-8 z-50 flex justify-between items-start">
+        <button 
+          onClick={onBack}
+          className="group flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+        >
+          <div className="p-2 rounded-full border border-white/10 group-hover:border-white/30 transition-all">
+            <ArrowLeft size={16} />
           </div>
+          <span className="text-xs font-cinzel tracking-widest uppercase">Return</span>
+        </button>
+      </div>
 
-          {/* Oracle Line */}
-          <OracleLine omen={chartData.omen} />
-
-          {/* Planet Cards */}
-          <div className="w-full max-w-2xl space-y-2 relative z-10">
-            <div className="text-center mb-6">
-              <span className="font-cinzel text-[9px] text-white/30 tracking-[0.2em] uppercase">Planetary Alignments</span>
-            </div>
-            
-            {planetCards.map((card) => (
-              <PlanetRow key={card.id} item={card} onClick={handleCardClick} />
-            ))}
-          </div>
-          
-          {/* Focused Card Modal */}
-          {focusedCard && (
-            <RitualFocusModal 
-              item={focusedCard} 
-              onClose={handleCloseModal} 
-              onEnterCouncil={onEnterCouncil} 
-              onBack={onBack}
-            />
-          )}
-          
-          {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            className="mt-12 relative z-50 flex gap-6"
+      {/* 2. Tarot Wheel Container */}
+      <div className="relative flex-1 w-full flex items-center justify-center perspective-[1000px]">
+        {/* Navigation Buttons */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20 z-40 pointer-events-none">
+          <button 
+            onClick={handlePrev}
+            className="pointer-events-auto p-4 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white/50 hover:text-white hover:border-cyan-400/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all group"
           >
-            <button
-              onClick={onBack}
-              className="bg-black/50 border border-white/30 text-white py-5 px-12 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-black/80 transition-all"
-            >
-              BACK TO FORM
-            </button>
-            <button
-              onClick={onEnterCouncil}
-              className="bg-white text-black py-5 px-12 rounded-full text-sm font-bold tracking-widest uppercase hover:scale-105 transition-all"
-            >
-              ENTER THE COUNCIL
-            </button>
-          </motion.div>
-        </>
-      )}
+            <ChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform" />
+          </button>
+          
+          <button 
+            onClick={handleNext}
+            className="pointer-events-auto p-4 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white/50 hover:text-white hover:border-cyan-400/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all group"
+          >
+            <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+
+        {/* 3D Cards */}
+        <div className="relative w-full h-[500px] flex justify-center items-center perspective-[1200px]">
+          <AnimatePresence mode='popLayout'>
+            {TAROT_THEMES.map((theme, index) => {
+              // Calculate circular offset
+              let offset = index - activeIndex;
+              // Handle wrap-around for smooth infinite loop visual (simplified for 4 items)
+              if (offset > 1) offset -= TAROT_THEMES.length;
+              if (offset < -1) offset += TAROT_THEMES.length;
+              
+              // Only render visible cards (active, left, right)
+              if (Math.abs(offset) > 1 && TAROT_THEMES.length > 3) return null;
+
+              return (
+                <HolographicCard 
+                  key={theme.id}
+                  theme={theme}
+                  index={index}
+                  isActive={index === activeIndex}
+                  offset={offset}
+                />
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* 3. Control Deck (Bottom) */}
+      <div className="absolute bottom-10 z-50 w-full max-w-lg px-6 flex flex-col items-center gap-6">
+        {/* Floating Input Bar */}
+        <div className="w-full relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-full opacity-0 group-hover:opacity-100 transition duration-500 blur-md"></div>
+          <div className="relative flex items-center bg-black/60 backdrop-blur-xl border border-white/10 rounded-full p-2 transition-all focus-within:border-white/20 focus-within:bg-black/80">
+            <input 
+              type="text" 
+              placeholder="Ask a specific question..." 
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value)}
+              className="flex-1 bg-transparent border-none text-white px-4 py-2 text-sm font-light focus:outline-none placeholder:text-white/30"
+            />
+          </div>
+        </div>
+
+        {/* Enter Council Button (The Rift Trigger) */}
+        <button
+          onClick={onEnterCouncil}
+          className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full"
+        >
+          {/* Button Glow */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/50 to-cyan-900/50 backdrop-blur-md border border-white/20 group-hover:border-white/50 transition-all rounded-full"></div>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/5 transition-opacity duration-300"></div>
+          
+          <div className="relative flex items-center gap-3">
+            <span className="font-cinzel font-bold text-white tracking-[0.2em] text-sm group-hover:text-cyan-200 transition-colors">
+              ENTER COUNCIL
+            </span>
+            <Send size={14} className="text-white/70 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+          </div>
+          
+          {/* Rift Beam Effect coming from button */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-cyan-400 blur-[4px] group-hover:blur-[8px] transition-all duration-300"></div>
+        </button>
+      </div>
     </div>
   );
 };

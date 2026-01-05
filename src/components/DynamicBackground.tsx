@@ -30,14 +30,14 @@ import React from 'react';
              <feGaussianBlur stdDeviation="30" />
              {/* 明显压黑，亮区变窄 */}
              <feColorMatrix
-               type="matrix"
-               values="
-                 0.6 0   0   0  -0.28
-                 0   0.6 0   0  -0.28
-                 0   0   0.6 0  -0.28
-                 0   0   0   1   0
-               "
-             />
+              type="matrix"
+              values="
+                0.8 0   0   0  -0.18
+                0   0.8 0   0  -0.18
+                0   0   0.8 0  -0.18
+                0   0   0   1   0
+              "
+            />
            </filter>
 
            {/* 斜向银河：更细、更亮，中间像一条刀光 */}
@@ -96,12 +96,12 @@ import React from 'react';
          /> 
  
          {/* 暗角效果：确保画布边缘完全黑，加强银河突出度 */}
-         <rect
-           width="100%"
-           height="100%"
-           fill="url(#vignette)"
-           opacity="0.8"
-         /> 
+        <rect
+          width="100%"
+          height="100%"
+          fill="url(#vignette)"
+          opacity="0.5"
+        /> 
  
          {/* 星群：分布在银河附近，大小与亮度有变化 */} 
          <g filter="url(#star-blur)"> 

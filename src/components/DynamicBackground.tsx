@@ -3,37 +3,53 @@
  import React from 'react'; 
  import { motion } from 'framer-motion'; 
  
- // 全局黑白液态背景（明显可见缓慢流动） 
+ // 全局黑白液态背景（黑白对比明显 + 一定有流动感） 
  export function DynamicBackground() { 
    return ( 
-     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#050505]"> 
-       {/* 底层深灰渐变，保证整体偏暗 */} 
+     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-black"> 
+       {/* 底层：深灰渐变，保证整体偏暗，不会变成一整块白 */} 
        <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-900 to-neutral-800" /> 
  
-       {/* 上层：一整块超大的灰度液态纹理，用 framer-motion 做漂移 */} 
+       {/* 亮雾团 A：偏白 */} 
        <motion.div 
-         className="absolute -inset-[30%]" 
-         style={{ 
-           // 保持你现在这版的黑白渐变质感 
-           backgroundImage: ` 
-             radial-gradient(circle at 15% 20%, rgba(255,255,255,0.9),  rgba(255,255,255,0) 55%), 
-             radial-gradient(circle at 80% 0%,  rgba(220,220,220,0.85), rgba(255,255,255,0) 55%), 
-             radial-gradient(circle at 0% 80%,  rgba(190,190,190,0.8),  rgba(255,255,255,0) 55%), 
-             radial-gradient(circle at 100% 85%, rgba(140,140,140,0.75), rgba(255,255,255,0) 55%), 
-             radial-gradient(circle at 45% 55%, rgba(0,0,0,1),         rgba(0,0,0,0)        62%) 
-           `, 
-           backgroundSize: '220% 220%', 
-           backgroundRepeat: 'no-repeat', 
-           filter: 'blur(48px)', 
-         }} 
-         initial={{ x: -200, y: 120, scale: 1.15 }} 
+         className="absolute -left-[25%] -top-[25%] w-[85vw] h-[85vw] rounded-full bg-white/85 blur-[110px] mix-blend-screen" 
+         initial={{ x: -120, y: -60 }} 
          animate={{ 
-           x: [-200, 200, -150, 0], 
-           y: [120, -160, 80, -40], 
-           scale: [1.15, 1.3, 1.2, 1.15], 
+           x: [-120, 180, -80], 
+           y: [-60, 120, -40], 
          }} 
          transition={{ 
-           duration: 22,      // 22 秒一轮，这个速度肉眼绝对能看见 
+           duration: 22,          // 先设快一点，方便你看出来在动 
+           repeat: Infinity, 
+           ease: 'easeInOut', 
+         }} 
+       /> 
+ 
+       {/* 中灰雾团 B */} 
+       <motion.div 
+         className="absolute right-[-30%] top-[5%] w-[80vw] h-[80vw] rounded-full bg-neutral-400/90 blur-[110px] mix-blend-screen" 
+         initial={{ x: 160, y: 40 }} 
+         animate={{ 
+           x: [160, -100, 80], 
+           y: [40, -80, 20], 
+         }} 
+         transition={{ 
+           duration: 26, 
+           repeat: Infinity, 
+           ease: 'easeInOut', 
+         }} 
+       /> 
+ 
+       {/* 深阴影 C：加厚黑色，防止画面太白 */} 
+       <motion.div 
+         className="absolute left-[5%] bottom-[-30%] w-[95vw] h-[95vw] rounded-full bg-black/95 blur-[130px] mix-blend-multiply" 
+         initial={{ x: 0, y: 60 }} 
+         animate={{ 
+           x: [0, -80, 50], 
+           y: [60, -50, 30], 
+         }} 
+         transition={{ 
+           duration: 30, 
            repeat: Infinity, 
            ease: 'easeInOut', 
          }} 

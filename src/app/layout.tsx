@@ -3,6 +3,7 @@ import { Cinzel, Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import FilmGrain from '@/components/ui/FilmGrain';
 import Background from '@/components/Background';
+import { DynamicBackground } from '@/components/DynamicBackground';
 
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -36,13 +37,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-white antialiased min-h-screen flex flex-col`}>
+      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-white antialiased min-h-screen flex flex-col relative`}>
+        <DynamicBackground />
+        
         <div className="fixed inset-0 -z-50 pointer-events-none">
-          <Background />
-          <FilmGrain />
+          {/* <Background /> */}
+          {/* <FilmGrain /> */}
         </div>
         
-        <div className="fixed inset-0 -z-50 pointer-events-none opacity-[0.05] bg-[url('data:image/svg+xml,%3Csvg viewBox=%270 0 200 200%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27noiseFilter%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23noiseFilter)%27 opacity=%270.05%27/%3E%3C/svg%3E')]"></div>
+        {/* <div className="fixed inset-0 -z-50 pointer-events-none opacity-[0.05] bg-[url('data:image/svg+xml,%3Csvg viewBox=%270 0 200 200%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27noiseFilter%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23noiseFilter)%27 opacity=%270.05%27/%3E%3C/svg%3E')]"></div> */}
         
         <main className="relative z-10 flex min-h-screen flex-col">
           {children}

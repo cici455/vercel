@@ -22,11 +22,55 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes orbit-slow { 
+  0%   { transform: translate3d(0, 0, 0) scale(1); } 
+  50%  { transform: translate3d(40px, -30px, 0) scale(1.15); } 
+  100% { transform: translate3d(0, 0, 0) scale(1); } 
+} 
+
+@keyframes orbit-medium { 
+  0%   { transform: translate3d(0, 0, 0) scale(1); } 
+  50%  { transform: translate3d(-30px, 40px, 0) scale(1.12); } 
+  100% { transform: translate3d(0, 0, 0) scale(1); } 
+} 
+
+@keyframes orbit-fast { 
+  0%   { transform: translate3d(0, 0, 0) scale(1); } 
+  50%  { transform: translate3d(20px, 20px, 0) scale(1.18); } 
+  100% { transform: translate3d(0, 0, 0) scale(1); } 
+} 
+
+@keyframes twinkle { 
+  0%, 100% { opacity: 0.2; transform: scale(1); } 
+  50%      { opacity: 1;   transform: scale(1.6); } 
+} 
+
 /* Add utility classes */
 @layer utilities {
   .animate-spin-slow {
     animation: spin-slow 120s linear infinite;
   }
+  
+  .animate-orbit-slow { 
+    animation: orbit-slow 32s ease-in-out infinite alternate; 
+  } 
+  
+  .animate-orbit-medium { 
+    animation: orbit-medium 26s ease-in-out infinite alternate; 
+  } 
+  
+  .animate-orbit-fast { 
+    animation: orbit-fast 20s ease-in-out infinite alternate; 
+  } 
+
+  .animate-twinkle { 
+    animation: twinkle 4s ease-in-out infinite; 
+  } 
+  
+  .animate-twinkle-delayed { 
+    animation: twinkle 5.5s ease-in-out infinite; 
+    animation-delay: 1.5s; 
+  } 
 }
 
 @theme {

@@ -212,7 +212,7 @@ export default function LandingPage() {
     <div className="relative w-full min-h-screen overflow-hidden flex flex-col justify-center items-center py-12 pb-40 bg-transparent">
       {/* Background Effect */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-         <StarField />
+         {/* <StarField /> */}
       </div>
 
       <AnimatePresence mode="wait">

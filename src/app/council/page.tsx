@@ -197,7 +197,7 @@ export default function ChronoCouncilPage() {
   // No need for separate handleNodeClick function - navigation is handled directly in the destiny tree component
 
   return (
-    <div className={`h-screen w-full bg-[#080808] text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
+    <div className={`h-screen w-full bg-transparent text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
       <div className="flex h-full">
         {/* Left Panel: CouncilChamber (75%) */}
         <div className="w-[75%] h-full flex flex-col relative z-10">

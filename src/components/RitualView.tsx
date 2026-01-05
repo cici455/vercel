@@ -123,12 +123,10 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
   
   return (
     <main className="relative min-h-screen overflow-x-hidden flex flex-col items-center">
-      {/* 背景层：星空 + 紫色星球 */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        {/* 深色星空底色 */}
+      {/* 背景层：星空 + 紫色星球 (Temporarily disabled for global dynamic background) */}
+      {/* <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-[#050509] via-[#02010a] to-black" />
 
-        {/* 紫色星球：露出大约上半部分 */}
         <div className="absolute left-1/2 bottom-[-28vh] -translate-x-1/2 w-[120vh] h-[120vh]">
           <Image 
             src="/planet.png" 
@@ -137,10 +135,9 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
             className="object-contain animate-[spin_120s_linear_infinite]" 
             priority 
           />
-          {/* 遮罩：让下半球渐隐到黑色 */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
         </div>
-      </div>
+      </div> */}
 
       {/* Top Navigation */}
       <div className="absolute top-0 left-0 w-full p-8 z-50 flex justify-between items-start">

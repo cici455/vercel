@@ -3,7 +3,8 @@ import { Cinzel, Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import FilmGrain from '@/components/ui/FilmGrain';
 import Background from '@/components/Background';
-import { DynamicBackground } from '@/components/DynamicBackground';
+// import { DynamicBackground } from '@/components/DynamicBackground';
+import { GlobalBackground } from '@/components/GlobalBackground';
 
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -37,8 +38,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 text-white antialiased min-h-screen flex flex-col relative bg-transparent`}>
-        <DynamicBackground />
+      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 text-white antialiased min-h-screen flex flex-col relative bg-black`}>
+        <GlobalBackground />
         
         <div className="fixed inset-0 -z-50 pointer-events-none">
           {/* <Background /> */}

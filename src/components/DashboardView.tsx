@@ -112,10 +112,10 @@ const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme
   return (
     <motion.div
       layout
-      className={`absolute w-[280px] h-[420px] rounded-xl border backdrop-blur-md overflow-hidden cursor-pointer transition-all duration-500
+      className={`absolute w-[260px] h-[340px] rounded-[24px] overflow-hidden cursor-pointer transition-all duration-500
         ${isActive 
-          ? `z-20 scale-110 opacity-100 ${theme.color} bg-black/40` 
-          : `z-10 scale-90 opacity-40 border-white/10 bg-black/60 blur-[2px] grayscale-[0.5]`
+          ? `z-20 scale-102 opacity-100 bg-gradient-to-b from-[#151515] via-[#050505] to-black border border-white/14 shadow-[0_28px_70px_rgba(0,0,0,0.95)]` 
+          : `z-10 scale-94 opacity-40 border border-white/10 bg-black/60 blur-[2px] grayscale-[0.5]`
         }
       `}
       initial={false}
@@ -123,58 +123,77 @@ const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme
         x: offset * 320, // Distance between cards
         z: Math.abs(offset) * -100, // Depth effect
         rotateY: offset * -15, // Rotation effect
-        scale: isActive ? 1.1 : 0.9 - Math.abs(offset) * 0.1,
+        rotateX: isActive ? 6 : 0,
+        scale: isActive ? 1.02 : 0.94,
         opacity: isActive ? 1 : 0.6 - Math.abs(offset) * 0.2,
       }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       style={{
         transformStyle: 'preserve-3d',
+        transformOrigin: 'center bottom',
       }}
     >
+      <div className="absolute inset-[10px] rounded-[18px] border border-white/10" />
+      
       {/* Card Content */}
       <div className="relative h-full flex flex-col items-center justify-between p-6">
-        {/* Header */}
-        <div className="w-full flex justify-between items-center opacity-50">
-          <div className="text-[10px] font-mono tracking-widest">NO. 0{index + 1}</div>
-          <div className="text-[10px] font-mono tracking-widest">ARCANA</div>
+        {/* 顶栏（塔罗感） */}
+        <div className="relative z-10 flex items-center justify-between px-6 pt-4 text-[10px] tracking-[0.25em] text-white/45 uppercase w-full">
+          <span>NO. 0{index + 1}</span>
+          <span>ARCANA</span>
         </div>
 
-        {/* Center Symbol */}
-        <div className="relative flex-1 flex items-center justify-center w-full">
-          {/* Glowing Orb Background */}
-          <div className={`absolute w-32 h-32 rounded-full blur-[40px] opacity-40 transition-colors duration-500
-            ${theme.id === 'love' ? 'bg-pink-500' : 
-              theme.id === 'career' ? 'bg-cyan-500' : 
-              theme.id === 'destiny' ? 'bg-yellow-500' : 'bg-purple-500'
-            }
-          `}></div>
-          
-          {/* Icon */}
-          <div className="relative z-10 text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
-            {theme.icon}
+        {/* 中部用占星星盘 + 行星符号 */}
+        <div className="relative z-10 mt-2 flex flex-col items-center justify-center h-[210px]">
+          <div className="relative w-[160px] h-[160px]">
+            <div className="absolute inset-0 rounded-full border border-white/16" />
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-[3px] h-[3px] rounded-full bg-white/65"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transform: `rotate(${i * 30}deg) translate(0, -76px)`,
+                }}
+              />
+            ))}
+            <div className="absolute inset-[30px] rounded-full border border-white/10 border-dashed" />
+            <div className="absolute inset-[58px] rounded-full border border-white/18" />
+            <svg viewBox="0 0 100 100" className="absolute inset-[34px] w-[92px] h-[92px] text-white/16">
+              <polygon points="50,8 12,84 88,84" fill="none" stroke="currentColor" strokeWidth="0.6" />
+              <polygon points="50,92 12,16 88,16" fill="none" stroke="currentColor" strokeWidth="0.6" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white/6 border border-white/18 flex items-center justify-center">
+                {/* 不同卡牌替换这里的符号：♀, ♄, ♅, ☉ 等 */}
+                <span className="text-white/70 text-lg">
+                  {theme.id === 'love' ? '♀' : 
+                   theme.id === 'career' ? '♄' : 
+                   theme.id === 'destiny' ? '☉' : '♅'
+                  }
+                </span>
+              </div>
+            </div>
           </div>
-          
-          {/* Tech Ring */}
-          <div className="absolute w-40 h-40 border border-white/10 rounded-full animate-[spin_10s_linear_infinite]"></div>
-          <div className="absolute w-48 h-48 border border-white/5 rounded-full border-dashed animate-[spin_15s_linear_infinite_reverse]"></div>
         </div>
 
-        {/* Footer Text */}
-        <div className="text-center space-y-2">
-          <h3 className="font-cinzel text-xl text-white tracking-widest font-bold drop-shadow-md">
+        {/* 底部：领域标题 */}
+        <div className="relative z-10 mt-2 px-6 text-center">
+          <div className="text-[13px] tracking-[0.32em] text-white/40 mb-1 uppercase">
+            DOMAIN
+          </div>
+          <div 
+            className="text-xl text-white font-serif" 
+            style={{ letterSpacing: '0.06em' }}
+          >
             {theme.title}
-          </h3>
-          <p className="text-[10px] text-white/50 font-mono tracking-[0.3em] uppercase">
+          </div>
+          <div className="text-[10px] tracking-[0.32em] text-white/45 uppercase mt-1">
             {theme.subtitle}
-          </p>
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4"></div>
-          <p className="text-[8px] text-cyan-400/80 font-mono tracking-widest pt-2 animate-pulse">
-            YOU ARE ONE STEP CLOSER
-          </p>
+          </div>
         </div>
       </div>
-      
-      {/* Scanline Effect */}
-      <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] opacity-10 pointer-events-none"></div>
     </motion.div>
   );
 };

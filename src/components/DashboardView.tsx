@@ -109,14 +109,33 @@ const CosmicStage = () => {
 
 // 2. Holographic Card
 const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme; isActive: boolean; index: number; offset: number }) => {
+  // 根据主题设置行星和元素信息
+  const getCardInfo = (id: string) => {
+    switch (id) {
+      case 'love':
+        return { symbol: '♀', planet: 'VENUS', element: 'WATER' };
+      case 'career':
+        return { symbol: '♄', planet: 'SATURN', element: 'EARTH' };
+      case 'destiny':
+        return { symbol: '☉', planet: 'SUN', element: 'FIRE' };
+      case 'chaos':
+        return { symbol: '♅', planet: 'URANUS', element: 'AIR' };
+      default:
+        return { symbol: '☉', planet: 'SUN', element: 'FIRE' };
+    }
+  };
+
+  const cardInfo = getCardInfo(theme.id);
+
   return (
     <motion.div
       layout
-      className={`absolute w-[260px] h-[340px] rounded-[24px] overflow-hidden cursor-pointer transition-all duration-500
-        ${isActive 
-          ? `z-20 scale-102 opacity-100 bg-gradient-to-b from-[#151515] via-[#050505] to-black border border-white/14 shadow-[0_28px_70px_rgba(0,0,0,0.95)]` 
-          : `z-10 scale-94 opacity-40 border border-white/10 bg-black/60 blur-[2px] grayscale-[0.5]`
-        }
+      className={`
+        relative w-[260px] h-[340px]
+        rounded-[24px] overflow-hidden
+        bg-gradient-to-b from-[#151515] via-[#050505] to-black
+        border border-white/14
+        shadow-[0_28px_70px_rgba(0,0,0,0.95)]
       `}
       initial={false}
       animate={{
@@ -133,20 +152,26 @@ const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme
         transformOrigin: 'center bottom',
       }}
     >
+      {/* 内边框，模拟塔罗牌的镶边 */}
       <div className="absolute inset-[10px] rounded-[18px] border border-white/10" />
+      
+      {/* 底缘高光，增加“厚度” */}
+      <div className="pointer-events-none absolute bottom-[14px] inset-x-10 h-[2px] bg-gradient-to-r from-white/0 via-white/45 to-white/0 opacity-60" />
       
       {/* Card Content */}
       <div className="relative h-full flex flex-col items-center justify-between p-6">
-        {/* 顶栏（塔罗感） */}
-        <div className="relative z-10 flex items-center justify-between px-6 pt-4 text-[10px] tracking-[0.25em] text-white/45 uppercase w-full">
+        {/* 顶栏：神秘学排版 */}
+        <div className="relative z-10 flex items-center justify-between px-6 pt-4 text-[10px] tracking-[0.25em] text-white/45 uppercase">
           <span>NO. 0{index + 1}</span>
           <span>ARCANA</span>
         </div>
 
-        {/* 中部用占星星盘 + 行星符号 */}
+        {/* 中部：占星星盘 + 行星符文 */}
         <div className="relative z-10 mt-2 flex flex-col items-center justify-center h-[210px]">
           <div className="relative w-[160px] h-[160px]">
+            {/* 外环 */}
             <div className="absolute inset-0 rounded-full border border-white/16" />
+            {/* 十二宫刻度 */}
             {[...Array(12)].map((_, i) => (
               <div
                 key={i}
@@ -158,38 +183,36 @@ const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme
                 }}
               />
             ))}
+            {/* 中环虚线 */}
             <div className="absolute inset-[30px] rounded-full border border-white/10 border-dashed" />
+            {/* 内环 */}
             <div className="absolute inset-[58px] rounded-full border border-white/18" />
+            {/* 六芒星几何阵 */}
             <svg viewBox="0 0 100 100" className="absolute inset-[34px] w-[92px] h-[92px] text-white/16">
               <polygon points="50,8 12,84 88,84" fill="none" stroke="currentColor" strokeWidth="0.6" />
               <polygon points="50,92 12,16 88,16" fill="none" stroke="currentColor" strokeWidth="0.6" />
             </svg>
+            {/* 中央行星符号 */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-10 h-10 rounded-full bg-white/6 border border-white/18 flex items-center justify-center">
-                {/* 不同卡牌替换这里的符号：♀, ♄, ♅, ☉ 等 */}
-                <span className="text-white/70 text-lg">
-                  {theme.id === 'love' ? '♀' : 
-                   theme.id === 'career' ? '♄' : 
-                   theme.id === 'destiny' ? '☉' : '♅'
-                  }
+                <span className="text-[20px] text-white/90">
+                  {cardInfo.symbol}
                 </span>
               </div>
             </div>
           </div>
+          {/* 行星 / 元素信息 */}
+          <div className="mt-5 text-[10px] tracking-[0.32em] uppercase text-white/55">
+            {cardInfo.planet} · {cardInfo.element}
+          </div>
         </div>
 
-        {/* 底部：领域标题 */}
-        <div className="relative z-10 mt-2 px-6 text-center">
-          <div className="text-[13px] tracking-[0.32em] text-white/40 mb-1 uppercase">
-            DOMAIN
-          </div>
-          <div 
-            className="text-xl text-white font-serif" 
-            style={{ letterSpacing: '0.06em' }}
-          >
+        {/* 底部文案：黑白 serif + 大字距 */}
+        <div className="relative z-10 mt-4 px-6 text-center">
+          <div className="text-[11px] tracking-[0.32em] text-white/42 mb-1 uppercase">
             {theme.title}
           </div>
-          <div className="text-[10px] tracking-[0.32em] text-white/45 uppercase mt-1">
+          <div className="text-[10px] tracking-[0.38em] text-white/32 uppercase">
             {theme.subtitle}
           </div>
         </div>

@@ -10,57 +10,62 @@ import React from 'react';
          preserveAspectRatio="xMidYMid slice" 
        > 
          <defs> 
-           {/* 液态噪声，用来扭曲银河形状 */} 
-           <filter id="galaxy-noise"> 
-             <feTurbulence 
-               type="fractalNoise" 
-               baseFrequency="0.8" 
-               numOctaves="3" 
-               seed="8" 
-               stitchTiles="noStitch" 
-             > 
-               {/* 噪声缓慢流动，形成液态变形 */} 
-               <animate 
-                 attributeName="baseFrequency" 
-                 dur="22s" 
-                 values="0.6;0.9;0.5;0.8;0.6" 
-                 repeatCount="indefinite" 
-               /> 
-             </feTurbulence> 
-             <feGaussianBlur stdDeviation="45" /> 
-             {/* 略微增加对比度，但保持黑白 */} 
-             <feColorMatrix 
-               type="matrix" 
-               values=" 
-                 1.1 0   0   0  -0.08 
-                 1.1 0   0   0  -0.08 
-                 1.1 0   0   0  -0.08 
-                 0   0   0   1   0 
-               " 
-             /> 
-           </filter> 
- 
-           {/* 斜向银河：中间窄亮，两边迅速变暗 */} 
-           <linearGradient 
-             id="galaxy-band" 
-             x1="0%" 
-             y1="100%" 
-             x2="100%" 
-             y2="0%" 
-           > 
-             {/* 左下角、右上角几乎纯黑 */} 
-             <stop offset="0%" stopColor="#000000" /> 
-             <stop offset="15%" stopColor="#050505" /> 
-             {/* 银河边缘：迅速从黑到灰 */} 
-             <stop offset="35%" stopColor="#202020" /> 
-             {/* 银河中心：最亮且比较窄 */} 
-             <stop offset="48%" stopColor="#f5f5f5" /> 
-             <stop offset="52%" stopColor="#ffffff" /> 
-             <stop offset="65%" stopColor="#202020" /> 
-             {/* 再次坠入黑暗 */} 
-             <stop offset="85%" stopColor="#050505" /> 
-             <stop offset="100%" stopColor="#000000" /> 
-           </linearGradient> 
+           {/* 液态噪声，用来扭曲银河形状 */}
+           <filter id="galaxy-noise">
+             <feTurbulence
+               type="fractalNoise"
+               baseFrequency="0.8"
+               numOctaves="3"
+               seed="8"
+               stitchTiles="noStitch"
+             >
+               {/* 噪声缓慢流动，形成液态变形 */}
+               <animate
+                 attributeName="baseFrequency"
+                 dur="22s"
+                 values="0.6;0.9;0.5;0.8;0.6"
+                 repeatCount="indefinite"
+               />
+             </feTurbulence>
+             <feGaussianBlur stdDeviation="45" />
+             {/* 调整对比度，让整体更暗 */}
+             <feColorMatrix
+               type="matrix"
+               values="
+                 0.8 0   0   0  -0.22
+                 0   0.8 0   0  -0.22
+                 0   0   0.8 0  -0.22
+                 0   0   0   1   0
+               "
+             />
+           </filter>
+
+           {/* 斜向银河：亮区更窄，两边深灰/黑更多 */}
+           <linearGradient
+             id="galaxy-band"
+             x1="0%"
+             y1="100%"
+             x2="100%"
+             y2="0%"
+           >
+             {/* 大部分区域都是纯黑 */}
+             <stop offset="0%" stopColor="#000000" />
+             <stop offset="20%" stopColor="#080808" />
+             <stop offset="35%" stopColor="#151515" />
+             {/* 银河亮区更窄 */}
+             <stop offset="48%" stopColor="#d0d0d0" />
+             <stop offset="52%" stopColor="#ffffff" />
+             <stop offset="65%" stopColor="#151515" />
+             <stop offset="80%" stopColor="#080808" />
+             <stop offset="100%" stopColor="#000000" />
+           </linearGradient>
+
+           {/* 暗角效果的径向渐变 */}
+           <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+             <stop offset="0%" stopColor="transparent" />
+             <stop offset="70%" stopColor="transparent" />
+             <stop offset="100%" stopColor="#000000" stopOpacity="0.7" />
+           </radialGradient> 
  
            {/* 星星的发光渐变 */} 
            <radialGradient id="star-glow" cx="50%" cy="50%" r="50%"> 
@@ -89,12 +94,11 @@ import React from 'react';
            opacity="0.9" 
          /> 
  
-         {/* 额外暗角：让两侧和四角更黑，突出中间银河 */} 
-         <rect 
-           width="100%" 
-           height="100%" 
-           fill="url(#galaxy-band)" // 复用同一个渐变，叠一层更暗 
-           opacity="0.25" 
+         {/* 暗角效果：使用径向渐变让四角变暗 */}
+         <rect
+           width="100%"
+           height="100%"
+           fill="url(#vignette)"
          /> 
  
          {/* 星群：分布在银河附近，大小与亮度有变化 */} 

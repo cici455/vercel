@@ -42,20 +42,20 @@ import React from 'react';
 
            {/* 斜向银河：更细、更亮，中间像一条刀光 */}
            <linearGradient id="galaxy-band" x1="0%" y1="100%" x2="100%" y2="0%">
-             <!-- 两端很长一段直接纯黑 -->
+             {/* 两端很长一段直接纯黑 */}
              <stop offset="0%" stopColor="#000000" />
              <stop offset="18%" stopColor="#000000" />
 
-             <!-- 接近银心前的深灰过渡区 -->
+             {/* 接近银心前的深灰过渡区 */}
              <stop offset="40%" stopColor="#050505" />
              <stop offset="46%" stopColor="#0c0c0c" />
 
-             <!-- 非常细的一条银河核心（亮，但不刺眼） -->
+             {/* 非常细的一条银河核心（亮，但不刺眼） */}
              <stop offset="49%" stopColor="#b8b8b8" />
              <stop offset="50%" stopColor="#f5f5f5" />
              <stop offset="51%" stopColor="#b8b8b8" />
 
-             <!-- 迅速回落到深灰，再回到黑 -->
+             {/* 迅速回落到深灰，再回到黑 */}
              <stop offset="54%" stopColor="#0c0c0c" />
              <stop offset="60%" stopColor="#050505" />
              <stop offset="82%" stopColor="#000000" />

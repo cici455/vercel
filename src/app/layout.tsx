@@ -36,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-[#e2e8f0] antialiased`}>
+      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-[#e2e8f0] antialiased min-h-screen overflow-y-auto`}>
         {/* Global liquid background */}
         <Background />
         

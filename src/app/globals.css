@@ -24,34 +24,36 @@
 
 @keyframes blob-slow { 
   0%   { transform: translate3d(0, 0, 0) scale(1); } 
-  33%  { transform: translate3d(60px, -40px, 0) scale(1.15); } 
-  66%  { transform: translate3d(-40px, 40px, 0) scale(1.08); } 
+  25%  { transform: translate3d(80px, -60px, 0) scale(1.18); } 
+  50%  { transform: translate3d(-60px, 40px, 0) scale(1.08); } 
+  75%  { transform: translate3d(40px, 80px, 0) scale(1.15); } 
   100% { transform: translate3d(0, 0, 0) scale(1); } 
 } 
 
 @keyframes blob-medium { 
   0%   { transform: translate3d(0, 0, 0) scale(1); } 
-  25%  { transform: translate3d(-50px, 20px, 0) scale(1.12); } 
-  50%  { transform: translate3d(30px, 60px, 0) scale(1.05); } 
-  75%  { transform: translate3d(-20px, -30px, 0) scale(1.1); } 
+  20%  { transform: translate3d(-70px, 30px, 0) scale(1.12); } 
+  40%  { transform: translate3d(50px, 80px, 0) scale(1.05); } 
+  60%  { transform: translate3d(-40px, -50px, 0) scale(1.14); } 
+  80%  { transform: translate3d(30px, -20px, 0) scale(1.08); } 
   100% { transform: translate3d(0, 0, 0) scale(1); } 
 } 
 
 @keyframes blob-fast { 
   0%   { transform: translate3d(0, 0, 0) scale(1); } 
-  50%  { transform: translate3d(40px, 30px, 0) scale(1.18); } 
+  50%  { transform: translate3d(60px, 50px, 0) scale(1.22); } 
   100% { transform: translate3d(0, 0, 0) scale(1); } 
 } 
 
 @keyframes blob-deep { 
   0%   { transform: translate3d(0, 0, 0) scale(1); } 
-  50%  { transform: translate3d(-30px, 20px, 0) scale(1.15); } 
+  50%  { transform: translate3d(-50px, 30px, 0) scale(1.18); } 
   100% { transform: translate3d(0, 0, 0) scale(1); } 
 } 
 
 @keyframes blob-deep-alt { 
   0%   { transform: translate3d(0, 0, 0) scale(1); } 
-  50%  { transform: translate3d(20px, -30px, 0) scale(1.12); } 
+  50%  { transform: translate3d(40px, -40px, 0) scale(1.15); } 
   100% { transform: translate3d(0, 0, 0) scale(1); } 
 } 
 
@@ -67,15 +69,15 @@
   }
   
   .animate-blob-slow { 
-    animation: blob-slow 40s ease-in-out infinite alternate; 
+    animation: blob-slow 42s ease-in-out infinite alternate; 
   } 
   
   .animate-blob-medium { 
-    animation: blob-medium 32s ease-in-out infinite alternate; 
+    animation: blob-medium 36s ease-in-out infinite alternate; 
   } 
   
   .animate-blob-fast { 
-    animation: blob-fast 24s ease-in-out infinite alternate; 
+    animation: blob-fast 26s ease-in-out infinite alternate; 
   } 
   
   .animate-blob-deep { 
@@ -83,7 +85,7 @@
   } 
   
   .animate-blob-deep-alt { 
-    animation: blob-deep-alt 45s ease-in-out infinite alternate; 
+    animation: blob-deep-alt 46s ease-in-out infinite alternate; 
   } 
 
   .animate-twinkle { 

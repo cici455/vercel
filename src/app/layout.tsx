@@ -36,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-white antialiased`}>
+      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-white antialiased min-h-screen flex flex-col`}>
         <div className="fixed inset-0 -z-50 pointer-events-none">
           <Background />
           <FilmGrain />

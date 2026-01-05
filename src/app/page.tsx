@@ -273,7 +273,8 @@ export default function LandingPage() {
   const [entered, setEntered] = useState(false);
 
   return (
-    <div className="relative w-full h-screen relative overflow-hidden flex flex-col justify-center items-center py-12 bg-transparent">
+    <div className="relative w-full min-h-screen overflow-hidden flex flex-col justify-center items-center py-12 pb-40 bg-transparent">
+      <ConstellationBackground />
       {/* Header & Button - Animate out when entered */}
       <AnimatePresence>
         {!entered && (

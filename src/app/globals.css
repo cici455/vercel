@@ -69,10 +69,16 @@
   }
 }
 
-body {
+html, body {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto !important;
   color: var(--foreground);
   background: var(--color-void);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 @layer utilities {

@@ -115,55 +115,7 @@ import React from 'react';
          <circle cx="980" cy="620" r="1.0" fill="url(#star-glow)" opacity="0.35" /> 
          <circle cx="1380" cy="540" r="0.9" fill="url(#star-glow)" opacity="0.3" /> 
 
-         {/* ========= 1. 长尾流星（震撼效果） ========= */} 
-         {/* 整个 group 被 translate，从右上斜穿到左下 */} 
-         <g opacity="0"> 
-           {/* 流星尾巴：一条长线，带强烈渐变光 */} 
-           <line 
-             x1="0" 
-             y1="0" 
-             x2="-220" 
-             y2="-60" 
-             stroke="white" 
-             strokeWidth="1.6" 
-             strokeLinecap="round" 
-             opacity="0.9" 
-           > 
-             {/* 尾巴在飞行中可轻微变粗变细 */} 
-             <animate 
-               attributeName="stroke-width" 
-               dur="3.2s" 
-               values="1.0;2.0;1.2;1.6;1.0" 
-               repeatCount="indefinite" 
-             /> 
-           </line> 
-           {/* 流星头部：一个高亮小球 */} 
-           <circle cx="0" cy="0" r="2.4" fill="white" opacity="1"> 
-             <animate 
-               attributeName="r" 
-               dur="3.2s" 
-               values="1.2;3;2;3.4;1.2" 
-               repeatCount="indefinite" 
-             /> 
-           </circle> 
-
-           {/* 控制整颗流星的飞行轨迹和出现消失 */} 
-           <animateTransform 
-             attributeName="transform" 
-             attributeType="XML" 
-             type="translate" 
-             from="2200 -200" 
-             to="-300 900" 
-             dur="3.2s" 
-             repeatCount="indefinite" 
-           /> 
-           <animate 
-             attributeName="opacity" 
-             dur="3.2s" 
-             values="0;1;1;0" 
-             repeatCount="indefinite" 
-           /> 
-         </g> 
+ 
 
          {/* ========= 2. 符文星阵（由一撮星组成的符号） ========= */} 
          {/* 位置大致在 LUMINA 上方，形成一个神秘的“拱形符文” */} 

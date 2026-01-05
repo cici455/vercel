@@ -366,44 +366,85 @@ export default function TarotSelector({ onNavigateToCouncil }: TarotSelectorProp
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-10"
+          className="mb-10 relative"
         >
+          {/* 卡牌聚光：在卡片后面营造焦点感 */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center -z-10">
+            <div 
+              className="w-[380px] h-[380px] rounded-full blur-3xl" 
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.0) 60%)',
+              }}
+            />
+          </div>
+
           <motion.div
             className="relative cursor-pointer"
             whileHover={{ scale: 1.02 }}
             onClick={drawNewCard}
           >
             {/* Card Background */}
-            <div className="w-72 h-96 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-lg border-2 border-[#D4AF37]/30 shadow-[0_0_30px_rgba(212,175,55,0.15)] relative overflow-hidden">
-              {/* Card Border Glow */}
-              <div className="absolute inset-0 border-2 border-transparent rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#b8d7f5] opacity-50 blur-sm animate-pulse"></div>
+            <div className="w-[260px] h-[420px] rounded-[26px] overflow-hidden bg-gradient-to-b from-[#090318] via-[#02000b] to-black border border-white/8 shadow-[0_0_60px_rgba(0,0,0,0.9)] relative">
+              {/* 内层细边框，像塔罗牌的“镶边框” */}
+              <div className="absolute inset-[10px] rounded-[20px] border border-white/8" />
               
               {/* Card Content */}
               <div className="relative p-6 flex flex-col items-center justify-between h-full">
-                {/* Card Name */}
-                <div className="text-center">
-                  <h2 className="text-2xl font-serif text-[#D4AF37] mb-2">
+                {/* 顶栏：Arcana */}
+                <div className="relative z-10 flex items-center justify-between px-5 pt-4 text-[10px] tracking-[0.25em] text-white/40 w-full">
+                  <span>NO. 01</span>
+                  <span className="text-white/50">ARCANA</span>
+                </div>
+
+                {/* 中部：星盘 / 符文 */}
+                <div className="relative z-10 flex flex-col items-center justify-center h-[230px]">
+                  {/* 细线星盘 */}
+                  <div className="relative w-[160px] h-[160px]">
+                    {/* 外环 */}
+                    <div className="absolute inset-0 rounded-full border border-white/8" />
+                    {/* 中环 */}
+                    <div className="absolute inset-[26px] rounded-full border border-white/6 border-dashed" />
+                    {/* 内环 */}
+                    <div className="absolute inset-[56px] rounded-full border border-white/10" />
+                    {/* 若干小刻度点 */}
+                    <div className="absolute left-1/2 top-[6px] -translate-x-1/2 w-[3px] h-[3px] rounded-full bg-white/80" />
+                    <div className="absolute right-[10px] top-1/2 -translate-y-1/2 w-[3px] h-[3px] rounded-full bg-white/50" />
+                    <div className="absolute left-[10px] top-1/2 -translate-y-1/2 w-[3px] h-[3px] rounded-full bg-white/50" />
+                    <div className="absolute left-1/2 bottom-[6px] -translate-x-1/2 w-[3px] h-[3px] rounded-full bg-white/80" />
+                  </div>
+
+                  {/* 中心光点（主星） */}
+                  <div className="mt-[-96px] w-[9px] h-[9px] rounded-full bg-cyan-300/90 shadow-[0_0_18px_rgba(125,249,255,0.9)]" />
+
+                  {/* 小字：对应星体 / 星座 */}
+                  <div className="mt-6 text-[10px] tracking-[0.32em] uppercase text-white/45">
+                    {currentCard.orientation.toUpperCase()}
+                  </div>
+                </div>
+
+                {/* 底部：领域标题 */}
+                <div className="relative z-10 mt-6 px-6 text-center">
+                  <div className="text-[13px] tracking-[0.32em] text-white/40 mb-1 uppercase">
+                    CARD
+                  </div>
+                  <div 
+                    className="text-2xl text-white font-serif" 
+                    style={{ letterSpacing: '0.06em' }}
+                  >
                     {currentCard.name}
-                  </h2>
-                  <p className="text-xs text-gray-400 uppercase tracking-widest">
-                    {currentCard.orientation}
-                  </p>
+                  </div>
                 </div>
 
-                {/* Card Image Placeholder */}
-                <div className="w-40 h-40 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-4">
-                  <Key size={48} className="text-[#D4AF37]/50" />
+                {/* 底缘的小符文 / 对齐线 */}
+                <div className="absolute bottom-6 inset-x-10 flex items-center justify-center gap-2 text-[8px] tracking-[0.35em] text-white/28 uppercase">
+                  <span>ARCANA</span>
+                  <span>·</span>
+                  <span>OMEN</span>
                 </div>
 
-                {/* Card Omen */}
-                <p className="text-center text-sm text-gray-300 italic mb-4">
-                  &ldquo;{currentCard.omen}&rdquo;
-                </p>
-
-                {/* Draw New Card Indicator */}
-                <div className="text-xs text-[#D4AF37]/60 hover:text-[#D4AF37] transition-colors">
-                  Click to draw new card
-                </div>
+                {/* 选中态的外圈辉光 */}
+                <div className="pointer-events-none absolute inset-0 rounded-[26px] ring-2 ring-cyan-400/60 blur-[3px] opacity-0 hover:opacity-100 transition-opacity duration-300" />
               </div>
             </div>
           </motion.div>

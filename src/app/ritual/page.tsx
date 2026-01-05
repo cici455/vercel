@@ -472,7 +472,8 @@ export default function RitualChamberPage() {
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

@@ -2,25 +2,23 @@ import React from 'react';
 
 export function DynamicBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-transparent">
-      {/* 底层渐变 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#080413] via-[#05010a] to-black opacity-60" />
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-black">
+      {/* 底层：轻微的黑灰渐变 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-950 to-neutral-900" />
 
-      {/* 霓虹光团 1 */}
-      <div className="absolute -left-1/3 -top-1/4 w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-[#22d3ee] via-[#6366f1] to-transparent opacity-55 blur-2xl animate-orbit-slow" />
+      {/* 大块灰度雾团 1（偏白） */}
+      <div className="absolute -left-1/3 -top-1/4 w-[70vw] h-[70vw] rounded-full bg-white opacity-10 blur-[100px] mix-blend-screen animate-blob-slow" />
 
-      {/* 霓虹光团 2 */}
-      <div className="absolute right-[-20%] top-1/4 w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-[#a855f7] via-[#ec4899] to-transparent opacity-55 blur-2xl animate-orbit-medium" />
+      {/* 灰度雾团 2（中灰） */}
+      <div className="absolute right-[-20%] top-1/3 w-[60vw] h-[60vw] rounded-full bg-neutral-400 opacity-15 blur-[80px] mix-blend-screen animate-blob-medium" />
 
-      {/* 霓虹光团 3 */}
-      <div className="absolute left-1/4 bottom-[-20%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-tr from-[#22c55e] via-[#22d3ee] to-transparent opacity-45 blur-2xl animate-orbit-fast" />
+      {/* 灰度雾团 3（偏深） */}
+      <div className="absolute left-1/4 bottom-[-25%] w-[65vw] h-[65vw] rounded-full bg-neutral-200 opacity-10 blur-[90px] mix-blend-screen animate-blob-fast" />
 
-      {/* 少量闪烁星点 */}
-      <div className="absolute inset-0 opacity-40 mix-blend-screen">
-        <span className="absolute top-[10%] left-[20%] w-1 h-1 rounded-full bg-white/70 animate-twinkle" />
-        <span className="absolute top-[30%] left-[70%] w-1 h-1 rounded-full bg-cyan-200 animate-twinkle-delayed" />
-        <span className="absolute top-[60%] left-[40%] w-1 h-1 rounded-full bg-violet-200 animate-twinkle" />
-        <span className="absolute top-[80%] left-[80%] w-1 h-1 rounded-full bg-fuchsia-200 animate-twinkle-delayed" />
+      {/* 加几层更深的阴影，让黑白过渡更丰富 */}
+      <div className="absolute inset-0 mix-blend-multiply opacity-70">
+        <div className="absolute left-[10%] top-[40%] w-[40vw] h-[40vw] rounded-full bg-black opacity-70 blur-3xl animate-blob-deep" />
+        <div className="absolute right-[5%] bottom-[10%] w-[30vw] h-[30vw] rounded-full bg-black opacity-80 blur-3xl animate-blob-deep-alt" />
       </div>
     </div>
   );

@@ -241,3 +241,32 @@ html, body {
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.8);
   }
 }
+
+/* 背景流动动画 */
+@keyframes bg-flow {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    background-position: 0% 0%;
+  }
+  25% {
+    transform: translate3d(30px, -30px, 0) scale(1.05);
+    background-position: 20% -10%;
+  }
+  50% {
+    transform: translate3d(-40px, 40px, 0) scale(1.08);
+    background-position: -10% 30%;
+  }
+  75% {
+    transform: translate3d(20px, 50px, 0) scale(1.04);
+    background-position: 10% 80%;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    background-position: 0% 0%;
+  }
+}
+
+.animate-bg-flow {
+  animation: bg-flow 38s ease-in-out infinite alternate;
+  will-change: transform, background-position;
+}

@@ -215,45 +215,21 @@ export default function LandingPage() {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* Stage 0: Intro */}
+        {/* Stage 0: Home (Carousel) */}
         {stage === 0 && (
           <motion.div 
-            key="intro"
+            key="home"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 1 }}
-            className="absolute top-0 w-full h-full flex flex-col justify-center items-center z-10"
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.8 }}
+            className="w-full h-full"
           >
-            <div className="text-center">
-              <h1 
-                className="text-7xl md:text-9xl font-serif text-white tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
-                style={{ mixBlendMode: "difference", zIndex: 10 }}
-              >
-                LUMINA
-              </h1>
-              <p className="mt-4 text-sm text-white/50 tracking-[0.75em] uppercase text-halo">
-                THE EVENT HORIZON
-              </p>
-            </div>
-            <motion.div 
-              className="absolute bottom-16 z-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 1 }}
-            >
-              <motion.button
-                onClick={() => setStage(1)}
-                whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }}
-                className="bg-transparent border-2 border-white/30 text-white/90 px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase transition-all hover:border-white/70 hover:text-white"
-              >
-                <span className="text-halo">ENTER THE VOID</span>
-              </motion.button>
-            </motion.div>
+            <HomeView onStart={() => setStage(2)} />
           </motion.div>
         )}
 
-        {/* Stage 1: Consultation Form */}
+        {/* Stage 1: Consultation Form (Skipped in current flow, but kept for logic) */}
         {stage === 1 && (
           <motion.div
             key="form"

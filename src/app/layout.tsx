@@ -37,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 bg-black text-white antialiased min-h-screen flex flex-col relative`}>
+      <body className={`${cinzel.variable} ${inter.variable} ${spaceGrotesk.variable} m-0 p-0 text-white antialiased min-h-screen flex flex-col relative bg-transparent`}>
         <DynamicBackground />
         
         <div className="fixed inset-0 -z-50 pointer-events-none">

@@ -27,44 +27,45 @@ import React from 'react';
                  repeatCount="indefinite"
                />
              </feTurbulence>
-             <feGaussianBlur stdDeviation="45" />
-             {/* 调整对比度，让整体更暗 */}
+             <feGaussianBlur stdDeviation="30" />
+             {/* 明显压黑，亮区变窄 */}
              <feColorMatrix
                type="matrix"
                values="
-                 0.8 0   0   0  -0.22
-                 0   0.8 0   0  -0.22
-                 0   0   0.8 0  -0.22
+                 0.6 0   0   0  -0.28
+                 0   0.6 0   0  -0.28
+                 0   0   0.6 0  -0.28
                  0   0   0   1   0
                "
              />
            </filter>
 
-           {/* 斜向银河：亮区更窄，两边深灰/黑更多 */}
-           <linearGradient
-             id="galaxy-band"
-             x1="0%"
-             y1="100%"
-             x2="100%"
-             y2="0%"
-           >
-             {/* 大部分区域都是纯黑 */}
+           {/* 斜向银河：更细、更亮，中间像一条刀光 */}
+           <linearGradient id="galaxy-band" x1="0%" y1="100%" x2="100%" y2="0%">
+             <!-- 两端很长一段直接纯黑 -->
              <stop offset="0%" stopColor="#000000" />
-             <stop offset="20%" stopColor="#080808" />
-             <stop offset="35%" stopColor="#151515" />
-             {/* 银河亮区更窄 */}
-             <stop offset="48%" stopColor="#d0d0d0" />
-             <stop offset="52%" stopColor="#ffffff" />
-             <stop offset="65%" stopColor="#151515" />
-             <stop offset="80%" stopColor="#080808" />
+             <stop offset="18%" stopColor="#000000" />
+
+             <!-- 接近银心前的深灰过渡区 -->
+             <stop offset="40%" stopColor="#050505" />
+             <stop offset="46%" stopColor="#0c0c0c" />
+
+             <!-- 非常细的一条银河核心（亮，但不刺眼） -->
+             <stop offset="49%" stopColor="#b8b8b8" />
+             <stop offset="50%" stopColor="#f5f5f5" />
+             <stop offset="51%" stopColor="#b8b8b8" />
+
+             <!-- 迅速回落到深灰，再回到黑 -->
+             <stop offset="54%" stopColor="#0c0c0c" />
+             <stop offset="60%" stopColor="#050505" />
+             <stop offset="82%" stopColor="#000000" />
              <stop offset="100%" stopColor="#000000" />
            </linearGradient>
 
-           {/* 暗角效果的径向渐变 */}
-           <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
-             <stop offset="0%" stopColor="transparent" />
-             <stop offset="70%" stopColor="transparent" />
-             <stop offset="100%" stopColor="#000000" stopOpacity="0.7" />
+           {/* 加强暗角，确保画布边缘完全黑 */}
+           <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+             <stop offset="60%" stopColor="#00000000" />
+             <stop offset="100%" stopColor="#000000ff" />
            </radialGradient> 
  
            {/* 星星的发光渐变 */} 
@@ -94,11 +95,12 @@ import React from 'react';
            opacity="0.9" 
          /> 
  
-         {/* 暗角效果：使用径向渐变让四角变暗 */}
+         {/* 暗角效果：确保画布边缘完全黑，加强银河突出度 */}
          <rect
            width="100%"
            height="100%"
            fill="url(#vignette)"
+           opacity="0.8"
          /> 
  
          {/* 星群：分布在银河附近，大小与亮度有变化 */} 

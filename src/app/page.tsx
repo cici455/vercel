@@ -25,6 +25,7 @@ function CameraRig({ entered }: { entered: boolean }) {
 
 // --- Consultation Form ---
 function ConsultationForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",

@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
+import HomeView from "@/components/HomeView";
 import AstrologyView from "@/components/AstrologyView";
 import RitualView from "@/components/RitualView";
 

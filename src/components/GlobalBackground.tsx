@@ -2,86 +2,64 @@
 
 import React from 'react';
 
-const ZODIAC = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
-
 export function GlobalBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 -z-20 overflow-hidden bg-black">
-      {/* 基底：黑到深灰渐变 */}
+      {/* 层 1：整体暗到黑的渐变基底 */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-[#050505] to-black" />
 
-      {/* 巨大黄道圆盘（十二宫 + 十字轴） */}
+      {/* 层 2：中心“事件视界”光晕（椭圆形） */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative w-[70vh] h-[70vh]">
-          {/* 外环 */}
-          <div className="absolute inset-0 rounded-full border border-white/18" />
-          {/* 中环 */}
-          <div className="absolute inset-[32px] rounded-full border border-white/10" />
-          {/* 内环 */}
-          <div className="absolute inset-[64px] rounded-full border border-white/14" />
-
-          {/* 十字轴 */}
-          <div className="absolute left-1/2 top-[6%] bottom-[6%] w-px -translate-x-1/2 bg-white/12" />
-          <div className="absolute top-1/2 left-[6%] right-[6%] h-px -translate-y-1/2 bg-white/12" />
-
-          {/* 十二宫刻度 + 符号 */}
-          {ZODIAC.map((glyph, i) => (
-            <div
-              key={glyph}
-              className="absolute left-1/2 top-1/2"
-              style={{
-                transform: `rotate(${i * 30}deg) translate(0, -33vh)`,
-              }}
-            >
-              {/* 刻度点 */}
-              <div className="w-[4px] h-[4px] rounded-full bg-white/75" />
-              {/* 符号位置再往外一点 */}
-              <div
-                className="mt-2 text-[14px] text-white/65"
-                style={{
-                  transform: `translate(-50%, -8px) rotate(${-i * 30}deg)`,
-                }}
-              >
-                {glyph}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 斜向银河：细长亮带从左下到右上 */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="w-[230vw] h-[75vh]"
-          style={{
-            background:
-              'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.03) 35%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.03) 65%, rgba(255,255,255,0) 100%)',
-            transform: 'rotate(-22deg) translateY(-12vh)',
-            filter: 'blur(40px)',
-          }}
+        <div 
+          className="w-[520px] h-[260px] rounded-full" 
+          style={{ 
+            background: 
+              'radial-gradient(circle, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.0) 65%)', 
+            filter: 'blur(30px)', 
+          }} 
         />
       </div>
 
-      {/* 中央聚光：托起中间内容（卡牌 / 标题） */}
+      {/* 层 3：竖直的“裂缝之门”——中间那条关键的形状 */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="w-[420px] h-[420px] rounded-full"
-          style={{
-            background:
-              'radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.0) 55%)',
-            transform: 'translateY(40px)',
-            filter: 'blur(22px)',
-          }}
+        <div 
+          className="w-[3px] h-[70vh]" 
+          style={{ 
+            background: 
+              'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.8), rgba(255,255,255,0))', 
+            filter: 'blur(6px)', 
+          }} 
         />
       </div>
 
-      {/* 少量星点 */}
-      <div className="absolute inset-0 mix-blend-screen opacity-50">
-        <span className="absolute top-[10%] left-[20%] w-[2px] h-[2px] rounded-full bg-white/80" />
-        <span className="absolute top-[18%] left-[68%] w-[2px] h-[2px] rounded-full bg-white/70" />
-        <span className="absolute top-[32%] left-[48%] w-[2px] h-[2px] rounded-full bg-white/75" />
-        <span className="absolute top-[44%] left-[78%] w-[1.5px] h-[1.5px] rounded-full bg-white/60" />
-        <span className="absolute top-[56%] left-[18%] w-[1.5px] h-[1.5px] rounded-full bg-white/60" />
+      {/* 层 4：在门周围再叠一层更细的高光，让“门”有金属感 */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div 
+          className="w-[18px] h-[72vh] rounded-full" 
+          style={{ 
+            background: 
+              'radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.0) 60%)', 
+            filter: 'blur(24px)', 
+          }} 
+        />
+      </div>
+
+      {/* 层 5：整体暗角——四周拉黑，中间更聚焦 */}
+      <div 
+        className="absolute inset-0" 
+        style={{ 
+          background: 
+            'radial-gradient(circle at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.9) 100%)', 
+        }} 
+      />
+
+      {/* 层 6：少量星点（点状而不是 ikon），保持克制 */}
+      <div className="absolute inset-0 mix-blend-screen opacity-55">
+        <span className="absolute top-[14%] left-[24%] w-[2px] h-[2px] rounded-full bg-white/80" />
+        <span className="absolute top-[18%] left-[70%] w-[2px] h-[2px] rounded-full bg-white/70" />
+        <span className="absolute top-[28%] left-[47%] w-[2px] h-[2px] rounded-full bg-white/75" />
+        <span className="absolute top-[52%] left-[17%] w-[1.5px] h-[1.5px] rounded-full bg-white/60" />
+        <span className="absolute top-[48%] left-[79%] w-[1.5px] h-[1.5px] rounded-full bg-white/60" />
       </div>
     </div>
   );

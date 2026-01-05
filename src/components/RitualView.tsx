@@ -47,59 +47,114 @@ const TAROT_THEMES: TarotTheme[] = [
 
 // Holographic Card
 const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme; isActive: boolean; index: number; offset: number }) => {
+  // 根据主题设置行星和元素信息
+  const getCardInfo = (id: string) => {
+    switch (id) {
+      case 'love':
+        return { symbol: '♀', planet: 'VENUS', element: 'WATER' };
+      case 'career':
+        return { symbol: '♄', planet: 'SATURN', element: 'EARTH' };
+      case 'destiny':
+        return { symbol: '☉', planet: 'SUN', element: 'FIRE' };
+      case 'chaos':
+        return { symbol: '♅', planet: 'URANUS', element: 'AIR' };
+      default:
+        return { symbol: '☉', planet: 'SUN', element: 'FIRE' };
+    }
+  };
+
+  const cardInfo = getCardInfo(theme.id);
+
   return (
     <motion.div
       layout
-      className={`absolute rounded-[20px] overflow-hidden cursor-pointer
-        ${isActive 
-          ? 'z-20 border border-cyan-300/70 shadow-[0_0_25px_rgba(56,189,248,0.55)] bg-gradient-to-b from-[#120821] via-[#05040A] to-[#010104]' 
-          : 'z-10 border border-white/20 bg-black/40'
-        }
+      className={`
+        relative w-[260px] h-[340px]
+        rounded-[24px] overflow-hidden
+        bg-gradient-to-b from-[#151515] via-[#050505] to-black
+        border border-white/14
+        shadow-[0_28px_70px_rgba(0,0,0,0.95)]
       `}
       initial={false}
       animate={{
-        x: offset * 220, // Reduced spacing
-        rotateY: isActive ? 3 : (offset > 0 ? 18 : -18),
-        rotateX: isActive ? -2 : 0,
-        scale: isActive ? 1 : 0.85,
-        opacity: isActive ? 1 : 0.4,
+        x: offset * 320, // Distance between cards
+        z: Math.abs(offset) * -100, // Depth effect
+        rotateY: offset * -15, // Rotation effect
+        rotateX: isActive ? 6 : 0,
+        scale: isActive ? 1.02 : 0.94,
+        opacity: isActive ? 1 : 0.6 - Math.abs(offset) * 0.2,
       }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       style={{
-        width: '260px',
-        height: '420px',
         transformStyle: 'preserve-3d',
+        transformOrigin: 'center bottom',
       }}
     >
+      {/* 内边框，模拟塔罗牌的镶边 */}
+      <div className="absolute inset-[10px] rounded-[18px] border border-white/10" />
+      
+      {/* 底缘高光，增加“厚度” */}
+      <div className="pointer-events-none absolute bottom-[14px] inset-x-10 h-[2px] bg-gradient-to-r from-white/0 via-white/45 to-white/0 opacity-60" />
+      
       {/* Card Content */}
       <div className="relative h-full flex flex-col items-center justify-between p-6">
-        {/* Header */}
-        <div className="w-full flex justify-between items-center opacity-70">
-          <div className="text-[10px] font-sans tracking-widest text-white/60">NO. 0{index + 1}</div>
-          <div className="text-[10px] font-sans tracking-widest text-white/60">ARCANA</div>
+        {/* 顶栏：神秘学排版 */}
+        <div className="relative z-10 flex items-center justify-between px-6 pt-4 text-[10px] tracking-[0.25em] text-white/45 uppercase">
+          <span>NO. 0{index + 1}</span>
+          <span>ARCANA</span>
         </div>
 
-        {/* Center Energy Rune */}
-        <div className="relative flex-1 flex items-center justify-center w-full">
-           <div className="w-32 h-32 rounded-full border border-white/10 flex items-center justify-center relative">
-              <div className="absolute inset-0 rounded-full border border-cyan-400/20 animate-spin-slow"></div>
-              <div className="w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_cyan]"></div>
-           </div>
+        {/* 中部：占星星盘 + 行星符文 */}
+        <div className="relative z-10 mt-2 flex flex-col items-center justify-center h-[210px]">
+          <div className="relative w-[160px] h-[160px]">
+            {/* 外环 */}
+            <div className="absolute inset-0 rounded-full border border-white/16" />
+            {/* 十二宫刻度 */}
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-[3px] h-[3px] rounded-full bg-white/65"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transform: `rotate(${i * 30}deg) translate(0, -76px)`,
+                }}
+              />
+            ))}
+            {/* 中环虚线 */}
+            <div className="absolute inset-[30px] rounded-full border border-white/10 border-dashed" />
+            {/* 内环 */}
+            <div className="absolute inset-[58px] rounded-full border border-white/18" />
+            {/* 六芒星几何阵 */}
+            <svg viewBox="0 0 100 100" className="absolute inset-[34px] w-[92px] h-[92px] text-white/16">
+              <polygon points="50,8 12,84 88,84" fill="none" stroke="currentColor" strokeWidth="0.6" />
+              <polygon points="50,92 12,16 88,16" fill="none" stroke="currentColor" strokeWidth="0.6" />
+            </svg>
+            {/* 中央行星符号 */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white/6 border border-white/18 flex items-center justify-center">
+                <span className="text-[20px] text-white/90">
+                  {cardInfo.symbol}
+                </span>
+              </div>
+            </div>
+          </div>
+          {/* 行星 / 元素信息 */}
+          <div className="mt-5 text-[10px] tracking-[0.32em] uppercase text-white/55">
+            {cardInfo.planet} · {cardInfo.element}
+          </div>
         </div>
 
-        {/* Footer Text */}
-        <div className="text-center space-y-2">
-          <h3 className="font-serif text-xl text-[#F5ECFF] tracking-widest font-normal uppercase">
+        {/* 底部文案：黑白 serif + 大字距 */}
+        <div className="relative z-10 mt-4 px-6 text-center">
+          <div className="text-[11px] tracking-[0.32em] text-white/42 mb-1 uppercase">
             {theme.title}
-          </h3>
-          <p className="text-[9px] text-white/40 font-sans tracking-[0.2em] uppercase">
+          </div>
+          <div className="text-[10px] tracking-[0.38em] text-white/32 uppercase">
             {theme.subtitle}
-          </p>
+          </div>
         </div>
       </div>
-      
-      {/* Scanline/Grid Effect - Subtle */}
-      <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.2)_50%)] bg-[length:100%_3px] opacity-20 pointer-events-none"></div>
     </motion.div>
   );
 };

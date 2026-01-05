@@ -471,6 +471,7 @@ export default function RitualChamberPage() {
               </motion.button>
             </div>
           </div>
+        </div>
         </main>
       </div>
     </div>

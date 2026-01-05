@@ -15,13 +15,13 @@
          {/* 亮雾团 A：偏白 */} 
          <motion.div 
            className="absolute -left-[25%] -top-[25%] w-[85vw] h-[85vw] rounded-full bg-white/85 blur-[110px] mix-blend-screen" 
-           initial={{ x: -120, y: -60 }} 
+           initial={{ x: -240, y: -120 }} 
            animate={{ 
-             x: [-120, 180, -80], 
-             y: [-60, 120, -40], 
+             x: [-240, 360, -160], 
+             y: [-120, 240, -80], 
            }} 
            transition={{ 
-             duration: 22,          // 先设快一点，方便你看出来在动 
+             duration: 11,          // 速度加倍 
              repeat: Infinity, 
              ease: 'easeInOut', 
            }} 
@@ -30,13 +30,13 @@
          {/* 中灰雾团 B */} 
          <motion.div 
            className="absolute right-[-30%] top-[5%] w-[80vw] h-[80vw] rounded-full bg-neutral-400/90 blur-[110px] mix-blend-screen" 
-           initial={{ x: 160, y: 40 }} 
+           initial={{ x: 320, y: 80 }} 
            animate={{ 
-             x: [160, -100, 80], 
-             y: [40, -80, 20], 
+             x: [320, -200, 160], 
+             y: [80, -160, 40], 
            }} 
            transition={{ 
-             duration: 26, 
+             duration: 13,          // 速度加倍 
              repeat: Infinity, 
              ease: 'easeInOut', 
            }} 
@@ -45,13 +45,13 @@
          {/* 深阴影 C：加厚黑色，防止画面太白 */} 
          <motion.div 
            className="absolute left-[5%] bottom-[-30%] w-[95vw] h-[95vw] rounded-full bg-black/95 blur-[130px] mix-blend-multiply" 
-           initial={{ x: 0, y: 60 }} 
+           initial={{ x: 0, y: 120 }} 
            animate={{ 
-             x: [0, -80, 50], 
-             y: [60, -50, 30], 
+             x: [0, -160, 100], 
+             y: [120, -100, 60], 
            }} 
            transition={{ 
-             duration: 30, 
+             duration: 15,          // 速度加倍 
              repeat: Infinity, 
              ease: 'easeInOut', 
            }} 

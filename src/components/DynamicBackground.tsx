@@ -103,70 +103,166 @@ import React from 'react';
           opacity="0.5"
         /> 
  
-         {/* 星群：分布在银河附近，大小与亮度有变化 */} 
-         <g filter="url(#star-blur)"> 
-           {/* 静态星点（基础星空） */} 
-           <circle cx="200" cy="200" r="2.2" fill="url(#star-glow)" opacity="0.9" /> 
-           <circle cx="450" cy="320" r="1.6" fill="url(#star-glow)" opacity="0.7" /> 
-           <circle cx="800" cy="180" r="1.8" fill="url(#star-glow)" opacity="0.8" /> 
-           <circle cx="1200" cy="260" r="2.0" fill="url(#star-glow)" opacity="0.85" /> 
-           <circle cx="1550" cy="220" r="1.4" fill="url(#star-glow)" opacity="0.7" /> 
-           <circle cx="600" cy="520" r="1.8" fill="url(#star-glow)" opacity="0.75" /> 
-           <circle cx="1000" cy="600" r="2.4" fill="url(#star-glow)" opacity="0.9" /> 
-           <circle cx="1350" cy="520" r="1.5" fill="url(#star-glow)" opacity="0.7" /> 
- 
-           {/* 动态“震撼”星团：大小和亮度缓慢变化，形状感觉更有生命力 */} 
-           <g> 
-             <circle cx="960" cy="320" r="3.5" fill="url(#star-glow)" opacity="0.95"> 
-               <animate 
-                 attributeName="r" 
-                 dur="4.5s" 
-                 values="2.5;4.5;3;5.2;2.8" 
-                 repeatCount="indefinite" 
-               /> 
-               <animate 
-                 attributeName="opacity" 
-                 dur="4.5s" 
-                 values="0.4;1;0.6;1;0.4" 
-                 repeatCount="indefinite" 
-               /> 
-             </circle> 
-           </g> 
- 
-           <g> 
-             <circle cx="720" cy="420" r="3.0" fill="url(#star-glow)" opacity="0.85"> 
-               <animate 
-                 attributeName="r" 
-                 dur="6s" 
-                 values="1.5;3.8;2.2;4.2;1.5" 
-                 repeatCount="indefinite" 
-               /> 
-               <animate 
-                 attributeName="opacity" 
-                 dur="6s" 
-                 values="0.3;0.9;0.5;1;0.3" 
-                 repeatCount="indefinite" 
-               /> 
-             </circle> 
-           </g> 
- 
-           <g> 
-             <circle cx="1220" cy="460" r="3.2" fill="url(#star-glow)" opacity="0.9"> 
-               <animate 
-                 attributeName="r" 
-                 dur="5.2s" 
-                 values="2;4;2.5;5;2" 
-                 repeatCount="indefinite" 
-               /> 
-               <animate 
-                 attributeName="opacity" 
-                 dur="5.2s" 
-                 values="0.4;1;0.6;1;0.4" 
-                 repeatCount="indefinite" 
-               /> 
-             </circle> 
-           </g> 
-         </g> 
+         {/* 星群：基础星空 + 几颗“主角星” */} 
+        <g filter="url(#star-blur)"> 
+          {/* 静态小星点（背景噪声层） */} 
+          <circle cx="200" cy="200" r="1.2" fill="url(#star-glow)" opacity="0.5" /> 
+          <circle cx="420" cy="260" r="1.0" fill="url(#star-glow)" opacity="0.4" /> 
+          <circle cx="760" cy="180" r="0.9" fill="url(#star-glow)" opacity="0.4" /> 
+          <circle cx="1180" cy="220" r="1.1" fill="url(#star-glow)" opacity="0.45" /> 
+          <circle cx="1540" cy="260" r="0.9" fill="url(#star-glow)" opacity="0.4" /> 
+          <circle cx="560" cy="540" r="1.0" fill="url(#star-glow)" opacity="0.4" /> 
+          <circle cx="980" cy="620" r="1.2" fill="url(#star-glow)" opacity="0.45" /> 
+          <circle cx="1380" cy="540" r="1.0" fill="url(#star-glow)" opacity="0.4" /> 
+
+          {/* 主角星 1：画面正上方的“超新星”——快速脉冲，亮度极高 */} 
+          <g> 
+            <circle cx="960" cy="260" r="2.4" fill="url(#star-glow)" opacity="0.9"> 
+              <animate 
+                attributeName="r" 
+                dur="2.4s" 
+                values="1.5;4.5;2.2;5.5;1.5" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="opacity" 
+                dur="2.4s" 
+                values="0.2;1;0.5;1;0.2" 
+                repeatCount="indefinite" 
+              /> 
+            </circle> 
+            {/* 外圈光环，让闪光更有冲击力 */} 
+            <circle cx="960" cy="260" r="6" fill="url(#star-glow)" opacity="0.4"> 
+              <animate 
+                attributeName="r" 
+                dur="2.4s" 
+                values="4;10;6;12;4" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="opacity" 
+                dur="2.4s" 
+                values="0;0.6;0.2;0.7;0" 
+                repeatCount="indefinite" 
+              /> 
+            </circle> 
+          </g> 
+
+          {/* 主角星 2：左下的旋转十字光芒 */} 
+          <g transform="translate(740 420)"> 
+            {/* 核心星点 */} 
+            <circle r="1.8" fill="url(#star-glow)" opacity="0.9"> 
+              <animate 
+                attributeName="r" 
+                dur="3.5s" 
+                values="1.2;2.5;1.5;3;1.2" 
+                repeatCount="indefinite" 
+              /> 
+            </circle> 
+            {/* 横向光芒 */} 
+            <line 
+              x1="-10" 
+              y1="0" 
+              x2="10" 
+              y2="0" 
+              stroke="white" 
+              strokeWidth="0.35" 
+              strokeLinecap="round" 
+              opacity="0.8" 
+            > 
+              <animateTransform 
+                attributeName="transform" 
+                attributeType="XML" 
+                type="rotate" 
+                from="0 0 0" 
+                to="360 0 0" 
+                dur="8s" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="opacity" 
+                dur="4s" 
+                values="0.1;0.8;0.3;1;0.1" 
+                repeatCount="indefinite" 
+              /> 
+            </line> 
+            {/* 纵向光芒 */} 
+            <line 
+              x1="0" 
+              y1="-10" 
+              x2="0" 
+              y2="10" 
+              stroke="white" 
+              strokeWidth="0.35" 
+              strokeLinecap="round" 
+              opacity="0.8" 
+            > 
+              <animateTransform 
+                attributeName="transform" 
+                attributeType="XML" 
+                type="rotate" 
+                from="45 0 0" 
+                to="405 0 0" 
+                dur="8s" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="opacity" 
+                dur="4s" 
+                values="0.1;0.8;0.3;1;0.1" 
+                repeatCount="indefinite" 
+              /> 
+            </line> 
+          </g> 
+
+          {/* 主角星 3：右侧较大的缓慢呼吸星团 */} 
+          <g> 
+            <circle cx="1260" cy="460" r="2.6" fill="url(#star-glow)" opacity="0.85"> 
+              <animate 
+                attributeName="r" 
+                dur="5.2s" 
+                values="1.8;3.8;2.2;4.5;1.8" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="opacity" 
+                dur="5.2s" 
+                values="0.2;0.9;0.4;1;0.2" 
+                repeatCount="indefinite" 
+              /> 
+            </circle> 
+          </g> 
+
+          {/* 流星：偶尔从右上斜划到左下 */} 
+          <g> 
+            <circle 
+              cx="1900" 
+              cy="80" 
+              r="1.4" 
+              fill="url(#star-glow)" 
+              opacity="0" 
+            > 
+              <animate 
+                attributeName="cx" 
+                dur="3.2s" 
+                values="1900;1100;300;-100" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="cy" 
+                dur="3.2s" 
+                values="80;260;640;900" 
+                repeatCount="indefinite" 
+              /> 
+              <animate 
+                attributeName="opacity" 
+                dur="3.2s" 
+                values="0;1;1;0" 
+                repeatCount="indefinite" 
+              /> 
+            </circle> 
+          </g> 
+        </g> 
        </svg> 
      </div> 
    ); 

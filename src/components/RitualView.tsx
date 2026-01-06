@@ -68,10 +68,10 @@ const HolographicCard = ({ theme, slot, index }: { theme: TarotTheme; slot: stri
   return (
     <motion.div
       className=" 
-        relative w-[260px] h-[340px] 
+        relative w-[260px] h-[380px] 
         rounded-[24px] overflow-hidden 
-        bg-gradient-to-b from-[#151515] via-[#050505] to-black 
-        border border-white/14 
+        bg-[#050307] 
+        border border-amber-300/60 
         shadow-[0_28px_70px_rgba(0,0,0,0.95)] 
       "
       style={{ transformOrigin: 'center bottom' }}
@@ -82,69 +82,65 @@ const HolographicCard = ({ theme, slot, index }: { theme: TarotTheme; slot: stri
       }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
     >
-      {/* 内边框，模拟塔罗牌的镶边 */}
-      <div className="absolute inset-[10px] rounded-[18px] border border-white/10" />
-      
-      {/* 底缘高光，增加“厚度” */}
-      <div className="pointer-events-none absolute bottom-[14px] inset-x-10 h-[2px] bg-gradient-to-r from-white/0 via-white/45 to-white/0 opacity-60" />
-      
-      {/* Card Content */}
-      <div className="relative h-full flex flex-col items-center justify-between p-6">
-        {/* 顶栏：神秘学排版 */}
-        <div className="relative z-10 flex items-center justify-between px-6 pt-4 text-[10px] tracking-[0.25em] text-white/45 uppercase">
-          <span>NO. 0{index + 1}</span>
-          <span>ARCANA</span>
-        </div>
+      {/* 内边框 */}
+      <div className="absolute inset-[10px] rounded-[18px] border border-amber-300/40" />
 
-        {/* 中部：占星星盘 + 行星符文 */}
-        <div className="relative z-10 mt-2 flex flex-col items-center justify-center h-[210px]">
-          <div className="relative w-[160px] h-[160px]">
-            {/* 外环 */}
-            <div className="absolute inset-0 rounded-full border border-white/16" />
-            {/* 十二宫刻度 */}
-            {[...Array(12)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-[3px] h-[3px] rounded-full bg-white/65"
-                style={{
-                  left: '50%',
-                  top: '50%',
-                  transform: `rotate(${i * 30}deg) translate(0, -76px)`,
-                }}
-              />
-            ))}
-            {/* 中环虚线 */}
-            <div className="absolute inset-[30px] rounded-full border border-white/10 border-dashed" />
-            {/* 内环 */}
-            <div className="absolute inset-[58px] rounded-full border border-white/18" />
-            {/* 六芒星几何阵 */}
-            <svg viewBox="0 0 100 100" className="absolute inset-[34px] w-[92px] h-[92px] text-white/16">
-              <polygon points="50,8 12,84 88,84" fill="none" stroke="currentColor" strokeWidth="0.6" />
-              <polygon points="50,92 12,16 88,16" fill="none" stroke="currentColor" strokeWidth="0.6" />
-            </svg>
-            {/* 中央行星符号 */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-white/6 border border-white/18 flex items-center justify-center">
-                <span className="text-[20px] text-white/90">
-                  {cardInfo.symbol}
-                </span>
-              </div>
-            </div>
-          </div>
-          {/* 行星 / 元素信息 */}
-          <div className="mt-5 text-[10px] tracking-[0.32em] uppercase text-white/55">
-            {cardInfo.planet} · {cardInfo.element}
-          </div>
-        </div>
+      {/* 四角装饰弧线 */}
+      <div className="absolute inset-[14px]">
+        {/* 左上 */}
+        <div className="absolute left-0 top-0 w-6 h-6 border-l border-t border-amber-300/70 rounded-tl-[18px]" />
+        {/* 右上 */}
+        <div className="absolute right-0 top-0 w-6 h-6 border-r border-t border-amber-300/70 rounded-tr-[18px]" />
+        {/* 左下 */}
+        <div className="absolute left-0 bottom-0 w-6 h-6 border-l border-b border-amber-300/70 rounded-bl-[18px]" />
+        {/* 右下 */}
+        <div className="absolute right-0 bottom-0 w-6 h-6 border-r border-b border-amber-300/70 rounded-br-[18px]" />
+      </div>
 
-        {/* 底部文案：黑白 serif + 大字距 */}
-        <div className="relative z-10 mt-4 px-6 text-center">
-          <div className="text-[11px] tracking-[0.32em] text-white/42 mb-1 uppercase">
-            {theme.title}
-          </div>
-          <div className="text-[10px] tracking-[0.38em] text-white/32 uppercase">
-            {theme.subtitle}
-          </div>
+      {/* 小星星点缀 */}
+      <div className="absolute inset-[24px]">
+        <span className="absolute left-[12%] top-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" />
+        <span className="absolute right-[16%] top-[26%] w-[2px] h-[2px] bg-amber-200 rounded-full" />
+        <span className="absolute left-[18%] bottom-[22%] w-[2px] h-[2px] bg-amber-200 rounded-full" />
+        <span className="absolute right-[20%] bottom-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" />
+      </div>
+
+      {/* 顶部小标题：编号 + ARCANA */}
+      <div className="relative z-10 flex items-center justify-between px-6 pt-5 text-[10px] tracking-[0.25em] text-amber-200/80 uppercase">
+        <span>NO. 0{index + 1}</span>
+        <span>ARCANA</span>
+      </div>
+
+      {/* 中央主图：月亮 + 光芒（LOVE 卡示例） */}
+      <div className="relative z-10 mt-4 flex flex-col items-center justify-center h-[210px]">
+        <div className="relative w-[150px] h-[150px]">
+          {/* 外层光芒圈 */}
+          <div className="absolute inset-0 rounded-full border border-amber-200/40" />
+          {/* 光芒射线（简单版：12 条线） */}
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute left-1/2 top-1/2 w-[1px] h-[14px] bg-amber-200/60 origin-bottom"
+              style={{ transform: `rotate(${i * 30}deg) translateY(-64px)` }}
+            />
+          ))}
+          {/* 月亮圆 */}
+          <div className="absolute inset-[26px] rounded-full border border-amber-200/80 bg-black" />
+          {/* 月亮剪影（左边挖掉一点形成弯月） */}
+          <div className="absolute inset-[32px] rounded-full bg-amber-200/90" />
+          <div className="absolute inset-[38px] rounded-full bg-black translate-x-[12px]" />
+          {/* 中心小星 */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-[4px] rounded-full bg-black/80" />
+        </div>
+      </div>
+
+      {/* 底部主文案 */}
+      <div className="relative z-10 mt-6 px-4 text-center">
+        <div className="text-[11px] tracking-[0.32em] text-amber-200/80 mb-2 uppercase">
+          {theme.title}
+        </div>
+        <div className="text-[10px] tracking-[0.38em] text-amber-200/70 uppercase">
+          {theme.subtitle}
         </div>
       </div>
     </motion.div>

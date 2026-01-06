@@ -46,6 +46,80 @@ const TAROT_THEMES: TarotTheme[] = [
 
 // --- Components ---
 
+// Card Motif Component
+function CardMotif({ id }: { id: string }) { 
+  switch (id) { 
+    case 'destiny': // 命运&道路 - 用你现在的月亮 
+      return ( 
+        <div className="relative w-[150px] h-[150px]"> 
+          <div className="absolute inset-0 rounded-full border border-amber-200/40" /> 
+          {[...Array(12)].map((_, i) => ( 
+            <div 
+              key={i} 
+              className="absolute left-1/2 top-1/2 w-[1px] h-[14px] bg-amber-200/60 origin-bottom" 
+              style={{ transform: `rotate(${i * 30}deg) translateY(-64px)` }} 
+            /> 
+          ))} 
+          <div className="absolute inset-[26px] rounded-full border border-amber-200/80 bg-black" /> 
+          <div className="absolute inset-[32px] rounded-full bg-amber-200/90" /> 
+          <div className="absolute inset-[38px] rounded-full bg-black translate-x-[12px]" /> 
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-[4px] rounded-full bg-black/80" /> 
+        </div> 
+      ); 
+    case 'love': // 爱&关系 - 双月+小星 
+      return ( 
+        <div className="relative w-[150px] h-[150px]"> 
+          <div className="absolute inset-0 rounded-full border border-amber-200/35" /> 
+          <div className="absolute inset-[30px] rounded-full border border-amber-200/25" /> 
+          {/* 大月 */} 
+          <div className="absolute inset-[36px] rounded-full bg-amber-200/90" /> 
+          <div className="absolute inset-[44px] rounded-full bg-black translate-x-[10px]" /> 
+          {/* 小月 */} 
+          <div className="absolute left-[30%] top-[38%] w-[26px] h-[26px] rounded-full bg-amber-200/80" /> 
+          <div className="absolute left-[33%] top-[41%] w-[22px] h-[22px] rounded-full bg-black" /> 
+          {/* 小星 */} 
+          <div className="absolute right-[26%] top-[30%] w-[3px] h-[3px] bg-amber-200 rounded-full" /> 
+        </div> 
+      ); 
+    case 'career': // 事业&财富 - 金字塔/硬朗结构 
+      return ( 
+        <div className="relative w-[150px] h-[150px]"> 
+          <div className="absolute inset-0 rounded-full border border-amber-200/30" /> 
+          <svg viewBox="0 0 100 100" className="absolute inset-[20px] w-[110px] h-[110px] text-amber-200/70"> 
+            <polygon 
+              points="50,10 14,86 86,86" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="1.4" 
+            /> 
+            <line x1="50" y1="10" x2="50" y2="86" stroke="currentColor" strokeWidth="0.8" /> 
+            <circle cx="50" cy="55" r="7" fill="none" stroke="currentColor" strokeWidth="1" /> 
+          </svg> 
+          {/* 顶点小光 */} 
+          <div className="absolute left-1/2 top-[18%] -translate-x-1/2 w-[4px] h-[4px] rounded-full bg-amber-200" /> 
+        </div> 
+      ); 
+    case 'chaos': // 混沌&变革 - 破碎圆+闪电 
+      return ( 
+        <div className="relative w-[150px] h-[150px]"> 
+          <div className="absolute inset-0 rounded-full border border-amber-200/30 border-dashed" /> 
+          {/* 破碎圆 */} 
+          <div className="absolute inset-[34px] rounded-full border border-amber-200/80 border-dashed border-spacing-[6px]" /> 
+          {/* 闪电 */} 
+          <svg viewBox="0 0 100 100" className="absolute inset-[30px] w-[90px] h-[90px] text-amber-200/90"> 
+            <polyline 
+              points="40,18 56,38 46,42 64,64 32,54 42,46 30,32 40,18" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="1.8" 
+            /> 
+          </svg> 
+        </div> 
+      ); 
+    default: 
+      return null; 
+  } 
+}
 
 // --- Main Component ---
 const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
@@ -186,22 +260,9 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                       <span>ARCANA</span> 
                     </div> 
  
-                    {/* 中央主图：月亮 + 光芒 */} 
+                    {/* 中央主图：根据 theme.id 渲染不同图案 */} 
                     <div className="relative z-10 mt-4 flex flex-col items-center justify-center h-[210px]"> 
-                      <div className="relative w-[150px] h-[150px]"> 
-                        <div className="absolute inset-0 rounded-full border border-amber-200/40" /> 
-                        {[...Array(12)].map((_, i) => ( 
-                          <div 
-                            key={i} 
-                            className="absolute left-1/2 top-1/2 w-[1px] h-[14px] bg-amber-200/60 origin-bottom" 
-                            style={{ transform: `rotate(${i * 30}deg) translateY(-64px)` }} 
-                          /> 
-                        ))} 
-                        <div className="absolute inset-[26px] rounded-full border border-amber-200/80 bg-black" /> 
-                        <div className="absolute inset-[32px] rounded-full bg-amber-200/90" /> 
-                        <div className="absolute inset-[38px] rounded-full bg-black translate-x-[12px]" /> 
-                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-[4px] rounded-full bg-black/80" /> 
-                      </div> 
+                      <CardMotif id={theme.id} /> 
                     </div> 
  
                     {/* 底部主文案 */} 

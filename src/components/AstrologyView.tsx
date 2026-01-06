@@ -143,7 +143,7 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
 
 // --- Main Component ---
 const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, onBack }) => {
-  const { chartData, narrativeProfile, tensionLabel, tensionLine, loading, error } = useUserChart(userData);
+  const { chartData, narrativeProfile, tensionLabel, tensionLine, planetCopy, loading, error } = useUserChart(userData);
 
   const trinityCards = useMemo(() => {
     if (!chartData) return [];
@@ -185,22 +185,27 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
 
   const planetCards = useMemo(() => {
     if (!chartData?.planets) return [];
-    return chartData.planets.map((planet, index) => ({
-      id: `planet-${index}`,
-      kind: "planet" as const,
-      planet: planet.name.toLowerCase() as any,
-      sign: planet.sign,
-      degree: 0,
-      title: planet.behavior,
-      inscription: planet.behavior,
-      notes: { meaning: "", practice: "" },
-      today: planet.transit ? {
-        status: planet.transit.type,
-        why: planet.transit.label,
-        guidance: ""
-      } : { status: undefined, why: "", guidance: "" }
-    }));
-  }, [chartData?.planets]);
+    return chartData.planets.map((planet, index) => {
+      const planetKey = planet.name.toLowerCase();
+      const copy = planetCopy?.[planetKey as keyof typeof planetCopy];
+      return {
+        id: `planet-${index}`,
+        kind: "planet" as const,
+        planet: planetKey as any,
+        sign: planet.sign,
+        degree: 0,
+        title: copy?.title || planet.behavior,
+        line: copy?.line,
+        inscription: planet.behavior,
+        notes: { meaning: "", practice: "" },
+        today: planet.transit ? {
+          status: planet.transit.type,
+          why: planet.transit.label,
+          guidance: ""
+        } : { status: undefined, why: "", guidance: "" }
+      };
+    });
+  }, [chartData?.planets, planetCopy]);
 
   return (
     <div className="relative w-full min-h-screen bg-transparent text-white flex flex-col items-center p-4 pb-48">

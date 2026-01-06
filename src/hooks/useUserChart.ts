@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
-import { calculateNatalChart } from '../utils/astrologyCalculator';
+import { calculateNatalChart, NatalChart } from '../utils/astrologyCalculator';
+import { PLANET_ARCHETYPES, PlanetKey } from '../utils/planetArchetypes';
+import { ELEMENT_BY_SIGN, Element } from '../utils/archetypeMatrix';
 import { calculatePlanetPositions, detectAspects, PlanetPosition, AspectSignal } from '../utils/astrologySystem';
 import { generateDailyOmen, OmenOutput } from '../utils/narrativeGenerator';
 import { ZODIAC_CONTENT } from '../data/luminaContent';
@@ -110,11 +112,49 @@ const buildNarrativeProfile = (natalChart: any): NarrativeProfile => {
   };
 };
 
+type PlanetCopyForUI = Record<PlanetKey, { title: string; line: string }>;
+
+const buildPlanetCopy = (natalChart: NatalChart): PlanetCopyForUI => {
+  const result: Partial<PlanetCopyForUI> = {};
+
+  const planetKeys: PlanetKey[] = [
+    'mercury',
+    'venus',
+    'mars',
+    'jupiter',
+    'saturn',
+    'uranus',
+    'neptune',
+    'pluto',
+  ];
+
+  planetKeys.forEach((key) => {
+    const sign = natalChart.signs[key];       // 例如 'capricorn'
+    if (!sign) return;
+
+    const element: Element | undefined = ELEMENT_BY_SIGN[sign.toLowerCase()];
+    const base = PLANET_ARCHETYPES[key];
+    if (!base) return;
+
+    const titleFromElement =
+      (element && base.titlesByElement?.[element]) || base.baseTitle;
+
+    result[key] = {
+      title: titleFromElement,
+      line: base.baseLine,
+    };
+  });
+
+  // 类型断言：我们确保上面填满所有 key
+  return result as PlanetCopyForUI;
+};
+
 export const useUserChart = (userData: UserChartInput | null) => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [narrativeProfile, setNarrativeProfile] = useState<NarrativeProfile | null>(null);
   const [tensionLabel, setTensionLabel] = useState<string>('');
   const [tensionLine, setTensionLine] = useState<string>('');
+  const [planetCopy, setPlanetCopy] = useState<Record<string, { title: string; line: string }>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,7 +187,11 @@ export const useUserChart = (userData: UserChartInput | null) => {
       setTensionLabel(label);
       setTensionLine(line);
       
-      // 4. Build narrative profile
+      // 4. Build planet copy for UI
+      const planetCopy = buildPlanetCopy(natalChart);
+      setPlanetCopy(planetCopy);
+      
+      // 5. Build narrative profile
       const profile = buildNarrativeProfile(natalChart);
       setNarrativeProfile(profile);
 
@@ -254,5 +298,5 @@ export const useUserChart = (userData: UserChartInput | null) => {
     }
   }, [userData]);
 
-  return { chartData, narrativeProfile, loading, error, tensionLabel, tensionLine };
+  return { chartData, narrativeProfile, loading, error, tensionLabel, tensionLine, planetCopy };
 };

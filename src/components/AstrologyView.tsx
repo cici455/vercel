@@ -69,13 +69,13 @@ const TrinityCard = ({ item }: { item: CardItem }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-black/60 backdrop-blur-sm border border-white/15 rounded-lg p-6 shadow-lg hover:border-white/30 transition-all"
+      className="bg-black/35 border border-white/10 backdrop-blur-md rounded-lg p-6 shadow-lg hover:border-white/30 transition-all"
     >
       <div className="flex flex-col items-center text-center">
         <div className="mb-4 text-[#E7D7B6] opacity-80">{getIcon()}</div>
-        <h3 className="font-cinzel text-xl mb-1 text-white">{item.title}</h3>
-        <p className="text-xs text-white/40 tracking-[0.2em] uppercase mb-3">{item.slot?.toUpperCase()}</p>
-        <p className="font-cormorant text-white/70 text-sm">{item.inscription}</p>
+        <h3 className="font-cinzel text-xl mb-1 text-white/90">{item.title}</h3>
+        <p className="text-xs text-white/60 tracking-[0.2em] uppercase mb-3">{item.slot?.toUpperCase()}</p>
+        <p className="font-cormorant text-white/75 text-sm">{item.inscription}</p>
       </div>
     </motion.div>
   );
@@ -89,7 +89,7 @@ const OracleLine = ({ omen }: { omen: OmenOutput }) => (
     className="w-full max-w-2xl relative z-10 mb-12"
   >
     <div className="text-center">
-      <span className="font-cinzel text-[9px] text-white/30 tracking-[0.2em] uppercase">TODAY'S OMEN</span>
+      <span className="font-cinzel text-[9px] text-white/60 tracking-[0.2em] uppercase">TODAY'S OMEN</span>
     </div>
     <blockquote className="relative mt-4 px-8 text-center font-cormorant text-lg text-white/90 italic">
       "{omen.omen}"
@@ -126,14 +126,14 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.7, duration: 0.5 }}
-      className="bg-black/50 backdrop-blur-sm border border-white/15 rounded-lg p-4 hover:border-white/30 transition-all"
+      className="bg-black/35 border border-white/10 backdrop-blur-md rounded-lg p-4 hover:border-white/30 transition-all"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 text-white/70">{getPlanetIcon()}</div>
+          <div className="w-8 h-8 text-white/75">{getPlanetIcon()}</div>
           <div>
-            <div className="font-cinzel text-sm text-white">{item.planet?.toUpperCase()}</div>
-            <div className="text-[10px] text-white/40">{formatDegree(item.degree)} {item.sign}</div>
+            <div className="font-cinzel text-sm text-white/90">{item.planet?.toUpperCase()}</div>
+            <div className="text-[10px] text-white/60">{formatDegree(item.degree)} {item.sign}</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -143,12 +143,12 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
             </div>
           )}
           <div className="text-right">
-            <div className="font-cinzel text-sm text-white">{item.title}</div>
+            <div className="font-cinzel text-sm text-white/90">{item.title}</div>
           </div>
         </div>
       </div>
       {item.description && (
-        <p className="mt-2 text-xs text-white/45">
+        <p className="mt-2 text-xs text-white/75">
           {item.description}
         </p>
       )}
@@ -232,10 +232,10 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
       >
         <div className="flex items-center justify-center gap-2 mb-2">
            <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/50"></div>
-           <h1 className="font-cinzel text-lg text-white tracking-[0.4em] uppercase drop-shadow-lg">Celestial Chart</h1>
+           <h1 className="font-cinzel text-lg text-white/90 tracking-[0.4em] uppercase drop-shadow-lg">Celestial Chart</h1>
            <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/50"></div>
         </div>
-        <p className="font-cormorant text-gray-400 italic">Looking up from {userData?.city || "Unknown Origin"}</p>
+        <p className="font-cormorant text-white/75 italic">Looking up from {userData?.city || "Unknown Origin"}</p>
       </motion.header>
 
       {error ? (
@@ -253,11 +253,11 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
             ))}
           </div>
           {/* 元素张力标签 & 解释 */}
-          <div className="mt-6 text-xs tracking-[0.3em] text-white/40 uppercase text-center">
+          <div className="mt-6 text-xs tracking-[0.3em] text-white/60 uppercase text-center">
             {tensionLabel || 'ELEMENTAL TENSION'}
           </div>
           {tensionLine && (
-            <p className="mt-2 text-[11px] text-white/40 text-center max-w-xl mx-auto">
+            <p className="mt-2 text-[11px] text-white/75 text-center max-w-xl mx-auto">
               {tensionLine}
             </p>
           )}
@@ -265,7 +265,7 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
 
           <div className="w-full max-w-2xl space-y-2 relative z-10">
             <div className="text-center mb-6">
-              <span className="font-cinzel text-[9px] text-white/30 tracking-[0.2em] uppercase">Planetary Alignments</span>
+              <span className="font-cinzel text-[9px] text-white/60 tracking-[0.2em] uppercase">Planetary Alignments</span>
             </div>
             {planetCards.map((card) => (
               <PlanetRow key={card.id} item={card} />

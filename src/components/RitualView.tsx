@@ -51,18 +51,19 @@ const TAROT_THEMES: TarotTheme[] = [
 const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [customInput, setCustomInput] = useState("");
+  const total = TAROT_THEMES.length;
   
   // Navigation handlers
-  const handlePrev = () => {
-    setActiveIndex((prev) => (prev - 1 + TAROT_THEMES.length) % TAROT_THEMES.length);
-  };
-  
-  const handleNext = () => {
-    setActiveIndex((prev) => (prev + 1) % TAROT_THEMES.length);
-  };
+  const handlePrev = () => setActiveIndex(i => (i - 1 + total) % total);
+  const handleNext = () => setActiveIndex(i => (i + 1) % total);
 
-  // Get visible indices (Active, Left, Right)
-  // For this simplified version, we just render all, but manipulate their positions via offset
+  // Get slot position for each card
+  const getSlot = (index: number): 'prev' | 'active' | 'next' | 'far' => {
+    if (index === activeIndex) return 'active';
+    if ((index + 1) % total === activeIndex) return 'prev';
+    if ((index - 1 + total) % total === activeIndex) return 'next';
+    return 'far';
+  };
   
   return (
     <main className="relative min-h-screen overflow-x-hidden flex flex-col items-center">
@@ -116,16 +117,14 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
         </div>
 
         {/* 3D Cards */}
-        <div className="relative w-full h-[380px] flex items-center justify-center perspective-[1200px]">
+        <div 
+          className="relative w-full h-[420px] flex items-center justify-center" 
+          style={{ perspective: 900 }} 
+        >
           <AnimatePresence mode='popLayout'>
             {TAROT_THEMES.map((theme, index) => {
               // Calculate slot position
-              let slot = 'active';
-              if (index === (activeIndex - 1 + TAROT_THEMES.length) % TAROT_THEMES.length) {
-                slot = 'prev';
-              } else if (index === (activeIndex + 1) % TAROT_THEMES.length) {
-                slot = 'next';
-              }
+              const slot = getSlot(index);
               
               // Only render visible cards (active, left, right)
               if (slot !== 'active' && slot !== 'prev' && slot !== 'next') return null;

@@ -69,8 +69,49 @@ export interface ChartData {
   omen: OmenOutput;
 }
 
+type NarrativeProfile = {
+  primaryArchetype: string; // 例如 'THE VANGUARD'
+  innerArchetype: string;   // 'THE ORACLE'
+  outerArchetype: string;   // 'THE MASK' / 'THE CROWN' 等
+  tensionPattern: string;   // 一句短标签，比如 'FIRE-WATER CONFLICT'
+};
+
+const buildNarrativeProfile = (natalChart: any): NarrativeProfile => {
+  const sun  = natalChart.signs.sun;
+  const moon = natalChart.signs.moon;
+  const asc  = natalChart.signs.asc;
+
+  // 简化：先用太阳星座决定 primary archetype
+  const primary = ZODIAC_CONTENT[sun]?.sun?.title || 'THE UNKNOWN';
+  const inner   = ZODIAC_CONTENT[moon]?.moon?.title || 'THE HIDDEN SELF';
+  const outer   = ZODIAC_CONTENT[asc]?.rising?.title || primary;
+
+  // 粗略 tension：按元素(火土风水)组合生成标签
+  const elementOf = (sign: string): 'fire' | 'earth' | 'air' | 'water' => {
+    const s = sign.toLowerCase();
+    if (['aries','leo','sagittarius'].includes(s)) return 'fire';
+    if (['taurus','virgo','capricorn'].includes(s)) return 'earth';
+    if (['gemini','libra','aquarius'].includes(s)) return 'air';
+    return 'water';
+  };
+  const eSun  = elementOf(sun);
+  const eMoon = elementOf(moon);
+
+  let tension = '';
+  if (eSun !== eMoon) tension = `${eSun.toUpperCase()}-${eMoon.toUpperCase()} DUALITY`;
+  else tension = `${eSun.toUpperCase()} CONTINUITY`;
+
+  return {
+    primaryArchetype: primary,
+    innerArchetype: inner,
+    outerArchetype: outer,
+    tensionPattern: tension,
+  };
+};
+
 export const useUserChart = (userData: UserChartInput | null) => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [narrativeProfile, setNarrativeProfile] = useState<NarrativeProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,6 +135,10 @@ export const useUserChart = (userData: UserChartInput | null) => {
 
       // 2. Calculate Natal Chart using the new calculator
       const natalChart = calculateNatalChart(birthDateUtc, userData.lat, userData.lng);
+      
+      // 3. Build narrative profile
+      const profile = buildNarrativeProfile(natalChart);
+      setNarrativeProfile(profile);
 
       // 3. Calculate Positions for existing system (backward compatibility)
       // Natal
@@ -198,5 +243,5 @@ export const useUserChart = (userData: UserChartInput | null) => {
     }
   }, [userData]);
 
-  return { chartData, loading, error };
+  return { chartData, narrativeProfile, loading, error };
 };

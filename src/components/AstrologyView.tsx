@@ -132,7 +132,7 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
 
 // --- Main Component ---
 const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, onBack }) => {
-  const { chartData, loading, error } = useUserChart(userData);
+  const { chartData, narrativeProfile, loading, error } = useUserChart(userData);
 
   const trinityCards = useMemo(() => {
     if (!chartData) return [];
@@ -143,17 +143,34 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
         case "Moon": slot = "moon"; break;
         case "Rising": slot = "rising"; break;
       }
+      
+      // Use narrative profile titles if available
+      let displayTitle = card.title;
+      if (narrativeProfile) {
+        switch (slot) {
+          case "sun":
+            displayTitle = narrativeProfile.primaryArchetype;
+            break;
+          case "moon":
+            displayTitle = narrativeProfile.innerArchetype;
+            break;
+          case "rising":
+            displayTitle = narrativeProfile.outerArchetype;
+            break;
+        }
+      }
+      
       return {
         id: `trinity-${slot}`,
         kind: "trinity" as const,
         slot: slot,
         sign: card.sign,
-        title: card.title,
+        title: displayTitle,
         inscription: card.desc,
         notes: card.notes || { meaning: "", practice: "" }
       };
     });
-  }, [chartData]);
+  }, [chartData, narrativeProfile]);
 
   const planetCards = useMemo(() => {
     if (!chartData?.planets) return [];
@@ -197,15 +214,18 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
             <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 border border-white/20 hover:bg-white/10 text-xs uppercase">Reset</button>
         </div>
       ) : loading || !chartData ? (
-        <div className="text-white/50 font-cinzel animate-pulse relative z-10">Calculating Star Chart...</div>
-      ) : (
+        <div className="text-white/50 font-cinzel animate-pulse relative z-10">Calculating Star Chart...</div>      ) : (
         <>
-          <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-3 mb-12 relative z-10">
+          <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 relative z-10">
             {trinityCards.map((card) => (
               <TrinityCard key={card.id} item={card} />
             ))}
           </div>
-
+          {narrativeProfile && (
+            <div className="text-center text-xs tracking-[0.3em] text-white/40 uppercase mb-12">
+              {narrativeProfile.tensionPattern}
+            </div>
+          )}
           <OracleLine omen={chartData.omen} />
 
           <div className="w-full max-w-2xl space-y-2 relative z-10">

@@ -214,7 +214,7 @@ export const useUserChart = (userData: UserChartInput | null) => {
       ];
 
       // Map Planets
-      const planetKeys = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
+      const planetKeys = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
       
       const planets: PlanetRow[] = planetKeys.map(pName => {
         const sign = getSign(pName);

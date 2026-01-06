@@ -12,7 +12,7 @@ export type CardItem = {
   id: string;
   kind: "trinity" | "planet";
   slot?: "sun"|"moon"|"rising";
-  planet?: "mercury"|"venus"|"mars"|"jupiter"|"saturn";
+  planet?: "mercury"|"venus"|"mars"|"jupiter"|"saturn"|"uranus"|"neptune"|"pluto";
   sign: string;
   degree?: number;
   title: string;
@@ -87,6 +87,9 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
       case 'mars': return <Swords size={18} strokeWidth={1.5} />;
       case 'jupiter': return <Orbit size={18} strokeWidth={1.5} />;
       case 'saturn': return <Shield size={18} strokeWidth={1.5} />;
+      case 'uranus': return <Sparkles size={18} strokeWidth={1.5} />;
+      case 'neptune': return <Orbit size={18} strokeWidth={1.5} />;
+      case 'pluto': return <Star size={18} strokeWidth={1.5} />;
       default: return <Star size={18} strokeWidth={1.5} />;
     }
   };

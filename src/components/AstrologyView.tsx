@@ -34,6 +34,14 @@ export interface AstrologyViewProps {
   onBack: () => void;
 }
 
+// --- Helpers ---
+
+const formatDegree = (deg: number | undefined | null) => {
+  if (deg === undefined || deg === null || Number.isNaN(deg)) return '—';
+  const norm = ((deg % 360) + 360) % 360;
+  return `${norm.toFixed(1)}°`;
+};
+
 // --- Components ---
 
 const TrinityCard = ({ item }: { item: CardItem }) => {
@@ -115,7 +123,7 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
           <div className="w-8 h-8 text-white/70">{getPlanetIcon()}</div>
           <div>
             <div className="font-cinzel text-sm text-white">{item.planet?.toUpperCase()}</div>
-            <div className="text-[10px] text-white/40">{item.degree}° {item.sign}</div>
+            <div className="text-[10px] text-white/40">{formatDegree(item.degree)} {item.sign}</div>
           </div>
         </div>
         <div className="flex items-center gap-2">

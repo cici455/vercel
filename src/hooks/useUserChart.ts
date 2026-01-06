@@ -112,7 +112,15 @@ const buildNarrativeProfile = (natalChart: any): NarrativeProfile => {
   };
 };
 
-type PlanetCopyForUI = Record<PlanetKey, { title: string; line: string }>;
+type PlanetCopyForUI = Record<
+  PlanetKey,
+  {
+    title: string;      // 小卡片右侧的标题，比如 THE WILD FLAME
+    line: string;       // 小卡片第二行简短说明
+    meaning: string;    // 更长解释，留给详情/Agent
+    practice: string;   // 一条落地建议
+  }
+>;
 
 type DisplayPlanetPosition = {
   degree: number;   // 星座内度数 0-30
@@ -167,7 +175,7 @@ const buildPlanetCopy = (natalChart: NatalChart): PlanetCopyForUI => {
   ];
 
   planetKeys.forEach((key) => {
-    const sign = natalChart.signs[key];       // 例如 'capricorn'
+    const sign = natalChart.signs[key]; // 例如 'capricorn'
     if (!sign) return;
 
     const element: Element | undefined = ELEMENT_BY_SIGN[sign.toLowerCase()];
@@ -180,10 +188,11 @@ const buildPlanetCopy = (natalChart: NatalChart): PlanetCopyForUI => {
     result[key] = {
       title: titleFromElement,
       line: base.baseLine,
+      meaning: base.notes.meaning,
+      practice: base.notes.practice,
     };
   });
 
-  // 类型断言：我们确保上面填满所有 key
   return result as PlanetCopyForUI;
 };
 
@@ -192,7 +201,7 @@ export const useUserChart = (userData: UserChartInput | null) => {
   const [narrativeProfile, setNarrativeProfile] = useState<NarrativeProfile | null>(null);
   const [tensionLabel, setTensionLabel] = useState<string>('');
   const [tensionLine, setTensionLine] = useState<string>('');
-  const [planetCopy, setPlanetCopy] = useState<Record<string, { title: string; line: string }>>({});
+  const [planetCopy, setPlanetCopy] = useState<Record<string, { title: string; line: string; meaning: string; practice: string }>>({});
   const [natalDisplayPositions, setNatalDisplayPositions] = useState<Record<string, { degree: number; sign: string }>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

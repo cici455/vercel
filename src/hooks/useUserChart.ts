@@ -1,7 +1,56 @@
 import { useState, useEffect } from 'react';
+import { DateTime } from 'luxon';
+import { calculateNatalChart } from '../utils/astrologyCalculator';
 import { calculatePlanetPositions, detectAspects, PlanetPosition, AspectSignal } from '../utils/astrologySystem';
 import { generateDailyOmen, OmenOutput } from '../utils/narrativeGenerator';
 import { ZODIAC_CONTENT } from '../data/luminaContent';
+
+// City to timezone mapping
+const CITY_TIMEZONES: Record<string, string> = {
+  'New York, US': 'America/New_York',
+  'London, GB': 'Europe/London',
+  'Shanghai, CN': 'Asia/Shanghai',
+  'Tokyo, JP': 'Asia/Tokyo',
+  'Sydney, AU': 'Australia/Sydney',
+  'Paris, FR': 'Europe/Paris',
+  'Beijing, CN': 'Asia/Shanghai',
+  'Moscow, RU': 'Europe/Moscow',
+  'Cairo, EG': 'Africa/Cairo',
+  'Rio de Janeiro, BR': 'America/Sao_Paulo',
+  'Mumbai, IN': 'Asia/Kolkata',
+  'Bangkok, TH': 'Asia/Bangkok',
+  'Mexico City, MX': 'America/Mexico_City',
+  'Los Angeles, US': 'America/Los_Angeles',
+  'Chicago, US': 'America/Chicago',
+};
+
+// Parse birth date and time to UTC
+const parseBirthDateTimeToUtc = (
+  dateStr: string,   // 'YYYY-MM-DD' (from <input type="date">)
+  timeStr: string,   // 'HH:MM'
+  cityName: string   // e.g. 'London, GB'
+): Date | null => {
+  const zone = CITY_TIMEZONES[cityName];
+  if (!zone) return null;
+
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const [hour, minute] = timeStr.split(':').map(Number);
+  if (
+    !year || !month || !day ||
+    Number.isNaN(hour) || Number.isNaN(minute)
+  ) {
+    return null;
+  }
+
+  const local = DateTime.fromObject(
+    { year, month, day, hour, minute },
+    { zone }
+  );
+  if (!local.isValid) return null;
+
+  const utc = local.toUTC();
+  return utc.toJSDate();
+};
 
 interface UserChartInput {
   date: string; // "YYYY-MM-DD"
@@ -51,91 +100,23 @@ export const useUserChart = (userData: UserChartInput | null) => {
     setError(null);
 
     try {
-      // 1. Parse Date & Time
-      let birthDate: Date;
+      // 1. Parse Date & Time to UTC
+      const birthDateUtc = parseBirthDateTimeToUtc(
+        userData.date,
+        userData.time,
+        userData.city
+      );
       
-      // Handle different date formats
-      const dateStr = userData.date;
-      const timeStr = userData.time;
-      
-      // Check if date is in MM/DD/YYYY format
-      const mmddyyyyRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-      const yyyymmddRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-      
-      let year: number, month: number, day: number;
-      let hours: number, minutes: number;
-      
-      // Parse time first
-      const timeParts = timeStr.split(':').map(Number);
-      if (timeParts.length >= 2) {
-        hours = timeParts[0] || 0;
-        minutes = timeParts[1] || 0;
-      } else {
-        throw new Error("Invalid Time");
-      }
-      
-      if (mmddyyyyRegex.test(dateStr)) {
-        // MM/DD/YYYY format
-        const match = dateStr.match(mmddyyyyRegex);
-        if (match) {
-          month = parseInt(match[1], 10);
-          day = parseInt(match[2], 10);
-          year = parseInt(match[3], 10);
-        } else {
-          throw new Error("Invalid Date");
-        }
-      } else if (yyyymmddRegex.test(dateStr)) {
-        // YYYY-MM-DD format
-        const match = dateStr.match(yyyymmddRegex);
-        if (match) {
-          year = parseInt(match[1], 10);
-          month = parseInt(match[2], 10);
-          day = parseInt(match[3], 10);
-        } else {
-          throw new Error("Invalid Date");
-        }
-      } else {
-        // Try to parse as ISO string
-        birthDate = new Date(`${dateStr}T${timeStr}`);
-        if (!isNaN(birthDate.getTime())) {
-          // Valid ISO date
-        } else {
-          throw new Error("Invalid Date Format");
-        }
-        
-        // Extract components for validation
-        year = birthDate.getFullYear();
-        month = birthDate.getMonth() + 1;
-        day = birthDate.getDate();
-      }
-      
-      // Validate date components
-      if (month < 1 || month > 12) {
-        throw new Error("Invalid Month");
-      }
-      
-      // Validate day for the given month and year
-      const daysInMonth = new Date(year, month, 0).getDate();
-      if (day < 1 || day > daysInMonth) {
-        throw new Error("Invalid Day");
-      }
-      
-      // Validate time components
-      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        throw new Error("Invalid Time");
-      }
-      
-      // Create final date object
-      birthDate = new Date(year, month - 1, day, hours, minutes);
-      
-      // Final validation
-      if (isNaN(birthDate.getTime())) {
-        throw new Error("Invalid Date Object");
+      if (!birthDateUtc) {
+        throw new Error("Invalid birth date/time/city combination");
       }
 
-      // 2. Calculate Positions
+      // 2. Calculate Natal Chart using the new calculator
+      const natalChart = calculateNatalChart(birthDateUtc, userData.lat, userData.lng);
+
+      // 3. Calculate Positions for existing system (backward compatibility)
       // Natal
-      const natalPositions = calculatePlanetPositions(birthDate, userData.lat, userData.lng);
+      const natalPositions = calculatePlanetPositions(birthDateUtc, userData.lat, userData.lng);
       
       // Transit (Now)
       const now = new Date();
@@ -146,7 +127,7 @@ export const useUserChart = (userData: UserChartInput | null) => {
 
       // 4. Generate Narrative (Omen)
       // Use User Name or ID as hash seed if available, otherwise date
-      const userId = `${userData.city}-${birthDate.toISOString()}`; 
+      const userId = `${userData.city}-${birthDateUtc.toISOString()}`; 
       const omen = generateDailyOmen(userId, now, signals);
 
       // 5. Map Content
@@ -162,15 +143,10 @@ export const useUserChart = (userData: UserChartInput | null) => {
         return ZODIAC_CONTENT[key] || ZODIAC_CONTENT['aries'];
       };
 
-      const sunSign = getSign("Sun");
-      const moonSign = getSign("Moon");
-      const risingSign = getSign("Sun"); // Fallback for MVP if Rising calc is complex, but let's check
-      // Note: In `astrologySystem`, calculatePlanetPositions calculates Ascendant? 
-      // Actually we didn't implement Ascendant fully there yet. 
-      // For MVP, let's map Rising to Sun or use a mock logic if missing.
-      // But `ZODIAC_CONTENT` expects rising.
-      // Let's use a placeholder if Ascendant is not in the list.
-      // Wait, `calculatePlanetPositions` returns an array.
+      // Use the new natal chart for more accurate signs
+      const sunSign = natalChart.signs.sun || getSign("Sun");
+      const moonSign = natalChart.signs.moon || getSign("Moon");
+      const risingSign = natalChart.signs.asc || getSign("Sun"); // Use calculated ascendant, fallback to sun
       
       const sunContent = getContent(sunSign).sun;
       const moonContent = getContent(moonSign).moon;

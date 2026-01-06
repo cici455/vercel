@@ -7,39 +7,97 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+import type { PlanetKey } from '../utils/planetArchetypes';
+
 // --- Types ---
 export interface RitualViewProps {
   onOpenGate: () => void;
   onBack: () => void;
 }
 
-type TarotTheme = {
-  id: string;
+type RitualId =
+  | 'love'
+  | 'career'
+  | 'destiny'
+  | 'chaos'
+  | 'body'
+  | 'mind'
+  | 'spirit'
+  | 'shadow';
+
+type RitualTheme = {
+  id: RitualId;
+  no: string;
   title: string;
   subtitle: string;
+  tag: string;      // 卡片底部 tagline
+  glyph: 'moon' | 'triangle' | 'arrow' | 'lightning' | 'shield' | 'circuit' | 'eye' | 'abyss';
 };
 
-// --- Mock Data ---
-const TAROT_THEMES: TarotTheme[] = [
-  { 
-    id: 'love', 
-    title: 'LOVE & RELATIONSHIPS', 
-    subtitle: 'VENUS ALIGNMENT'
+const RITUAL_THEMES: RitualTheme[] = [
+  {
+    id: 'love',
+    no: 'NO. 01',
+    title: 'LOVE & RELATIONSHIPS',
+    subtitle: 'VENUS ALIGNMENT',
+    tag: 'Where your heart keeps choosing, even when your mind hesitates.',
+    glyph: 'moon',
   },
-  { 
-    id: 'career', 
-    title: 'CAREER & WEALTH', 
-    subtitle: 'SATURN RETURN'
+  {
+    id: 'career',
+    no: 'NO. 02',
+    title: 'CAREER & WEALTH',
+    subtitle: 'SATURN RETURN',
+    tag: 'The structures you are meant to build, and what they demand in return.',
+    glyph: 'triangle',
   },
-  { 
-    id: 'destiny', 
-    title: 'DESTINY & PATH', 
-    subtitle: 'SOLAR GUIDANCE'
+  {
+    id: 'destiny',
+    no: 'NO. 03',
+    title: 'DESTINY & PATH',
+    subtitle: 'NORTH NODE CURRENT',
+    tag: 'The direction your life keeps leaning toward, even when you look away.',
+    glyph: 'arrow',
   },
-  { 
-    id: 'chaos', 
-    title: 'CHAOS & CHANGE', 
-    subtitle: 'URANUS STORM'
+  {
+    id: 'chaos',
+    no: 'NO. 04',
+    title: 'CHAOS & CHANGE',
+    subtitle: 'URANUS STORM',
+    tag: 'What breaks so something truer can finally fit.',
+    glyph: 'lightning',
+  },
+  {
+    id: 'body',
+    no: 'NO. 05',
+    title: 'BODY & HEALTH',
+    subtitle: 'EARTH TEMPLE',
+    tag: 'The vessel that carries all your other stories.',
+    glyph: 'shield',
+  },
+  {
+    id: 'mind',
+    no: 'NO. 06',
+    title: 'MIND & PATTERNS',
+    subtitle: 'MERCURY CIRCUIT',
+    tag: 'The loops your thoughts keep running until you rewrite them.',
+    glyph: 'circuit',
+  },
+  {
+    id: 'spirit',
+    no: 'NO. 07',
+    title: 'SPIRIT & MYSTERY',
+    subtitle: 'NEPTUNE VEIL',
+    tag: 'Where the borders between you and the unseen grow thin.',
+    glyph: 'eye',
+  },
+  {
+    id: 'shadow',
+    no: 'NO. 08',
+    title: 'SHADOW & FEAR',
+    subtitle: 'PLUTO UNDERWORLD',
+    tag: 'The contracts you made with survival, and the ones you can now rescind.',
+    glyph: 'abyss',
   },
 ];
 
@@ -125,7 +183,7 @@ function CardMotif({ id }: { id: string }) {
 const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [customInput, setCustomInput] = useState("");
-  const total = TAROT_THEMES.length;
+  const total = RITUAL_THEMES.length;
   
   // Navigation handlers
   const handlePrev = () => setActiveIndex(i => (i - 1 + total) % total);
@@ -196,7 +254,7 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
           style={{ perspective: 900 }} 
         >
           <AnimatePresence mode='popLayout'>
-            {TAROT_THEMES.map((theme, index) => {
+            {RITUAL_THEMES.map((theme, index) => {
               // Calculate slot position
               const slot = getSlot(index);
               
@@ -225,8 +283,6 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                     animate={{ 
                       scale: slot === 'active' ? 1.04 : slot === 'prev' || slot === 'next' ? 0.88 : 0.8, 
                       rotateY: slot === 'prev' ? -18 : slot === 'next' ? 18 : 0, 
-                      rotateX: slot === 'active' ? 6 : 0, 
-                      translateZ: slot === 'active' ? 80 : -60, 
                     }} 
                     transition={{ duration: 0.45, ease: 'easeOut' }} 
                   > 
@@ -234,10 +290,10 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                     {slot !== 'active' && ( 
                       <div className="absolute inset-0 bg-black/60 z-20 pointer-events-none" /> 
                     )} 
- 
+
                     {/* 内边框 */} 
                     <div className="absolute inset-[10px] rounded-[18px] border border-amber-300/40" /> 
- 
+
                     {/* 四角装饰弧线 */} 
                     <div className="absolute inset-[14px]"> 
                       <div className="absolute left-0 top-0 w-6 h-6 border-l border-t border-amber-300/70 rounded-tl-[18px]" /> 
@@ -245,7 +301,7 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                       <div className="absolute left-0 bottom-0 w-6 h-6 border-l border-b border-amber-300/70 rounded-bl-[18px]" /> 
                       <div className="absolute right-0 bottom-0 w-6 h-6 border-r border-b border-amber-300/70 rounded-br-[18px]" /> 
                     </div> 
- 
+
                     {/* 小星星点缀 */} 
                     <div className="absolute inset-[24px]"> 
                       <span className="absolute left-[12%] top-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" /> 
@@ -253,26 +309,29 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                       <span className="absolute left-[18%] bottom-[22%] w-[2px] h-[2px] bg-amber-200 rounded-full" /> 
                       <span className="absolute right-[20%] bottom-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" /> 
                     </div> 
- 
+
                     {/* 顶部小标题：编号 + ARCANA */} 
                     <div className="relative z-10 flex items-center justify-between px-6 pt-5 text-[10px] tracking-[0.25em] text-amber-200/80 uppercase"> 
-                      <span>NO. 0{index + 1}</span> 
+                      <span>{theme.no}</span> 
                       <span>ARCANA</span> 
                     </div> 
- 
+
                     {/* 中央主图：根据 theme.id 渲染不同图案 */} 
                     <div className="relative z-10 mt-4 flex flex-col items-center justify-center h-[210px]"> 
                       <CardMotif id={theme.id} /> 
                     </div> 
- 
+
                     {/* 底部主文案 */} 
                     <div className="relative z-10 mt-6 px-4 text-center"> 
                       <div className="text-[11px] tracking-[0.32em] text-amber-200/80 mb-2 uppercase"> 
                         {theme.title} 
                       </div> 
-                      <div className="text-[10px] tracking-[0.38em] text-amber-200/70 uppercase"> 
+                      <div className="text-[10px] tracking-[0.38em] text-amber-200/70 uppercase mb-3"> 
                         {theme.subtitle} 
                       </div> 
+                      <p className="text-[11px] text-amber-100/70 leading-relaxed">
+                        {theme.tag}
+                      </p>
                     </div> 
                   </motion.div> 
                 </motion.div>

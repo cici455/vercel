@@ -46,7 +46,7 @@ const TAROT_THEMES: TarotTheme[] = [
 // --- Components ---
 
 // Holographic Card
-const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme; isActive: boolean; index: number; offset: number }) => {
+const HolographicCard = ({ theme, slot, index }: { theme: TarotTheme; slot: string; index: number }) => {
   // 根据主题设置行星和元素信息
   const getCardInfo = (id: string) => {
     switch (id) {
@@ -67,28 +67,20 @@ const HolographicCard = ({ theme, isActive, index, offset }: { theme: TarotTheme
 
   return (
     <motion.div
-      layout
-      className={`
-        relative w-[260px] h-[340px]
-        rounded-[24px] overflow-hidden
-        bg-gradient-to-b from-[#151515] via-[#050505] to-black
-        border border-white/14
-        shadow-[0_28px_70px_rgba(0,0,0,0.95)]
-      `}
-      initial={false}
-      animate={{
-        x: offset * 320, // Distance between cards
-        z: Math.abs(offset) * -100, // Depth effect
-        rotateY: offset * -15, // Rotation effect
-        rotateX: isActive ? 6 : 0,
-        scale: isActive ? 1.02 : 0.94,
-        opacity: isActive ? 1 : 0.6 - Math.abs(offset) * 0.2,
+      className=" 
+        relative w-[260px] h-[340px] 
+        rounded-[24px] overflow-hidden 
+        bg-gradient-to-b from-[#151515] via-[#050505] to-black 
+        border border-white/14 
+        shadow-[0_28px_70px_rgba(0,0,0,0.95)] 
+      "
+      style={{ transformOrigin: 'center bottom' }}
+      animate={{ 
+        scale: slot === 'active' ? 1.02 : 0.9, 
+        rotateY: slot === 'prev' ? -16 : slot === 'next' ? 16 : 0, 
+        translateZ: slot === 'active' ? 60 : -40, 
       }}
-      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
-      style={{
-        transformStyle: 'preserve-3d',
-        transformOrigin: 'center bottom',
-      }}
+      transition={{ duration: 0.45, ease: 'easeOut' }}
     >
       {/* 内边框，模拟塔罗牌的镶边 */}
       <div className="absolute inset-[10px] rounded-[18px] border border-white/10" />
@@ -228,26 +220,36 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
         </div>
 
         {/* 3D Cards */}
-        <div className="relative w-full h-[500px] flex justify-center items-center">
+        <div className="relative w-full h-[380px] flex items-center justify-center perspective-[1200px]">
           <AnimatePresence mode='popLayout'>
             {TAROT_THEMES.map((theme, index) => {
-              // Calculate circular offset
-              let offset = index - activeIndex;
-              // Handle wrap-around
-              if (offset > 1) offset -= TAROT_THEMES.length;
-              if (offset < -1) offset += TAROT_THEMES.length;
+              // Calculate slot position
+              let slot = 'active';
+              if (index === (activeIndex - 1 + TAROT_THEMES.length) % TAROT_THEMES.length) {
+                slot = 'prev';
+              } else if (index === (activeIndex + 1) % TAROT_THEMES.length) {
+                slot = 'next';
+              }
               
               // Only render visible cards (active, left, right)
-              if (Math.abs(offset) > 1 && TAROT_THEMES.length > 3) return null;
+              if (slot !== 'active' && slot !== 'prev' && slot !== 'next') return null;
 
               return (
-                <HolographicCard 
-                  key={theme.id}
-                  theme={theme}
-                  index={index}
-                  isActive={index === activeIndex}
-                  offset={offset}
-                />
+                <motion.div 
+                  key={theme.id} 
+                  className="absolute left-1/2 -translate-x-1/2" 
+                  animate={{ 
+                    x: slot === 'prev' ? -220 : slot === 'next' ? 220 : 0, 
+                    zIndex: slot === 'active' ? 20 : 10, 
+                  }} 
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                >
+                  <HolographicCard 
+                    theme={theme}
+                    slot={slot}
+                    index={index}
+                  />
+                </motion.div>
               );
             })}
           </AnimatePresence>

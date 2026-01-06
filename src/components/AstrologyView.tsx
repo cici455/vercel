@@ -7,8 +7,7 @@ import {
 import { useUserChart } from '../hooks/useUserChart';
 import { OmenOutput } from '../utils/narrativeGenerator';
 
-// --- Types ---
-export type CardItem = {
+// --- Types ---export type CardItem = {
   id: string;
   kind: "trinity" | "planet";
   slot?: "sun"|"moon"|"rising";
@@ -17,6 +16,7 @@ export type CardItem = {
   degree?: number;
   title: string;
   inscription: string;
+  description?: string; // 新增：一行文案说明
   notes: {
     meaning: string;
     practice: string;
@@ -27,7 +27,6 @@ export type CardItem = {
     guidance?: string;
   };
 };
-
 export interface AstrologyViewProps {
   userData: any;
   onEnterRitual: () => void;
@@ -137,6 +136,11 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
           </div>
         </div>
       </div>
+      {item.description && (
+        <p className="mt-2 text-xs text-white/45">
+          {item.description}
+        </p>
+      )}
     </motion.div>
   );
 };
@@ -195,6 +199,7 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
         sign: displayPos?.sign || planet.sign,
         degree: displayPos?.degree || 0,
         title: copy?.title || planet.behavior,
+        description: copy?.line, // 新增：来自 PLANET_ARCHETYPES.baseLine
         line: copy?.line,
         inscription: planet.behavior,
         notes: { meaning: "", practice: "" },

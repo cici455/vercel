@@ -38,6 +38,7 @@ interface UserChartInput {
   city: string; // Just for display reference if needed
   lat: number;
   lng: number;
+  timezone: string; // Timezone from Open-Meteo API
 }
 
 export interface TrinityCard {

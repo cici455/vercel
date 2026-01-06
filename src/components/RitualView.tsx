@@ -100,9 +100,160 @@ const RITUAL_THEMES: RitualTheme[] = [
     glyph: 'abyss',
   },
 ];
-
+};
 
 // --- Components ---
+
+function RitualGlyph({
+  glyph,
+  isActive,
+}: {
+  glyph: RitualTheme['glyph'];
+  isActive: boolean;
+}) {
+  const glow = isActive ? 'opacity-80' : 'opacity-35';
+  const baseCircle = (
+    <div className="absolute inset-0 rounded-full border border-amber-200/40" />
+  );
+
+  switch (glyph) {
+    case 'moon': // LOVE
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <div className={`absolute inset-[18px] rounded-full border border-amber-200/25 ${glow}`} />
+          <div className="absolute inset-[24px] rounded-full bg-amber-200/90" />
+          <div className="absolute inset-[34px] rounded-full bg-black translate-x-[12px]" />
+        </div>
+      );
+    case 'triangle': // CAREER
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[18px] w-[114px] h-[114px] text-amber-200/85"
+          >
+            <polygon
+              points="50,10 15,90 85,90"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            />
+            <circle cx="50" cy="65" r="6" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'arrow': // DESTINY
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[22px] w-[106px] h-[106px] text-amber-200/85"
+          >
+            <line x1="50" y1="90" x2="50" y2="20" stroke="currentColor" strokeWidth="1.6" />
+            <polygon points="50,10 42,24 58,24" fill="currentColor" />
+            <circle cx="50" cy="70" r="5" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'lightning': // CHAOS
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[22px] w-[106px] h-[106px] text-amber-200/90"
+          >
+            <polyline
+              points="40,12 60,36 48,40 64,70 34,60 46,46 32,32 40,12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            />
+          </svg>
+        </div>
+      );
+    case 'shield': // BODY
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[20px] w-[110px] h-[110px] text-amber-200/80"
+          >
+            <path
+              d="M50 10 L25 20 L25 55 C25 70 36 83 50 88 C64 83 75 70 75 55 L75 20 Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            />
+            <circle cx="50" cy="48" r="7" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'circuit': // MIND
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <div className="absolute inset-[30px] rounded-full border border-amber-200/30" />
+          {[0, 120, 240].map((deg) => (
+            <div
+              key={deg}
+              className="absolute left-1/2 top-1/2 w-[4px] h-[4px] rounded-full bg-amber-200/80"
+              style={{ transform: `rotate(${deg}deg) translate(0, -44px)` }}
+            />
+          ))}
+          <div className="absolute inset-[50px] rounded-full border border-amber-200/30" />
+        </div>
+      );
+    case 'eye': // SPIRIT
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[24px] w-[102px] h-[102px] text-amber-200/85"
+          >
+            <path
+              d="M10,50 Q50,20 90,50 Q50,80 10,50 Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" />
+            <circle cx="50" cy="50" r="3" fill="currentColor" />
+          </svg>
+        </div>
+      );
+    case 'abyss': // SHADOW
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[24px] w-[102px] h-[102px] text-amber-200/85"
+          >
+            <polygon
+              points="50,86 18,26 82,26"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            />
+            <circle cx="50" cy="60" r="6" fill="none" stroke="currentColor" strokeWidth="1" />
+            <line x1="50" y1="66" x2="50" y2="86" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    default:
+      return (
+        <div className="relative w-[150px] h-[150px] mx-auto">
+          {baseCircle}
+        </div>
+      );
+  }
+}
 
 // Card Motif Component
 function CardMotif({ id }: { id: string }) { 

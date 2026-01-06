@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Star, Moon, Flame } from 'lucide-react';
+import { Send, Target, MoonStar, FlaskConical, ArrowLeft } from 'lucide-react';
 import { Cinzel } from 'next/font/google';
+import { useRouter } from 'next/navigation';
 
 // Google Font for headers
 const cinzel = Cinzel({
@@ -12,46 +13,35 @@ const cinzel = Cinzel({
   variable: '--font-cinzel',
 });
 
-// Intro state with agent introductions
-const INTRO_STATE = [
-  {
-    id: 1,
-    role: 'strategist',
-    content: "I am your Rationality. I guard your assets and define your reality.",
-    timestamp: '10:42 AM'
-  },
-  {
-    id: 2,
-    role: 'oracle',
-    content: "I am your Intuition. I keep the secrets you are afraid to whisper.",
-    timestamp: '10:43 AM'
-  },
-  {
-    id: 3,
-    role: 'alchemist',
-    content: "I am your Action. I turn your chaos into concrete protocols.",
-    timestamp: '10:44 AM'
-  }
-];
+// Define Archetype type
+type Archetype = "strategist" | "oracle" | "alchemist";
 
-// Define types for tree nodes
-interface TreeNode {
+// Define Message type
+interface Message {
   id: number;
-  label: string;
-  messageId: number;
-  type: 'strategist' | 'council';
-  active: boolean;
+  role: 'user' | 'strategist' | 'oracle' | 'alchemist';
+  content: string;
+  timestamp: string;
 }
 
 // Main component
 export default function ChronoCouncilPage() {
-  const [messages, setMessages] = useState(INTRO_STATE);
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
   const [isCouncilMode, setIsCouncilMode] = useState(false);
   const [isSummonActive, setIsSummonActive] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
   const [activeTreeNode, setActiveTreeNode] = useState<number | null>(null);
+  const [openInfo, setOpenInfo] = useState<Archetype | null>(null);
+  
+  // Click outside to close info popover
+  useEffect(() => {
+    const onDown = () => setOpenInfo(null);
+    window.addEventListener("pointerdown", onDown);
+    return () => window.removeEventListener("pointerdown", onDown);
+  }, []);
   
   // Handle agent selection from header icons
   const handleAgentSelect = (agent: 'strategist' | 'oracle' | 'alchemist') => {
@@ -65,12 +55,11 @@ export default function ChronoCouncilPage() {
     
     if (!messageContent.trim()) return;
     
-    let newMessage;
     let formattedHistory;
     
     // For solo mode, add user message to chat
     if (mode === 'solo') {
-      newMessage = {
+      const newMessage: Message = {
         id: messages.length + 1,
         role: 'user',
         content: messageContent,
@@ -122,7 +111,7 @@ export default function ChronoCouncilPage() {
       // Check if API returned an error or if responses are missing
       if (data.error || !data.responses) {
         // Add error message to chat
-        const errorMessage = {
+        const errorMessage: Message = {
           id: messages.length + 1,
           role: 'strategist', // Use strategist role for error messages
           content: "The stars are silent right now... Please try again later.",
@@ -134,7 +123,7 @@ export default function ChronoCouncilPage() {
       
       // Add AI responses to chat only for non-null responses
       const nextId = messages.length + 1;
-      const aiResponses: typeof messages = [];
+      const aiResponses: Message[] = [];
       let responseId = nextId;
       let responseType: 'strategist' | 'council' = 'strategist';
       
@@ -184,7 +173,7 @@ export default function ChronoCouncilPage() {
       console.error('Error calling council API:', error);
       // Add error message to chat if the fetch itself failed
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const errorMessage = {
+      const errorMessage: Message = {
         id: messages.length + 1,
         role: 'strategist',
         content: "The stars are silent right now... Please try again later.",
@@ -198,85 +187,148 @@ export default function ChronoCouncilPage() {
 
   return (
     <div className={`h-screen w-full bg-transparent text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
-      <div className="flex h-full">
-        {/* Left Panel: CouncilChamber (75%) */}
-        <div className="w-[75%] h-full flex flex-col relative z-10">
-          {/* Header */}
-          <header className="p-6 flex justify-between items-center backdrop-blur-[20px] bg-[#080808]/50 border-b border-white/[0.05]">
-            <div className="flex flex-col items-start gap-1">
-              <h1 className={`text-sm tracking-widest uppercase text-[#888888] font-serif`}>
-                RITUAL IN PROGRESS
-              </h1>
-            </div>
-            
-            {/* Agent Icons (Clickable Buttons) */}
-            <div className="flex gap-4">
-                {/* Strategist Button */}
+        <div className="flex h-full">
+          {/* Left Panel: CouncilChamber (75%) */}
+          <div className="w-[75%] h-full flex flex-col relative z-10">
+            {/* Header */}
+            <header className="p-6 flex justify-between items-center backdrop-blur-[20px] bg-[#080808]/50 border-b border-white/[0.05]">
+              <div className="flex items-center gap-6">
+                {/* Back Button */}
                 <button 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                  onClick={() => handleAgentSelect('strategist')}
+                  onClick={() => router.back()}
+                  className="flex items-center gap-2 
+                            rounded-full border border-white/15 bg-black/40 px-3 py-2 
+                            text-white/80 hover:text-white hover:border-white/25 hover:bg-black/55 
+                            backdrop-blur-md"
+                  aria-label="Back"
                 >
-                  <Star size={14} className={activeAgent === 'strategist' ? "text-[#D4AF37]" : "text-[#666666]"} />
-                  <span className="text-[10px] uppercase tracking-wider font-serif">STRATEGIST</span>
+                  <span className="text-lg">←</span>
+                  <span className="text-sm tracking-widest">BACK</span>
                 </button>
                 
-                {/* Oracle Button */}
-                <button 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/10 border-[#A0ECD6]/30 text-[#A0ECD6]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                  onClick={() => handleAgentSelect('oracle')}
-                >
-                  <Moon size={14} className={activeAgent === 'oracle' ? "text-[#A0ECD6]" : "text-[#666666]"} />
-                  <span className="text-[10px] uppercase tracking-wider font-serif">ORACLE</span>
-                </button>
-                
-                {/* Alchemist Button */}
-                <button 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/10 border-[#9D4EDD]/30 text-[#9D4EDD]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                  onClick={() => handleAgentSelect('alchemist')}
-                >
-                  <Flame size={14} className={activeAgent === 'alchemist' ? "text-[#9D4EDD]" : "text-[#666666]"} />
-                  <span className="text-[10px] uppercase tracking-wider font-serif">ALCHEMIST</span>
-                </button>
-            </div>
-          </header>
+                <div className="flex flex-col items-start gap-1">
+                  <h1 className={`text-sm tracking-widest uppercase text-[#888888] font-serif`}>
+                    RITUAL IN PROGRESS
+                  </h1>
+                </div>
+              </div>
+              
+              {/* Agent Icons (Clickable Buttons with Popover Info) */}
+              <div className="flex gap-4">
+                  {/* Strategist Button */}
+                  <button 
+                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
+                    onClick={() => setOpenInfo(openInfo === "strategist" ? null : "strategist")}
+                  >
+                    <Target size={16} className={activeAgent === 'strategist' ? "text-[#D4AF37]" : "text-white/70 group-hover:text-white"} />
+                    <span className="text-[10px] uppercase tracking-wider font-serif">STRATEGIST</span>
+                    
+                    {openInfo === "strategist" && (
+                      <div 
+                        className="absolute left-0 top-full mt-2 w-72 
+                                   rounded-2xl border border-white/15 bg-black/70 p-4 
+                                   text-white/80 shadow-xl backdrop-blur-md"
+                        onPointerDown={(e) => e.stopPropagation()}
+                      >
+                        <div className="text-xs tracking-widest text-[#D6B25E]">SUN · RATIONAL</div>
+                        <div className="mt-2 text-sm leading-relaxed">
+                          Focuses on long-term outcomes, trade-offs, and winning conditions.
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Oracle Button */}
+                  <button 
+                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/10 border-[#A0ECD6]/30 text-[#A0ECD6]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
+                    onClick={() => setOpenInfo(openInfo === "oracle" ? null : "oracle")}
+                  >
+                    <MoonStar size={16} className={activeAgent === 'oracle' ? "text-[#A0ECD6]" : "text-white/70 group-hover:text-white"} />
+                    <span className="text-[10px] uppercase tracking-wider font-serif">ORACLE</span>
+                    
+                    {openInfo === "oracle" && (
+                      <div 
+                        className="absolute left-0 top-full mt-2 w-72 
+                                   rounded-2xl border border-white/15 bg-black/70 p-4 
+                                   text-white/80 shadow-xl backdrop-blur-md"
+                        onPointerDown={(e) => e.stopPropagation()}
+                      >
+                        <div className="text-xs tracking-widest text-[#A0ECD6]">MOON · INTUITIVE</div>
+                        <div className="mt-2 text-sm leading-relaxed">
+                          Taps into intuition, emotional intelligence, and hidden patterns.
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Alchemist Button */}
+                  <button 
+                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/10 border-[#9D4EDD]/30 text-[#9D4EDD]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
+                    onClick={() => setOpenInfo(openInfo === "alchemist" ? null : "alchemist")}
+                  >
+                    <FlaskConical size={16} className={activeAgent === 'alchemist' ? "text-[#9D4EDD]" : "text-white/70 group-hover:text-white"} />
+                    <span className="text-[10px] uppercase tracking-wider font-serif">ALCHEMIST</span>
+                    
+                    {openInfo === "alchemist" && (
+                      <div 
+                        className="absolute left-0 top-full mt-2 w-72 
+                                   rounded-2xl border border-white/15 bg-black/70 p-4 
+                                   text-white/80 shadow-xl backdrop-blur-md"
+                        onPointerDown={(e) => e.stopPropagation()}
+                      >
+                        <div className="text-xs tracking-widest text-[#9D4EDD]">FIRE · ACTION</div>
+                        <div className="mt-2 text-sm leading-relaxed">
+                          Turns chaos into concrete protocols and transforms ideas into action.
+                        </div>
+                      </div>
+                    )}
+                  </button>
+              </div>
+            </header>
 
           {/* Message List */}
           <div className="flex-1 overflow-y-auto p-8 space-y-8 [&::-webkit-scrollbar]:hidden scrollbar-hide">
-            {messages.map((message, index) => (
-              <motion.div
-                key={message.id}
-                id={`message-${message.id}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                  {/* Role indicator */}
-                  {message.role !== 'user' && (
-                    <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
-                      {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
-                      {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
-                      {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
-                      <span className="opacity-50">| {message.timestamp}</span>
-                    </div>
-                  )}
+            {messages.length === 0 ? (
+              <div className="text-center text-white/50 text-sm py-20">
+                Ask what you're facing right now...
+              </div>
+            ) : (
+              messages.map((message, index) => (
+                <motion.div
+                  key={message.id}
+                  id={`message-${message.id}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    {/* Role indicator */}
+                    {message.role !== 'user' && (
+                      <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
+                        {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
+                        {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
+                        {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
+                        <span className="opacity-50">| {message.timestamp}</span>
+                      </div>
+                    )}
 
-                  {/* Message content */}
-                  <div 
-                    className={`text-base leading-[1.6] font-light
-                      ${message.role === 'user' 
-                        ? 'text-[#E0E0E0]' 
-                        : 'text-[#CCCCCC]' 
-                      }`}
-                  >
-                    <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
-                      {message.content}
-                    </p>
+                    {/* Message content */}
+                    <div 
+                      className={`text-base leading-[1.6] font-light
+                        ${message.role === 'user' 
+                          ? 'text-[#E0E0E0]' 
+                          : 'text-[#CCCCCC]' 
+                        }`}
+                    >
+                      <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
+                        {message.content}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
 
           {/* Input Area - Floating Bar */}

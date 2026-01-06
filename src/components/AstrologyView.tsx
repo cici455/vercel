@@ -132,7 +132,7 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
 
 // --- Main Component ---
 const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, onBack }) => {
-  const { chartData, narrativeProfile, loading, error } = useUserChart(userData);
+  const { chartData, narrativeProfile, tensionLabel, tensionLine, loading, error } = useUserChart(userData);
 
   const trinityCards = useMemo(() => {
     if (!chartData) return [];
@@ -221,10 +221,14 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
               <TrinityCard key={card.id} item={card} />
             ))}
           </div>
-          {narrativeProfile && (
-            <div className="text-center text-xs tracking-[0.3em] text-white/40 uppercase mb-12">
-              {narrativeProfile.tensionPattern}
-            </div>
+          {/* 元素张力标签 & 解释 */}
+          <div className="mt-6 text-xs tracking-[0.3em] text-white/40 uppercase text-center">
+            {tensionLabel || 'ELEMENTAL TENSION'}
+          </div>
+          {tensionLine && (
+            <p className="mt-2 text-[11px] text-white/40 text-center max-w-xl mx-auto">
+              {tensionLine}
+            </p>
           )}
           <OracleLine omen={chartData.omen} />
 

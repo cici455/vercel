@@ -27,6 +27,8 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
   });
   const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [hour, setHour] = useState('');
+  const [minute, setMinute] = useState('');
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -256,16 +258,29 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={formData.time.split(':')[0] || ''}
+                      value={hour}
                       onChange={(e) => {
-                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2); // 只保留前两位数字
-                        const hNum = raw === '' ? NaN : Number(raw);
-                        if (!Number.isNaN(hNum) && hNum > 23) return; // 超过 23 不接受
+                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2); // 保留前两位数字
+                        if (raw === '') {
+                          setHour('');
+                          setFormData({ ...formData, time: '' });
+                          setErrors({ ...errors, time: '' });
+                          return;
+                        }
 
-                        const mm = formData.time.split(':')[1] || '';
-                        const newTime = raw.length === 2 && mm.length === 2 ? `${raw}:${mm}` : '';
-                        setFormData({ ...formData, time: newTime });
-                        setErrors({ ...errors, time: '' });
+                        const n = Number(raw);
+                        if (n > 23) return; // 不允许超过 23
+
+                        setHour(raw);
+
+                        // 只有两边都填满两位，才同步到 formData.time
+                        if (raw.length === 2 && minute.length === 2) {
+                          const newTime = `${raw}:${minute}`;
+                          setFormData({ ...formData, time: newTime });
+                          setErrors({ ...errors, time: '' });
+                        } else {
+                          setFormData({ ...formData, time: '' });
+                        }
                       }}
                       className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                       placeholder="HH"
@@ -280,16 +295,28 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={formData.time.split(':')[1] || ''}
+                      value={minute}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        const mNum = raw === '' ? NaN : Number(raw);
-                        if (!Number.isNaN(mNum) && mNum > 59) return;
+                        if (raw === '') {
+                          setMinute('');
+                          setFormData({ ...formData, time: '' });
+                          setErrors({ ...errors, time: '' });
+                          return;
+                        }
 
-                        const hh = formData.time.split(':')[0] || '';
-                        const newTime = hh.length === 2 && raw.length === 2 ? `${hh}:${raw}` : '';
-                        setFormData({ ...formData, time: newTime });
-                        setErrors({ ...errors, time: '' });
+                        const n = Number(raw);
+                        if (n > 59) return; // 不允许超过 59
+
+                        setMinute(raw);
+
+                        if (hour.length === 2 && raw.length === 2) {
+                          const newTime = `${hour}:${raw}`;
+                          setFormData({ ...formData, time: newTime });
+                          setErrors({ ...errors, time: '' });
+                        } else {
+                          setFormData({ ...formData, time: '' });
+                        }
                       }}
                       className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                       placeholder="MM"
@@ -297,6 +324,7 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                       required
                     />
                   </div>
+
                   {errors.time && (
                     <p className="mt-1 text-xs text-red-400">{errors.time}</p>
                   )}

@@ -4,6 +4,7 @@ import { calculateNatalChart } from '../utils/astrologyCalculator';
 import { calculatePlanetPositions, detectAspects, PlanetPosition, AspectSignal } from '../utils/astrologySystem';
 import { generateDailyOmen, OmenOutput } from '../utils/narrativeGenerator';
 import { ZODIAC_CONTENT } from '../data/luminaContent';
+import { buildTensionPattern } from '../utils/archetypeMatrix';
 
 // Parse birth date and time to UTC
 const parseBirthDateTimeToUtc = (
@@ -112,6 +113,8 @@ const buildNarrativeProfile = (natalChart: any): NarrativeProfile => {
 export const useUserChart = (userData: UserChartInput | null) => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [narrativeProfile, setNarrativeProfile] = useState<NarrativeProfile | null>(null);
+  const [tensionLabel, setTensionLabel] = useState<string>('');
+  const [tensionLine, setTensionLine] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -136,7 +139,15 @@ export const useUserChart = (userData: UserChartInput | null) => {
       // 2. Calculate Natal Chart using the new calculator
       const natalChart = calculateNatalChart(birthDateUtc, userData.lat, userData.lng);
       
-      // 3. Build narrative profile
+      // 3. Calculate tension pattern using archetype matrix
+      const { label, line } = buildTensionPattern(
+        natalChart.signs.sun,
+        natalChart.signs.moon
+      );
+      setTensionLabel(label);
+      setTensionLine(line);
+      
+      // 4. Build narrative profile
       const profile = buildNarrativeProfile(natalChart);
       setNarrativeProfile(profile);
 
@@ -243,5 +254,5 @@ export const useUserChart = (userData: UserChartInput | null) => {
     }
   }, [userData]);
 
-  return { chartData, narrativeProfile, loading, error };
+  return { chartData, narrativeProfile, loading, error, tensionLabel, tensionLine };
 };

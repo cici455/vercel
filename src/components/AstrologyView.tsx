@@ -6,8 +6,19 @@ import {
 } from 'lucide-react';
 import { useUserChart } from '../hooks/useUserChart';
 import { OmenOutput } from '../utils/narrativeGenerator';
+import type { PlanetKey } from '../utils/planetArchetypes';
 
-// --- Types ---export type CardItem = {
+// --- Types ---
+type CardConfig = {
+  id: string;
+  kind: "trinity" | "planet";
+  slot?: "sun" | "moon" | "rising";     // 仅在 kind 为 "trinity" 时使用
+  planet?: PlanetKey;                   // 仅在 kind 为 "planet" 时使用
+  sign: string;
+  degree?: number;
+};
+
+export type CardItem = {
   id: string;
   kind: "trinity" | "planet";
   slot?: "sun"|"moon"|"rising";

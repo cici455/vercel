@@ -5,33 +5,13 @@ import { calculatePlanetPositions, detectAspects, PlanetPosition, AspectSignal }
 import { generateDailyOmen, OmenOutput } from '../utils/narrativeGenerator';
 import { ZODIAC_CONTENT } from '../data/luminaContent';
 
-// City to timezone mapping
-const CITY_TIMEZONES: Record<string, string> = {
-  'New York, US': 'America/New_York',
-  'London, GB': 'Europe/London',
-  'Shanghai, CN': 'Asia/Shanghai',
-  'Tokyo, JP': 'Asia/Tokyo',
-  'Sydney, AU': 'Australia/Sydney',
-  'Paris, FR': 'Europe/Paris',
-  'Beijing, CN': 'Asia/Shanghai',
-  'Moscow, RU': 'Europe/Moscow',
-  'Cairo, EG': 'Africa/Cairo',
-  'Rio de Janeiro, BR': 'America/Sao_Paulo',
-  'Mumbai, IN': 'Asia/Kolkata',
-  'Bangkok, TH': 'Asia/Bangkok',
-  'Mexico City, MX': 'America/Mexico_City',
-  'Los Angeles, US': 'America/Los_Angeles',
-  'Chicago, US': 'America/Chicago',
-};
-
 // Parse birth date and time to UTC
 const parseBirthDateTimeToUtc = (
   dateStr: string,   // 'YYYY-MM-DD' (from <input type="date">)
   timeStr: string,   // 'HH:MM'
-  cityName: string   // e.g. 'London, GB'
+  timezone: string   // e.g. 'Europe/London'
 ): Date | null => {
-  const zone = CITY_TIMEZONES[cityName];
-  if (!zone) return null;
+  const zone = timezone || 'UTC';
 
   const [year, month, day] = dateStr.split('-').map(Number);
   const [hour, minute] = timeStr.split(':').map(Number);
@@ -104,7 +84,7 @@ export const useUserChart = (userData: UserChartInput | null) => {
       const birthDateUtc = parseBirthDateTimeToUtc(
         userData.date,
         userData.time,
-        userData.city
+        userData.timezone
       );
       
       if (!birthDateUtc) {

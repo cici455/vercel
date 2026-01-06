@@ -17,7 +17,8 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
     time: "",
     city: "",
     lat: 0,
-    lng: 0
+    lng: 0,
+    timezone: ""
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const [errors, setErrors] = useState({
@@ -55,6 +56,7 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
               name: `${item.name}, ${item.country_code}`,
               lat: item.latitude,
               lng: item.longitude,
+              timezone: item.timezone,
             })) ?? [];
 
           setCitySuggestions(suggestions);
@@ -70,7 +72,13 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
   };
 
   const handleCitySelect = (city: any) => {
-    setFormData({...formData, city: city.name, lat: city.lat, lng: city.lng});
+    setFormData({
+      ...formData,
+      city: city.name,
+      lat: city.lat,
+      lng: city.lng,
+      timezone: city.timezone,
+    });
     setShowSuggestions(false);
     setErrors({...errors, city: ""});
   };

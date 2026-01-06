@@ -31,35 +31,35 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
 
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setFormData({...formData, city: value, lat: 0, lng: 0});
-    setErrors({...errors, city: ""});
-    
+    setFormData({ ...formData, city: value, lat: 0, lng: 0 });
+    setErrors({ ...errors, city: "" });
+
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    
+
     if (value.length >= 2) {
       setShowSuggestions(true);
-      searchTimeout.current = setTimeout(() => {
-        // Expanded mock cities list
-        const mockCities = [
-          { name: "New York", lat: 40.7128, lng: -74.0060 },
-          { name: "London", lat: 51.5074, lng: -0.1278 },
-          { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
-          { name: "Shanghai", lat: 31.2304, lng: 121.4737 },
-          { name: "Paris", lat: 48.8566, lng: 2.3522 },
-          { name: "Sydney", lat: -33.8688, lng: 151.2093 },
-          { name: "Beijing", lat: 39.9042, lng: 116.4074 },
-          { name: "Moscow", lat: 55.7558, lng: 37.6173 },
-          { name: "Cairo", lat: 30.0444, lng: 31.2357 },
-          { name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729 },
-          { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
-          { name: "Bangkok", lat: 13.7563, lng: 100.5018 },
-          { name: "Mexico City", lat: 19.4326, lng: -99.1332 },
-          { name: "Los Angeles", lat: 34.0522, lng: -118.2437 },
-          { name: "Chicago", lat: 41.8781, lng: -87.6298 },
-        ].filter(city => 
-          city.name.toLowerCase().includes(value.toLowerCase())
-        );
-        setCitySuggestions(mockCities);
+
+      searchTimeout.current = setTimeout(async () => {
+        try {
+          const res = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+              value
+            )}&count=10&language=en&format=json`
+          );
+          const data = await res.json();
+
+          const suggestions =
+            (data.results || []).map((item: any) => ({
+              name: `${item.name}, ${item.country_code}`,
+              lat: item.latitude,
+              lng: item.longitude,
+            })) ?? [];
+
+          setCitySuggestions(suggestions);
+        } catch (error) {
+          console.error("City lookup failed", error);
+          setCitySuggestions([]);
+        }
       }, 300);
     } else {
       setShowSuggestions(false);

@@ -100,7 +100,6 @@ const RITUAL_THEMES: RitualTheme[] = [
     glyph: 'abyss',
   },
 ];
-};
 
 // --- Components ---
 
@@ -467,9 +466,9 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                       <span>ARCANA</span> 
                     </div> 
 
-                    {/* 中央主图：根据 theme.id 渲染不同图案 */} 
+                    {/* 中央主图：根据 theme.glyph 渲染不同图案 */} 
                     <div className="relative z-10 mt-4 flex flex-col items-center justify-center h-[210px]"> 
-                      <CardMotif id={theme.id} /> 
+                      <RitualGlyph glyph={theme.glyph} isActive={slot === 'active'} /> 
                     </div> 
 
                     {/* 底部主文案 */} 

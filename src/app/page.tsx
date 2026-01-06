@@ -115,26 +115,32 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form
-    const dateError = validateDate(formData.date);
-    const timeError = validateTime(formData.time);
-    const cityError = validateCity(formData.city, formData.lat, formData.lng);
-    
+
+    // 1. 先从 hour / minute 组合出一个 time 字符串
+    const hh = hour.padStart(2, '0');
+    const mm = minute.padStart(2, '0');
+    const timeString = hour && minute ? `${hh}:${mm}` : '';
+
+    // 把 timeString 同步进 formData，确保 onComplete 用到的也是这一份
+    const mergedFormData = { ...formData, time: timeString };
+    setFormData(mergedFormData);
+
+    // 2. 用 timeString 去做校验，而不是旧的 formData.time
+    const dateError = validateDate(mergedFormData.date);
+    const timeError = validateTime(timeString);
+    const cityError = validateCity(mergedFormData.city, mergedFormData.lat, mergedFormData.lng);
+
     const newErrors = {
       date: dateError || "",
       time: timeError || "",
       city: cityError || ""
     };
-    
     setErrors(newErrors);
-    
-    // Check if there are any errors
+
     const hasErrors = Object.values(newErrors).some(error => error !== "");
     if (hasErrors) return;
-    
+
     setStatus("loading");
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     setStatus("success");
   };
@@ -268,7 +274,9 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                       inputMode="numeric"
                       value={hour}
                       onChange={(e) => {
-                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2); // 保留前两位数字
+                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2); // 只保留数字，最多两位
+
+                        // 允许清空
                         if (raw === '') {
                           setHour('');
                           setFormData({ ...formData, time: '' });
@@ -276,19 +284,36 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                           return;
                         }
 
+                        // 第一位只能是 0/1/2
+                        if (raw.length === 1) {
+                          const n = Number(raw);
+                          if (n > 2) return; // 不接受 3–9 作为第一位
+                          setHour(raw);
+                          // 只填一位时，不更新 time
+                          setFormData({ ...formData, time: '' });
+                          return;
+                        }
+
+                        // 两位数时，必须 <= 23
                         const n = Number(raw);
-                        if (n > 23) return; // 不允许超过 23
+                        if (n > 23) return;
 
                         setHour(raw);
 
-                        // 只有两边都填满两位，才同步到 formData.time
-                        if (raw.length === 2 && minute.length === 2) {
-                          const newTime = `${raw}:${minute}`;
-                          setFormData({ ...formData, time: newTime });
-                          setErrors({ ...errors, time: '' });
-                        } else {
-                          setFormData({ ...formData, time: '' });
+                        // 如果分钟已经合法两位，则组合成 HH:MM（自动补零）
+                        if (minute.length >= 1) {
+                          const hh = raw.padStart(2, '0');
+                          const mm = minute.padStart(2, '0');
+                          if (mm.length === 2) {
+                            const newTime = `${hh}:${mm}`;
+                            setFormData({ ...formData, time: newTime });
+                            setErrors({ ...errors, time: '' });
+                            return;
+                          }
                         }
+
+                        // 否则先清空 time，等分钟填完再组合
+                        setFormData({ ...formData, time: '' });
                       }}
                       className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                       placeholder="HH"
@@ -306,6 +331,8 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                       value={minute}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, '').slice(0, 2);
+
+                        // 允许清空
                         if (raw === '') {
                           setMinute('');
                           setFormData({ ...formData, time: '' });
@@ -318,13 +345,17 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
 
                         setMinute(raw);
 
-                        if (hour.length === 2 && raw.length === 2) {
-                          const newTime = `${hour}:${raw}`;
+                        // 只要小时有一位以上，分钟两位，就组合 HH:MM
+                        if (hour.length >= 1 && raw.length === 2) {
+                          const hh = hour.padStart(2, '0');
+                          const mm = raw.padStart(2, '0');
+                          const newTime = `${hh}:${mm}`;
                           setFormData({ ...formData, time: newTime });
                           setErrors({ ...errors, time: '' });
-                        } else {
-                          setFormData({ ...formData, time: '' });
+                          return;
                         }
+
+                        setFormData({ ...formData, time: '' });
                       }}
                       className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                       placeholder="MM"

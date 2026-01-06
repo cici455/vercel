@@ -20,6 +20,11 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
     lng: 0
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [errors, setErrors] = useState({
+    date: "",
+    time: "",
+    city: ""
+  });
   const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -27,18 +32,30 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFormData({...formData, city: value, lat: 0, lng: 0});
+    setErrors({...errors, city: ""});
     
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     
-    if (value.length >= 1) {
+    if (value.length >= 2) {
       setShowSuggestions(true);
       searchTimeout.current = setTimeout(() => {
-        // Simple mock suggestions
+        // Expanded mock cities list
         const mockCities = [
           { name: "New York", lat: 40.7128, lng: -74.0060 },
           { name: "London", lat: 51.5074, lng: -0.1278 },
           { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
           { name: "Shanghai", lat: 31.2304, lng: 121.4737 },
+          { name: "Paris", lat: 48.8566, lng: 2.3522 },
+          { name: "Sydney", lat: -33.8688, lng: 151.2093 },
+          { name: "Beijing", lat: 39.9042, lng: 116.4074 },
+          { name: "Moscow", lat: 55.7558, lng: 37.6173 },
+          { name: "Cairo", lat: 30.0444, lng: 31.2357 },
+          { name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729 },
+          { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
+          { name: "Bangkok", lat: 13.7563, lng: 100.5018 },
+          { name: "Mexico City", lat: 19.4326, lng: -99.1332 },
+          { name: "Los Angeles", lat: 34.0522, lng: -118.2437 },
+          { name: "Chicago", lat: 41.8781, lng: -87.6298 },
         ].filter(city => 
           city.name.toLowerCase().includes(value.toLowerCase())
         );
@@ -53,10 +70,57 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
   const handleCitySelect = (city: any) => {
     setFormData({...formData, city: city.name, lat: city.lat, lng: city.lng});
     setShowSuggestions(false);
+    setErrors({...errors, city: ""});
+  };
+
+  // Validate date
+  const validateDate = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Invalid date";
+    const today = new Date();
+    const min = new Date("1900-01-01");
+    if (date < min) return "Too early";
+    if (date > today) return "Cannot be in the future";
+    // Optional: limit age 13~100 years
+    const age = today.getFullYear() - date.getFullYear();
+    if (age < 13 || age > 100) return "Age must be between 13 and 100";
+    return null;
+  };
+
+  // Validate time
+  const validateTime = (value: string) => {
+    // 24-hour format, 00:00 - 23:59
+    const match = /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+    return match ? null : "Use 24h format HH:MM";
+  };
+
+  // Validate city
+  const validateCity = (city: string, lat: number, lng: number) => {
+    if (!city) return "City is required";
+    if (lat === 0 && lng === 0) return "Please select a city from the suggestions";
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    const dateError = validateDate(formData.date);
+    const timeError = validateTime(formData.time);
+    const cityError = validateCity(formData.city, formData.lat, formData.lng);
+    
+    const newErrors = {
+      date: dateError || "",
+      time: timeError || "",
+      city: cityError || ""
+    };
+    
+    setErrors(newErrors);
+    
+    // Check if there are any errors
+    const hasErrors = Object.values(newErrors).some(error => error !== "");
+    if (hasErrors) return;
+    
     setStatus("loading");
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -157,6 +221,9 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                     ))}
                   </div>
                 )}
+                {errors.city && (
+                  <p className="mt-1 text-xs text-red-400">{errors.city}</p>
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-6">
@@ -165,20 +232,35 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                   <input 
                     type="date" 
                     value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    onChange={(e) => {
+                      setFormData({...formData, date: e.target.value});
+                      setErrors({...errors, date: ""});
+                    }}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+                    min="1900-01-01"
+                    max={new Date().toISOString().slice(0, 10)}
                     required
                   />
+                  {errors.date && (
+                    <p className="mt-1 text-xs text-red-400">{errors.date}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Time</label>
                   <input 
                     type="time" 
                     value={formData.time}
-                    onChange={(e) => setFormData({...formData, time: e.target.value})}
+                    onChange={(e) => {
+                      setFormData({...formData, time: e.target.value});
+                      setErrors({...errors, time: ""});
+                    }}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+                    step={60}
                     required
                   />
+                  {errors.time && (
+                    <p className="mt-1 text-xs text-red-400">{errors.time}</p>
+                  )}
                 </div>
               </div>
               

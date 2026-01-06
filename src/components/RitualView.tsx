@@ -43,109 +43,9 @@ const TAROT_THEMES: TarotTheme[] = [
   },
 ];
 
+
 // --- Components ---
 
-// Holographic Card
-const HolographicCard = ({ theme, slot, index }: { theme: TarotTheme; slot: string; index: number }) => {
-  // 根据主题设置行星和元素信息
-  const getCardInfo = (id: string) => {
-    switch (id) {
-      case 'love':
-        return { symbol: '♀', planet: 'VENUS', element: 'WATER' };
-      case 'career':
-        return { symbol: '♄', planet: 'SATURN', element: 'EARTH' };
-      case 'destiny':
-        return { symbol: '☉', planet: 'SUN', element: 'FIRE' };
-      case 'chaos':
-        return { symbol: '♅', planet: 'URANUS', element: 'AIR' };
-      default:
-        return { symbol: '☉', planet: 'SUN', element: 'FIRE' };
-    }
-  };
-
-  const cardInfo = getCardInfo(theme.id);
-
-  return (
-    <motion.div
-      className=" 
-        relative w-[260px] h-[380px] 
-        rounded-[24px] overflow-hidden 
-        bg-[#050307] 
-        border border-amber-300/60 
-        shadow-[0_28px_70px_rgba(0,0,0,0.95)] 
-      "
-      style={{ transformOrigin: 'center bottom' }}
-      animate={{ 
-        scale: slot === 'active' ? 1.02 : 0.9, 
-        rotateY: slot === 'prev' ? -16 : slot === 'next' ? 16 : 0, 
-        translateZ: slot === 'active' ? 60 : -40, 
-      }}
-      transition={{ duration: 0.45, ease: 'easeOut' }}
-    >
-      {/* 内边框 */}
-      <div className="absolute inset-[10px] rounded-[18px] border border-amber-300/40" />
-
-      {/* 四角装饰弧线 */}
-      <div className="absolute inset-[14px]">
-        {/* 左上 */}
-        <div className="absolute left-0 top-0 w-6 h-6 border-l border-t border-amber-300/70 rounded-tl-[18px]" />
-        {/* 右上 */}
-        <div className="absolute right-0 top-0 w-6 h-6 border-r border-t border-amber-300/70 rounded-tr-[18px]" />
-        {/* 左下 */}
-        <div className="absolute left-0 bottom-0 w-6 h-6 border-l border-b border-amber-300/70 rounded-bl-[18px]" />
-        {/* 右下 */}
-        <div className="absolute right-0 bottom-0 w-6 h-6 border-r border-b border-amber-300/70 rounded-br-[18px]" />
-      </div>
-
-      {/* 小星星点缀 */}
-      <div className="absolute inset-[24px]">
-        <span className="absolute left-[12%] top-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" />
-        <span className="absolute right-[16%] top-[26%] w-[2px] h-[2px] bg-amber-200 rounded-full" />
-        <span className="absolute left-[18%] bottom-[22%] w-[2px] h-[2px] bg-amber-200 rounded-full" />
-        <span className="absolute right-[20%] bottom-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" />
-      </div>
-
-      {/* 顶部小标题：编号 + ARCANA */}
-      <div className="relative z-10 flex items-center justify-between px-6 pt-5 text-[10px] tracking-[0.25em] text-amber-200/80 uppercase">
-        <span>NO. 0{index + 1}</span>
-        <span>ARCANA</span>
-      </div>
-
-      {/* 中央主图：月亮 + 光芒（LOVE 卡示例） */}
-      <div className="relative z-10 mt-4 flex flex-col items-center justify-center h-[210px]">
-        <div className="relative w-[150px] h-[150px]">
-          {/* 外层光芒圈 */}
-          <div className="absolute inset-0 rounded-full border border-amber-200/40" />
-          {/* 光芒射线（简单版：12 条线） */}
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute left-1/2 top-1/2 w-[1px] h-[14px] bg-amber-200/60 origin-bottom"
-              style={{ transform: `rotate(${i * 30}deg) translateY(-64px)` }}
-            />
-          ))}
-          {/* 月亮圆 */}
-          <div className="absolute inset-[26px] rounded-full border border-amber-200/80 bg-black" />
-          {/* 月亮剪影（左边挖掉一点形成弯月） */}
-          <div className="absolute inset-[32px] rounded-full bg-amber-200/90" />
-          <div className="absolute inset-[38px] rounded-full bg-black translate-x-[12px]" />
-          {/* 中心小星 */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-[4px] rounded-full bg-black/80" />
-        </div>
-      </div>
-
-      {/* 底部主文案 */}
-      <div className="relative z-10 mt-6 px-4 text-center">
-        <div className="text-[11px] tracking-[0.32em] text-amber-200/80 mb-2 uppercase">
-          {theme.title}
-        </div>
-        <div className="text-[10px] tracking-[0.38em] text-amber-200/70 uppercase">
-          {theme.subtitle}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
 
 // --- Main Component ---
 const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
@@ -235,16 +135,86 @@ const RitualView: React.FC<RitualViewProps> = ({ onOpenGate, onBack }) => {
                   key={theme.id} 
                   className="absolute left-1/2 -translate-x-1/2" 
                   animate={{ 
-                    x: slot === 'prev' ? -220 : slot === 'next' ? 220 : 0, 
-                    zIndex: slot === 'active' ? 20 : 10, 
+                    x: slot === 'prev' ? -280 : slot === 'next' ? 280 : 0,   // 原来 -220/220 改大一点 
+                    zIndex: slot === 'active' ? 30 : 10, 
                   }} 
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
-                >
-                  <HolographicCard 
-                    theme={theme}
-                    slot={slot}
-                    index={index}
-                  />
+                  transition={{ duration: 0.4, ease: 'easeOut' }} 
+                > 
+                  <motion.div 
+                    className=" 
+                      relative w-[260px] h-[380px] 
+                      rounded-[24px] overflow-hidden 
+                      bg-[#050307] 
+                      border border-amber-300/60 
+                      shadow-[0_28px_70px_rgba(0,0,0,0.95)] 
+                    " 
+                    style={{ transformOrigin: 'center bottom' }} 
+                    animate={{ 
+                      scale: slot === 'active' ? 1.04 : slot === 'prev' || slot === 'next' ? 0.88 : 0.8, 
+                      rotateY: slot === 'prev' ? -18 : slot === 'next' ? 18 : 0, 
+                      rotateX: slot === 'active' ? 6 : 0, 
+                      translateZ: slot === 'active' ? 80 : -60, 
+                    }} 
+                    transition={{ duration: 0.45, ease: 'easeOut' }} 
+                  > 
+                    {/* 中心卡亮度优势：非 active 加一层暗罩 */} 
+                    {slot !== 'active' && ( 
+                      <div className="absolute inset-0 bg-black/60 z-20 pointer-events-none" /> 
+                    )} 
+ 
+                    {/* 内边框 */} 
+                    <div className="absolute inset-[10px] rounded-[18px] border border-amber-300/40" /> 
+ 
+                    {/* 四角装饰弧线 */} 
+                    <div className="absolute inset-[14px]"> 
+                      <div className="absolute left-0 top-0 w-6 h-6 border-l border-t border-amber-300/70 rounded-tl-[18px]" /> 
+                      <div className="absolute right-0 top-0 w-6 h-6 border-r border-t border-amber-300/70 rounded-tr-[18px]" /> 
+                      <div className="absolute left-0 bottom-0 w-6 h-6 border-l border-b border-amber-300/70 rounded-bl-[18px]" /> 
+                      <div className="absolute right-0 bottom-0 w-6 h-6 border-r border-b border-amber-300/70 rounded-br-[18px]" /> 
+                    </div> 
+ 
+                    {/* 小星星点缀 */} 
+                    <div className="absolute inset-[24px]"> 
+                      <span className="absolute left-[12%] top-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" /> 
+                      <span className="absolute right-[16%] top-[26%] w-[2px] h-[2px] bg-amber-200 rounded-full" /> 
+                      <span className="absolute left-[18%] bottom-[22%] w-[2px] h-[2px] bg-amber-200 rounded-full" /> 
+                      <span className="absolute right-[20%] bottom-[18%] w-[3px] h-[3px] bg-amber-200 rounded-full" /> 
+                    </div> 
+ 
+                    {/* 顶部小标题：编号 + ARCANA */} 
+                    <div className="relative z-10 flex items-center justify-between px-6 pt-5 text-[10px] tracking-[0.25em] text-amber-200/80 uppercase"> 
+                      <span>NO. 0{index + 1}</span> 
+                      <span>ARCANA</span> 
+                    </div> 
+ 
+                    {/* 中央主图：月亮 + 光芒 */} 
+                    <div className="relative z-10 mt-4 flex flex-col items-center justify-center h-[210px]"> 
+                      <div className="relative w-[150px] h-[150px]"> 
+                        <div className="absolute inset-0 rounded-full border border-amber-200/40" /> 
+                        {[...Array(12)].map((_, i) => ( 
+                          <div 
+                            key={i} 
+                            className="absolute left-1/2 top-1/2 w-[1px] h-[14px] bg-amber-200/60 origin-bottom" 
+                            style={{ transform: `rotate(${i * 30}deg) translateY(-64px)` }} 
+                          /> 
+                        ))} 
+                        <div className="absolute inset-[26px] rounded-full border border-amber-200/80 bg-black" /> 
+                        <div className="absolute inset-[32px] rounded-full bg-amber-200/90" /> 
+                        <div className="absolute inset-[38px] rounded-full bg-black translate-x-[12px]" /> 
+                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-[4px] rounded-full bg-black/80" /> 
+                      </div> 
+                    </div> 
+ 
+                    {/* 底部主文案 */} 
+                    <div className="relative z-10 mt-6 px-4 text-center"> 
+                      <div className="text-[11px] tracking-[0.32em] text-amber-200/80 mb-2 uppercase"> 
+                        {theme.title} 
+                      </div> 
+                      <div className="text-[10px] tracking-[0.38em] text-amber-200/70 uppercase"> 
+                        {theme.subtitle} 
+                      </div> 
+                    </div> 
+                  </motion.div> 
                 </motion.div>
               );
             })}

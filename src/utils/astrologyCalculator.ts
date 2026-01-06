@@ -1,5 +1,7 @@
 import * as Astronomy from 'astronomy-engine';
 
+type AstroTime = ReturnType<typeof Astronomy.MakeTime>;
+
 // Helper functions
 const degToRad = (deg: number) => (deg * Math.PI) / 180;
 const radToDeg = (rad: number) => (rad * 180) / Math.PI;
@@ -49,7 +51,7 @@ const planetBodies: Record<PlanetKey, Astronomy.Body> = {
 };
 
 // Get planet longitude
-const getPlanetLong = (body: Astronomy.Body, astroTime: Astronomy.Time): number => {
+const getPlanetLong = (body: Astronomy.Body, astroTime: AstroTime): number => {
   // GeoVector calculates the position relative to Earth
   const vec = Astronomy.GeoVector(body, astroTime, true);
   // Convert to Ecliptic coordinates

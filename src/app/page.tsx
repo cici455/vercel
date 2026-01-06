@@ -248,25 +248,58 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2"> 
-                    Time 
-                  </label> 
-                  <input 
-                    type="text" 
-                    inputMode="numeric" 
-                    value={formData.time} 
-                    onChange={(e) => { 
-                      setFormData({ ...formData, time: e.target.value }); 
-                      setErrors({ ...errors, time: "" }); 
-                    }} 
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors" 
-                    placeholder="HH:MM" 
-                    maxLength={5} 
-                    required 
-                  /> 
-                  {errors.time && ( 
-                    <p className="mt-1 text-xs text-red-400">{errors.time}</p> 
-                  )} 
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">
+                    Time
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {/* 小时 HH */}
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.time.split(':')[0] || ''}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2); // 只保留前两位数字
+                        const hNum = raw === '' ? NaN : Number(raw);
+                        if (!Number.isNaN(hNum) && hNum > 23) return; // 超过 23 不接受
+
+                        const mm = formData.time.split(':')[1] || '';
+                        const newTime = raw.length === 2 && mm.length === 2 ? `${raw}:${mm}` : '';
+                        setFormData({ ...formData, time: newTime });
+                        setErrors({ ...errors, time: '' });
+                      }}
+                      className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                      placeholder="HH"
+                      maxLength={2}
+                      required
+                    />
+
+                    {/* 静态冒号 */}
+                    <span className="text-white/50 text-lg">:</span>
+
+                    {/* 分钟 MM */}
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.time.split(':')[1] || ''}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const mNum = raw === '' ? NaN : Number(raw);
+                        if (!Number.isNaN(mNum) && mNum > 59) return;
+
+                        const hh = formData.time.split(':')[0] || '';
+                        const newTime = hh.length === 2 && raw.length === 2 ? `${hh}:${raw}` : '';
+                        setFormData({ ...formData, time: newTime });
+                        setErrors({ ...errors, time: '' });
+                      }}
+                      className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                      placeholder="MM"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+                  {errors.time && (
+                    <p className="mt-1 text-xs text-red-400">{errors.time}</p>
+                  )}
                 </div>
               </div>
               

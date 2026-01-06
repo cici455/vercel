@@ -25,8 +25,6 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
     time: "",
     city: ""
   });
-  const [hour, setHour] = useState('');
-  const [minute, setMinute] = useState('');
   const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -250,58 +248,22 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">
-                    Time
-                  </label>
-                  <div className="flex gap-3">
-                    {/* 小时 00–23 */}
-                    <select 
-                      value={hour} 
-                      onChange={(e) => { 
-                        const h = e.target.value; 
-                        setHour(h); 
-                        const newTime = h && minute ? `${h}:${minute}` : ''; 
-                        setFormData({ ...formData, time: newTime }); 
-                        setErrors({ ...errors, time: '' }); 
-                      }} 
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors" 
-                      required 
-                    > 
-                      <option value="">HH</option> 
-                      {Array.from({ length: 24 }, (_, i) => { 
-                        const v = i.toString().padStart(2, '0'); 
-                        return ( 
-                          <option key={v} value={v}> 
-                            {v} 
-                          </option> 
-                        ); 
-                      })} 
-                    </select> 
- 
-                    {/* 分钟 00–59 */} 
-                    <select 
-                      value={minute} 
-                      onChange={(e) => { 
-                        const m = e.target.value; 
-                        setMinute(m); 
-                        const newTime = hour && m ? `${hour}:${m}` : ''; 
-                        setFormData({ ...formData, time: newTime }); 
-                        setErrors({ ...errors, time: '' }); 
-                      }} 
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors" 
-                      required 
-                    > 
-                      <option value="">MM</option> 
-                      {Array.from({ length: 60 }, (_, i) => { 
-                        const v = i.toString().padStart(2, '0'); 
-                        return ( 
-                          <option key={v} value={v}> 
-                            {v} 
-                          </option> 
-                        ); 
-                      })} 
-                    </select> 
-                  </div> 
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2"> 
+                    Time 
+                  </label> 
+                  <input 
+                    type="text" 
+                    inputMode="numeric" 
+                    value={formData.time} 
+                    onChange={(e) => { 
+                      setFormData({ ...formData, time: e.target.value }); 
+                      setErrors({ ...errors, time: "" }); 
+                    }} 
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors" 
+                    placeholder="HH:MM" 
+                    maxLength={5} 
+                    required 
+                  /> 
                   {errors.time && ( 
                     <p className="mt-1 text-xs text-red-400">{errors.time}</p> 
                   )} 

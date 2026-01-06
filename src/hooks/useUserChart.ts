@@ -114,6 +114,44 @@ const buildNarrativeProfile = (natalChart: any): NarrativeProfile => {
 
 type PlanetCopyForUI = Record<PlanetKey, { title: string; line: string }>;
 
+type DisplayPlanetPosition = {
+  degree: number;   // 星座内度数 0-30
+  sign: string;     // 星座字符串（aries/taurus...）
+};
+
+type DisplayPositions = Record<PlanetKey, DisplayPlanetPosition>;
+
+const buildDisplayPositionsFromChart = (natalChart: NatalChart): DisplayPositions => {
+  const result: Partial<DisplayPositions> = {};
+
+  const planetKeys: PlanetKey[] = [
+    'mercury',
+    'venus',
+    'mars',
+    'jupiter',
+    'saturn',
+    'uranus',
+    'neptune',
+    'pluto',
+  ];
+
+  planetKeys.forEach((key) => {
+    const lon = natalChart.longitudes[key];
+    const sign = natalChart.signs[key];
+    if (lon === undefined || !sign) return;
+
+    const norm = ((lon % 360) + 360) % 360;
+    const degreeInSign = norm % 30; // 每宫 0-30 度
+
+    result[key] = {
+      degree: degreeInSign,
+      sign,
+    };
+  });
+
+  return result as DisplayPositions;
+};
+
 const buildPlanetCopy = (natalChart: NatalChart): PlanetCopyForUI => {
   const result: Partial<PlanetCopyForUI> = {};
 
@@ -155,6 +193,7 @@ export const useUserChart = (userData: UserChartInput | null) => {
   const [tensionLabel, setTensionLabel] = useState<string>('');
   const [tensionLine, setTensionLine] = useState<string>('');
   const [planetCopy, setPlanetCopy] = useState<Record<string, { title: string; line: string }>>({});
+  const [natalDisplayPositions, setNatalDisplayPositions] = useState<Record<string, { degree: number; sign: string }>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -191,7 +230,11 @@ export const useUserChart = (userData: UserChartInput | null) => {
       const planetCopy = buildPlanetCopy(natalChart);
       setPlanetCopy(planetCopy);
       
-      // 5. Build narrative profile
+      // 5. Build display positions from chart
+      const natalDisplayPositions = buildDisplayPositionsFromChart(natalChart);
+      setNatalDisplayPositions(natalDisplayPositions);
+      
+      // 6. Build narrative profile
       const profile = buildNarrativeProfile(natalChart);
       setNarrativeProfile(profile);
 
@@ -298,5 +341,5 @@ export const useUserChart = (userData: UserChartInput | null) => {
     }
   }, [userData]);
 
-  return { chartData, narrativeProfile, loading, error, tensionLabel, tensionLine, planetCopy };
+  return { chartData, narrativeProfile, loading, error, tensionLabel, tensionLine, planetCopy, natalDisplayPositions };
 };

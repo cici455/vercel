@@ -143,7 +143,7 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
 
 // --- Main Component ---
 const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, onBack }) => {
-  const { chartData, narrativeProfile, tensionLabel, tensionLine, planetCopy, loading, error } = useUserChart(userData);
+  const { chartData, narrativeProfile, tensionLabel, tensionLine, planetCopy, natalDisplayPositions, loading, error } = useUserChart(userData);
 
   const trinityCards = useMemo(() => {
     if (!chartData) return [];
@@ -182,18 +182,18 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
       };
     });
   }, [chartData, narrativeProfile]);
-
   const planetCards = useMemo(() => {
     if (!chartData?.planets) return [];
     return chartData.planets.map((planet, index) => {
       const planetKey = planet.name.toLowerCase();
       const copy = planetCopy?.[planetKey as keyof typeof planetCopy];
+      const displayPos = natalDisplayPositions?.[planetKey as keyof typeof natalDisplayPositions];
       return {
         id: `planet-${index}`,
         kind: "planet" as const,
         planet: planetKey as any,
-        sign: planet.sign,
-        degree: 0,
+        sign: displayPos?.sign || planet.sign,
+        degree: displayPos?.degree || 0,
         title: copy?.title || planet.behavior,
         line: copy?.line,
         inscription: planet.behavior,
@@ -205,8 +205,7 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
         } : { status: undefined, why: "", guidance: "" }
       };
     });
-  }, [chartData?.planets, planetCopy]);
-
+  }, [chartData?.planets, planetCopy, natalDisplayPositions]);
   return (
     <div className="relative w-full min-h-screen bg-transparent text-white flex flex-col items-center p-4 pb-48">
       <motion.header 

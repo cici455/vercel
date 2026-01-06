@@ -25,6 +25,8 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
     time: "",
     city: ""
   });
+  const [hour, setHour] = useState('');
+  const [minute, setMinute] = useState('');
   const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -75,6 +77,7 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
 
   // Validate date
   const validateDate = (value: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return "Use format YYYY-MM-DD";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "Invalid date";
     const today = new Date();
@@ -89,6 +92,7 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
 
   // Validate time
   const validateTime = (value: string) => {
+    if (!value) return "Time is required";
     // 24-hour format, 00:00 - 23:59
     const match = /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
     return match ? null : "Use 24h format HH:MM";
@@ -246,21 +250,61 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Time</label>
-                  <input 
-                    type="time" 
-                    value={formData.time}
-                    onChange={(e) => {
-                      setFormData({...formData, time: e.target.value});
-                      setErrors({...errors, time: ""});
-                    }}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
-                    step={60}
-                    required
-                  />
-                  {errors.time && (
-                    <p className="mt-1 text-xs text-red-400">{errors.time}</p>
-                  )}
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">
+                    Time
+                  </label>
+                  <div className="flex gap-3">
+                    {/* 小时 00–23 */}
+                    <select 
+                      value={hour} 
+                      onChange={(e) => { 
+                        const h = e.target.value; 
+                        setHour(h); 
+                        const newTime = h && minute ? `${h}:${minute}` : ''; 
+                        setFormData({ ...formData, time: newTime }); 
+                        setErrors({ ...errors, time: '' }); 
+                      }} 
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors" 
+                      required 
+                    > 
+                      <option value="">HH</option> 
+                      {Array.from({ length: 24 }, (_, i) => { 
+                        const v = i.toString().padStart(2, '0'); 
+                        return ( 
+                          <option key={v} value={v}> 
+                            {v} 
+                          </option> 
+                        ); 
+                      })} 
+                    </select> 
+ 
+                    {/* 分钟 00–59 */} 
+                    <select 
+                      value={minute} 
+                      onChange={(e) => { 
+                        const m = e.target.value; 
+                        setMinute(m); 
+                        const newTime = hour && m ? `${hour}:${m}` : ''; 
+                        setFormData({ ...formData, time: newTime }); 
+                        setErrors({ ...errors, time: '' }); 
+                      }} 
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors" 
+                      required 
+                    > 
+                      <option value="">MM</option> 
+                      {Array.from({ length: 60 }, (_, i) => { 
+                        const v = i.toString().padStart(2, '0'); 
+                        return ( 
+                          <option key={v} value={v}> 
+                            {v} 
+                          </option> 
+                        ); 
+                      })} 
+                    </select> 
+                  </div> 
+                  {errors.time && ( 
+                    <p className="mt-1 text-xs text-red-400">{errors.time}</p> 
+                  )} 
                 </div>
               </div>
               

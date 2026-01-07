@@ -30,72 +30,127 @@ const initialNodes: Node[] = [
 ];
 
 export const FateTree = () => {
-  const { messages } = useLuminaStore();
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const { messages, setActiveMessage } = useLuminaStore();
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
 
-  // Auto-generate nodes from messages
+  // Generate nodes and edges from messages
   useEffect(() => {
     if (messages.length === 0) return;
+
+    // Create a map for quick lookup
+    const messageMap = new Map(messages.map(msg => [msg.id, msg]));
     
-    const lastMsg = messages[messages.length - 1];
-    if (lastMsg.role === 'user') return; // Only agents create nodes for now
-
-    const newNodeId = `node-${lastMsg.id}`;
-    const parentNodeId = nodes.length > 0 ? nodes[nodes.length - 1].id : 'root';
+    // Create nodes with proper layout
+    const newNodes: Node[] = [];
+    const newEdges: Edge[] = [];
     
-    // Simple vertical layout logic
-    const level = nodes.length;
-    const xOffset = (Math.random() - 0.5) * 200;
-    const newY = level * 100;
-    const newX = 250 + xOffset;
-
-    const newNode: Node = {
-      id: newNodeId,
-      position: { x: newX, y: newY },
-      data: { label: lastMsg.role.toUpperCase() },
-      style: {
-        background: lastMsg.content.includes('[RE-FRAMED]') 
-          ? 'rgba(212, 175, 55, 0.2)' 
-          : 'rgba(255, 255, 255, 0.05)',
-        border: `1px solid ${
-          lastMsg.content.includes('[RE-FRAMED]') ? '#D4AF37' :
-          lastMsg.role === 'strategist' ? '#fbbf24' : 
-          lastMsg.role === 'oracle' ? '#e2e8f0' : '#10b981'
-        }`,
-        color: '#fff',
-        fontSize: '10px',
-        width: 100,
-        borderRadius: '4px',
-        backdropFilter: 'blur(5px)',
-        boxShadow: lastMsg.content.includes('[RE-FRAMED]') 
-          ? '0 0 20px rgba(212, 175, 55, 0.4)' 
-          : 'none'
-      },
+    // Calculate depth for each node
+    const calculateDepth = (messageId: string): number => {
+      let depth = 0;
+      let current = messageMap.get(messageId);
+      while (current?.parentId) {
+        depth++;
+        current = messageMap.get(current.parentId);
+      }
+      return depth;
     };
+    
+    // Get all nodes at each depth
+    const depthMap = new Map<number, string[]>();
+    messages.forEach(msg => {
+      const depth = calculateDepth(msg.id);
+      if (!depthMap.has(depth)) {
+        depthMap.set(depth, []);
+      }
+      depthMap.get(depth)?.push(msg.id);
+    });
+    
+    // Function to recursively create nodes and edges
+    const createNode = (messageId: string, x: number, y: number, level: number) => {
+      const message = messageMap.get(messageId);
+      if (!message) return;
+      
+      // Calculate position based on depth
+      const depth = calculateDepth(messageId);
+      const siblings = depthMap.get(depth) || [];
+      const index = siblings.indexOf(messageId);
+      
+      const nodeX = 150 + index * 160;
+      const nodeY = depth * 90;
+      
+      let color = '#666';
+      let borderColor = '#333';
+      
+      if (message.role === 'user') {
+        color = '#3b82f6';
+        borderColor = '#60a5fa';
+      } else if (message.role === 'strategist') {
+        color = '#f59e0b';
+        borderColor = '#fbbf24';
+      } else if (message.role === 'oracle') {
+        color = '#8b5cf6';
+        borderColor = '#a78bfa';
+      } else if (message.role === 'alchemist') {
+        color = '#ec4899';
+        borderColor = '#f472b6';
+      }
 
-    const newEdge: Edge = {
-      id: `edge-${parentNodeId}-${newNodeId}`,
-      source: parentNodeId,
-      target: newNodeId,
-      animated: true,
-      style: { 
-        stroke: lastMsg.content.includes('[RE-FRAMED]') 
-          ? '#D4AF37' 
-          : 'rgba(255, 255, 255, 0.2)',
-        strokeWidth: lastMsg.content.includes('[RE-FRAMED]') ? 2 : 1
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: lastMsg.content.includes('[RE-FRAMED]') 
-          ? '#D4AF37' 
-          : 'rgba(255, 255, 255, 0.2)',
-      },
+      // Add node
+      newNodes.push({
+        id: messageId,
+        position: { x: nodeX, y: nodeY },
+        data: { 
+          label: message.role === 'user' ? 'You' : message.role.charAt(0).toUpperCase() + message.role.slice(1),
+          messageId: message.id
+        },
+        style: {
+          background: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.1)`,
+          border: `1px solid ${borderColor}`,
+          color: '#fff',
+          borderRadius: '8px',
+          padding: '10px',
+          fontSize: '10px',
+          width: 120,
+          backdropFilter: 'blur(5px)'
+        }
+      });
+      
+      // Add edges to children
+      if (message.childrenIds.length > 0) {
+        message.childrenIds.forEach((childId, index) => {
+          // Calculate x position for children (spread out horizontally)
+          const childX = nodeX + (index - (message.childrenIds.length - 1) / 2) * 150;
+          
+          // Add edge
+          newEdges.push({
+            id: `edge-${messageId}-${childId}`,
+            source: messageId,
+            target: childId,
+            animated: true,
+            style: { stroke: borderColor, strokeWidth: 1 },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: borderColor,
+            },
+          });
+          
+          // Recursively create child nodes
+          createNode(childId, childX, nodeY, level + 1);
+        });
+      }
     };
-
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [...eds, newEdge]);
-  }, [messages]);
+    
+    // Find root messages (no parent) and create nodes for them
+    const rootMessages = messages.filter(msg => !msg.parentId);
+    rootMessages.forEach((rootMsg, index) => {
+      const rootX = 250 + (index - (rootMessages.length - 1) / 2) * 300;
+      createNode(rootMsg.id, rootX, 0, 0);
+    });
+    
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }, [messages, setActiveMessage]);
 
   return (
     <div className="w-full h-full glass-panel overflow-hidden relative">
@@ -104,15 +159,17 @@ export const FateTree = () => {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={(_, node) => setActiveMessage(node.id)}
         fitView
         attributionPosition="bottom-right"
         className="bg-transparent"
+        defaultZoom={0.8}
       >
-        <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.1 }} />
-        <Controls className="bg-white/10 border border-white/20 text-white fill-white" />
+        <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.05 }} />
+        <Controls className="bg-black/50 border border-white/10 text-white fill-white" />
       </ReactFlow>
       <div className="absolute top-4 right-4 pointer-events-none">
-        <h3 className="text-xs uppercase tracking-widest text-starlight/50 font-cinzel">Probability Tree</h3>
+        <h3 className="text-xs uppercase tracking-widest text-white/50 font-cinzel">DESTINY TREE</h3>
       </div>
     </div>
   );

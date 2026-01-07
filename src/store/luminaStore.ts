@@ -21,13 +21,14 @@ export interface UserData {
   birthPlace: string;
 }
 
-export interface ArchiveItem {
+export interface Message {
   id: string;
-  date: number;
-  outcome: 'gold' | 'blue' | 'red';
-  summary: string;
-  nodes: Node[];
-  edges: Edge[];
+  role: AgentRole | 'user';
+  content: string;
+  timestamp: number;
+  parentId?: string;
+  childrenIds: string[];
+  isGlitch?: boolean;
 }
 
 interface LuminaState {
@@ -36,15 +37,17 @@ interface LuminaState {
   messages: Message[];
   nodes: Node[];
   edges: Edge[];
+  activeMessageId: string | null;
   voidEnergy: number;
   archives: ArchiveItem[];
   
   // Actions
   setPhase: (phase: Phase) => void;
   setUserData: (data: Partial<UserData>) => void;
-  addMessage: (role: AgentRole | 'user', content: string) => void;
+  addMessage: (role: AgentRole | 'user', content: string, parentId?: string) => string;
   updateMessage: (id: string, updates: Partial<Message>) => void;
   deleteMessage: (id: string) => void;
+  setActiveMessage: (id: string | null) => void;
   addVoidEnergy: (amount: number) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
@@ -67,6 +70,7 @@ export const useLuminaStore = create<LuminaState>()(
       messages: [],
       nodes: [],
       edges: [],
+      activeMessageId: null,
       voidEnergy: 0,
       archives: [],
 
@@ -76,18 +80,37 @@ export const useLuminaStore = create<LuminaState>()(
         userData: { ...state.userData, ...data } 
       })),
       
-      addMessage: (role, content) => set((state) => ({
-        messages: [
-          ...state.messages,
-          {
-            id: Math.random().toString(36).substring(7),
-            role,
-            content,
-            timestamp: Date.now(),
-            isGlitch: false,
-          },
-        ],
-      })),
+      addMessage: (role, content, parentId) => {
+        const id = `msg-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        const newMessage: Message = {
+          id,
+          role,
+          content,
+          timestamp: Date.now(),
+          parentId,
+          childrenIds: [],
+          isGlitch: false,
+        };
+        
+        set((state) => {
+          const updatedMessages = [...state.messages, newMessage];
+          
+          // Update parent's childrenIds if parentId is provided
+          if (parentId) {
+            const parentIndex = updatedMessages.findIndex(msg => msg.id === parentId);
+            if (parentIndex !== -1) {
+              updatedMessages[parentIndex] = {
+                ...updatedMessages[parentIndex],
+                childrenIds: [...updatedMessages[parentIndex].childrenIds, id]
+              };
+            }
+          }
+          
+          return { messages: updatedMessages };
+        });
+        
+        return id;
+      },
 
       updateMessage: (id, updates) => set((state) => ({
         messages: state.messages.map((msg) => 
@@ -95,9 +118,31 @@ export const useLuminaStore = create<LuminaState>()(
         ),
       })),
 
-      deleteMessage: (id) => set((state) => ({
-        messages: state.messages.filter((msg) => msg.id !== id),
-      })),
+      deleteMessage: (id) => set((state) => {
+        // Recursively delete all children
+        const deleteRecursive = (messageId: string) => {
+          const message = state.messages.find(msg => msg.id === messageId);
+          if (!message) return [];
+          
+          const childrenToDelete = message.childrenIds.flatMap(childId => deleteRecursive(childId));
+          return [messageId, ...childrenToDelete];
+        };
+        
+        const idsToDelete = deleteRecursive(id);
+        
+        // Remove messages
+        const filteredMessages = state.messages.filter(msg => !idsToDelete.includes(msg.id));
+        
+        // Remove references from parents
+        const updatedMessages = filteredMessages.map(msg => ({
+          ...msg,
+          childrenIds: msg.childrenIds.filter(childId => !idsToDelete.includes(childId))
+        }));
+        
+        return { messages: updatedMessages };
+      }),
+
+      setActiveMessage: (id) => set({ activeMessageId: id }),
 
       addVoidEnergy: (amount) => set((state) => ({
         voidEnergy: state.voidEnergy + amount,
@@ -140,6 +185,7 @@ export const useLuminaStore = create<LuminaState>()(
         messages: [],
         nodes: [],
         edges: [],
+        activeMessageId: null,
         voidEnergy: 0,
       }),
     }),

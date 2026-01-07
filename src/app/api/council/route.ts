@@ -33,8 +33,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // 构建对话历史上下文 - 注意：历史记录只用于参考，不在最终prompt中使用，因为Gemini API会处理
+    // 构建对话历史上下文
     const safeHistory = Array.isArray(history) ? history : [];
+    
+    // Format history for prompt
+    const historyText =
+      safeHistory.length > 0
+        ? safeHistory
+            .slice(-12)
+            .map((m: any) => `${m.role.toUpperCase()}: ${String(m.content ?? "")}`)
+            .join("\n")
+        : "NONE";
     
     // --- 配置代理和Gemini API URL ---
     // 从环境变量读取配置
@@ -120,8 +129,7 @@ export async function POST(req: Request) {
         agentDef = alchemistDef;
         taskInstruction = `Analyze the user's input based on their RISING sign (${astroData?.risingSign || 'Unknown'}). Provide a synthesized, action-first response.`;
       }
-      
-      systemPrompt = [
+            systemPrompt = [
         coreProtocol,
         "",
         agentDef,
@@ -130,6 +138,9 @@ export async function POST(req: Request) {
         taskInstruction,
         "",
         "**INPUT DATA:**",
+        "**CONTEXT HISTORY (most recent last):**",
+        historyText,
+        "",
         `User: "${message.replace(/"/g, '\\"')}"`,
         `Astro Profile: ${astroProfile}`,
         "",
@@ -162,6 +173,9 @@ export async function POST(req: Request) {
         "3. **Alchemist:** Acknowledge both sides. Propose a 'Third Way' - a creative action plan that satisfies the Sun's need for safety AND the Moon's need for expression.",
         "",
         "**INPUT DATA:**",
+        "**CONTEXT HISTORY (most recent last):**",
+        historyText,
+        "",
         `User: "${message.replace(/"/g, '\\"')}"`,
         `Astro Profile: ${astroProfile}`,
         "",

@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Send, Target, MoonStar, FlaskConical, ArrowLeft } from 'lucide-react';
 import { Cinzel } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import { useLuminaStore } from '@/store/luminaStore';
+import { FateTree } from '@/components/visualization/FateTree';
 
 // Google Font for headers
 const cinzel = Cinzel({
@@ -16,25 +18,21 @@ const cinzel = Cinzel({
 // Define Archetype type
 type Archetype = "strategist" | "oracle" | "alchemist";
 
-// Define Message type
-interface Message {
-  id: number;
-  role: 'user' | 'strategist' | 'oracle' | 'alchemist';
-  content: string;
-  timestamp: string;
-}
-
 // Main component
 export default function ChronoCouncilPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { 
+    messages, 
+    activeMessageId, 
+    addMessage, 
+    setActiveMessage 
+  } = useLuminaStore();
   const [input, setInput] = useState('');
   const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
-  const [isCouncilMode, setIsCouncilMode] = useState(false);
   const [isSummonActive, setIsSummonActive] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
-  const [activeTreeNode, setActiveTreeNode] = useState<number | null>(null);
   const [openInfo, setOpenInfo] = useState<Archetype | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Click outside to close info popover
   useEffect(() => {
@@ -42,11 +40,62 @@ export default function ChronoCouncilPage() {
     window.addEventListener("pointerdown", onDown);
     return () => window.removeEventListener("pointerdown", onDown);
   }, []);
-  
-  // Handle agent selection from header icons
-  const handleAgentSelect = (agent: 'strategist' | 'oracle' | 'alchemist') => {
-    setActiveAgent(agent);
-    setIsCouncilMode(false);
+
+  // Find nearest user message content
+  const findNearestUserText = (startId: string) => { 
+    const map = new Map(messages.map(m => [m.id, m])); 
+    let cur = map.get(startId); 
+    while (cur) { 
+      if (cur.role === "user") return cur.content; 
+      cur = cur.parentId ? map.get(cur.parentId) : undefined; 
+    } 
+    return ""; 
+  }; 
+
+  // Summon council from a specific assistant message
+  const summonCouncilFrom = async (parentAssistantId: string) => { 
+    setIsLoading(true); 
+    try { 
+      const userText = findNearestUserText(parentAssistantId) || input; 
+      const res = await fetch("/api/council", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ 
+          message: userText, 
+          mode: "council", 
+          activeAgent, 
+          astroData: { sunSign: "Leo", moonSign: "Virgo", risingSign: "Libra" }, 
+          history: buildHistory(parentAssistantId), 
+        }), 
+      }); 
+      const data = await res.json(); 
+
+      Object.entries(data.responses).forEach(([role, content]: any) => { 
+        if (content !== null) {
+          addMessage(role as any, content as string, parentAssistantId); 
+        }
+      }); 
+
+      // Set active message to the parent assistant message
+      setActiveMessage(parentAssistantId); 
+    } catch (error) {
+      console.error("Error summoning council:", error);
+    } finally { 
+      setIsLoading(false); 
+    } 
+  };
+
+  // Build history from activeMessageId
+  const buildHistory = (fromId: string | null) => {
+    if (!fromId) return [];
+    const map = new Map(messages.map(m => [m.id, m]));
+    const chain: { role: string; content: string }[] = [];
+    let cur = map.get(fromId);
+    while (cur) {
+      chain.push({ role: cur.role, content: cur.content });
+      cur = cur.parentId ? map.get(cur.parentId) : undefined;
+    }
+    return chain.reverse();
   };
 
   // Handle message send
@@ -55,34 +104,14 @@ export default function ChronoCouncilPage() {
     
     if (!messageContent.trim()) return;
     
-    let formattedHistory;
+    // Add user message to chat
+    const userMessageId = addMessage('user', messageContent, activeMessageId || undefined);
+    setInput('');
+    setLastUserMessage(messageContent);
     
-    // For solo mode, add user message to chat
-    if (mode === 'solo') {
-      const newMessage: Message = {
-        id: messages.length + 1,
-        role: 'user',
-        content: messageContent,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      // Update UI with user message immediately
-      setMessages([...messages, newMessage]);
-      setInput('');
-      setLastUserMessage(messageContent);
-      
-      formattedHistory = [...messages, newMessage].map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-    } else {
-      // For council mode, re-use existing history
-      formattedHistory = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-    }
-
+    // Build history for API
+    const history = buildHistory(activeMessageId);
+    
     try {
       // Call council API with appropriate mode
       const response = await fetch('/api/council', {
@@ -97,7 +126,7 @@ export default function ChronoCouncilPage() {
             moonSign: 'Virgo',
             risingSign: 'Libra'
           },
-          history: formattedHistory,
+          history: history,
           mode,
           activeAgent: activeAgent // Use currently selected active agent
         })
@@ -105,61 +134,41 @@ export default function ChronoCouncilPage() {
 
       const data = await response.json();
       
-      // Generate timestamps for all responses
-      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
       // Check if API returned an error or if responses are missing
       if (data.error || !data.responses) {
         // Add error message to chat
-        const errorMessage: Message = {
-          id: messages.length + 1,
-          role: 'strategist', // Use strategist role for error messages
-          content: "The stars are silent right now... Please try again later.",
-          timestamp
-        };
-        setMessages(prev => [...prev, errorMessage]);
-        return; // Exit early, don't update DestinyTree
+        addMessage('strategist', "The stars are silent right now... Please try again later.", userMessageId);
+        return; // Exit early
       }
       
       // Add AI responses to chat only for non-null responses
-      const nextId = messages.length + 1;
-      const aiResponses: Message[] = [];
-      let responseId = nextId;
-      let responseType: 'strategist' | 'council' = 'strategist';
+      let aiMessageId: string | null = null;
       
       if (data.responses.strategist !== null) {
-        aiResponses.push({
-          id: responseId++,
-          role: 'strategist',
-          content: data.responses.strategist,
-          timestamp
-        });
-      }
-      
-      if (data.responses.oracle !== null || data.responses.alchemist !== null) {
-        responseType = 'council';
+        const id = addMessage('strategist', data.responses.strategist, userMessageId);
+        if (mode === 'solo' && activeAgent === 'strategist') {
+          aiMessageId = id;
+        }
       }
       
       if (data.responses.oracle !== null) {
-        aiResponses.push({
-          id: responseId++,
-          role: 'oracle',
-          content: data.responses.oracle,
-          timestamp
-        });
+        const id = addMessage('oracle', data.responses.oracle, userMessageId);
+        if (mode === 'solo' && activeAgent === 'oracle') {
+          aiMessageId = id;
+        }
       }
       
       if (data.responses.alchemist !== null) {
-        aiResponses.push({
-          id: responseId++,
-          role: 'alchemist',
-          content: data.responses.alchemist,
-          timestamp
-        });
+        const id = addMessage('alchemist', data.responses.alchemist, userMessageId);
+        if (mode === 'solo' && activeAgent === 'alchemist') {
+          aiMessageId = id;
+        }
       }
       
-      // Update chat with AI responses
-      setMessages(prev => [...prev, ...aiResponses]);
+      // Set active message to the AI response in solo mode
+      if (mode === 'solo' && aiMessageId) {
+        setActiveMessage(aiMessageId);
+      }
       
       // Update summon button state
       if (mode === 'solo' && data.responses.strategist !== null) {
@@ -172,14 +181,7 @@ export default function ChronoCouncilPage() {
     } catch (error) {
       console.error('Error calling council API:', error);
       // Add error message to chat if the fetch itself failed
-      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const errorMessage: Message = {
-        id: messages.length + 1,
-        role: 'strategist',
-        content: "The stars are silent right now... Please try again later.",
-        timestamp
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      addMessage('strategist', "The stars are silent right now... Please try again later.", userMessageId);
     }
   };
 
@@ -218,7 +220,10 @@ export default function ChronoCouncilPage() {
                   {/* Strategist Button */}
                   <button 
                     className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                    onClick={() => setOpenInfo(openInfo === "strategist" ? null : "strategist")}
+                    onClick={() => {
+                      setActiveAgent('strategist');
+                      setOpenInfo(openInfo === "strategist" ? null : "strategist");
+                    }}
                   >
                     <Target size={16} className={activeAgent === 'strategist' ? "text-[#D4AF37]" : "text-white/70 group-hover:text-white"} />
                     <span className="text-[10px] uppercase tracking-wider font-serif">STRATEGIST</span>
@@ -241,7 +246,10 @@ export default function ChronoCouncilPage() {
                   {/* Oracle Button */}
                   <button 
                     className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/10 border-[#A0ECD6]/30 text-[#A0ECD6]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                    onClick={() => setOpenInfo(openInfo === "oracle" ? null : "oracle")}
+                    onClick={() => {
+                      setActiveAgent('oracle');
+                      setOpenInfo(openInfo === "oracle" ? null : "oracle");
+                    }}
                   >
                     <MoonStar size={16} className={activeAgent === 'oracle' ? "text-[#A0ECD6]" : "text-white/70 group-hover:text-white"} />
                     <span className="text-[10px] uppercase tracking-wider font-serif">ORACLE</span>
@@ -264,7 +272,10 @@ export default function ChronoCouncilPage() {
                   {/* Alchemist Button */}
                   <button 
                     className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/10 border-[#9D4EDD]/30 text-[#9D4EDD]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                    onClick={() => setOpenInfo(openInfo === "alchemist" ? null : "alchemist")}
+                    onClick={() => {
+                      setActiveAgent('alchemist');
+                      setOpenInfo(openInfo === "alchemist" ? null : "alchemist");
+                    }}
                   >
                     <FlaskConical size={16} className={activeAgent === 'alchemist' ? "text-[#9D4EDD]" : "text-white/70 group-hover:text-white"} />
                     <span className="text-[10px] uppercase tracking-wider font-serif">ALCHEMIST</span>
@@ -293,41 +304,79 @@ export default function ChronoCouncilPage() {
                 Ask what you're facing right now...
               </div>
             ) : (
-              messages.map((message, index) => (
-                <motion.div
-                  key={message.id}
-                  id={`message-${message.id}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                    {/* Role indicator */}
-                    {message.role !== 'user' && (
-                      <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
-                        {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
-                        {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
-                        {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
-                        <span className="opacity-50">| {message.timestamp}</span>
-                      </div>
-                    )}
+              <>
+                {/* Render messages in a tree structure */}
+                {(() => {
+                  // Find root messages (no parent)
+                  const rootMessages = messages.filter(msg => !msg.parentId);
+                  
+                  // Recursive render function
+                  const renderMessage = (messageId: string, level = 0) => {
+                    const message = messages.find(msg => msg.id === messageId);
+                    if (!message) return null;
+                    
+                    // Format timestamp
+                    const timestamp = new Date(message.timestamp).toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    });
+                    
+                    return (
+                      <div key={message.id} className="space-y-4">
+                        <motion.div
+                          id={`message-${message.id}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                          style={{ marginLeft: level * 20 }}
+                        >
+                          <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                            {/* Role indicator */}
+                            {message.role !== 'user' && (
+                              <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
+                                {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
+                                {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
+                                {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
+                                <span className="opacity-50">| {timestamp}</span>
+                              </div>
+                            )}
 
-                    {/* Message content */}
-                    <div 
-                      className={`text-base leading-[1.6] font-light
-                        ${message.role === 'user' 
-                          ? 'text-[#E0E0E0]' 
-                          : 'text-[#CCCCCC]' 
-                        }`}
-                    >
-                      <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
-                        {message.content}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
+                            {/* Message content */}
+                            <div 
+                              className={`text-base leading-[1.6] font-light
+                                ${message.role === 'user' 
+                                  ? 'text-[#E0E0E0]' 
+                                  : 'text-[#CCCCCC]' 
+                                }`}
+                            >
+                              <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
+                                {message.content}
+                              </p>
+                            </div>
+                            
+                            {/* Summon Council button for assistant messages */}
+                            {message.role !== "user" && ( 
+                              <button 
+                                onClick={() => summonCouncilFrom(message.id)} 
+                                className="mt-3 text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white" 
+                              > 
+                                SUMMON COUNCIL 
+                              </button> 
+                            )}
+                          </div>
+                        </motion.div>
+                        
+                        {/* Render children */}
+                        {message.childrenIds.map(childId => renderMessage(childId, level + 1))}
+                      </div>
+                    );
+                  };
+                  
+                  // Render root messages
+                  return rootMessages.map(msg => renderMessage(msg.id));
+                })()}
+              </>
             )}
           </div>
 
@@ -373,103 +422,9 @@ export default function ChronoCouncilPage() {
           </div>
         </div>
 
-        {/* Right Panel: DestinyTree (25%) */}
+        {/* Right Panel: FateTree (25%) */}
         <div className="w-[25%] h-full flex flex-col border-l border-white/[0.05] bg-[#0A0A0A]/50 backdrop-blur-md">
-          {/* Header */}
-          <header className="p-6 border-b border-white/[0.05]">
-            <h2 className={`text-center text-[10px] tracking-[0.2em] uppercase text-[#666666] font-serif`}>
-              Destiny Tree
-            </h2>
-          </header>
-
-          {/* Timeline */}
-          <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden scrollbar-hide">
-            <div className="relative">
-              {/* Vertical line */}
-              <div className="absolute left-[11px] top-0 bottom-0 w-[1px] bg-gradient-to-b from-white/[0.1] via-white/[0.05] to-transparent"></div>
-              
-              {/* Dynamic Nodes from Messages */}
-              <div className="space-y-8">
-                {/* Iterate through messages to create tree nodes */}
-                {messages.map((message, index) => {
-                  // Skip user messages or show small dot
-                  if (message.role === 'user') {
-                    return (
-                      <div key={`user-${message.id}`} className="flex items-start">
-                        <div className="relative z-10 flex items-center justify-center">
-                          <div className="w-[3px] h-[3px] rounded-full bg-[#444444]"></div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  
-                  // For agent messages, show appropriate icon
-                  return (
-                    <div 
-                      key={`agent-${message.id}`} 
-                      className="flex items-start cursor-pointer group"
-                      onClick={() => {
-                        // Scroll to message
-                        const messageElement = document.getElementById(`message-${message.id}`);
-                        if (messageElement) {
-                          messageElement.scrollIntoView({ behavior: 'smooth' });
-                          setActiveTreeNode(message.id);
-                        }
-                      }}
-                    >
-                      {/* Node with icon based on role */}
-                      <div className="relative z-10 flex items-center justify-center">
-                        {/* Active node with ping animation */}
-                        {activeTreeNode === message.id && (
-                          <motion.div
-                            className={`absolute inset-0 rounded-full ${message.role === 'strategist' ? 'bg-[#D4AF37]/30' : 
-                                      message.role === 'oracle' ? 'bg-[#A0ECD6]/30' : 'bg-[#9D4EDD]/30'}`}
-                            animate={{ 
-                              scale: [1, 2.5, 1],
-                              opacity: [0.5, 0, 0]
-                            }}
-                            transition={{ 
-                              duration: 2,
-                              repeat: Infinity,
-                              ease: "easeOut"
-                            }}
-                          />
-                        )}
-                        
-                        {/* Role-specific icon */}
-                        <div className={`p-1.5 rounded-full border border-[#333333] bg-[#0A0A0A] ${activeTreeNode === message.id ? 'shadow-[0_0_10px_rgba(255,255,255,0.1)] border-white/20' : ''}`}>
-                          {message.role === 'strategist' && (
-                            <div className="w-2 h-2 rounded-full bg-[#D4AF37]"></div>
-                          )}
-                          {message.role === 'oracle' && (
-                            <div className="w-2 h-2 rounded-full bg-[#A0ECD6]"></div>
-                          )}
-                          {message.role === 'alchemist' && (
-                            <div className="w-2 h-2 rounded-full bg-[#9D4EDD]"></div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Connection line for council clusters */}
-                      {/* Check if this is part of a council cluster */}
-                      {index < messages.length - 1 && 
-                       messages[index + 1].role !== 'user' && 
-                       messages[index + 1].role !== message.role && (
-                        <div className="absolute left-[11px] top-4 bottom-12 w-[1px] bg-gradient-to-b from-white/10 to-transparent"></div>
-                      )}
-                    </div>
-                  );
-                })}
-                
-                {/* Empty state if no messages */}
-                {messages.length === 0 && (
-                  <div className="text-center text-[#888888] text-sm italic py-12">
-                    The journey has just begun...
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <FateTree />
         </div>
       </div>
     </div>

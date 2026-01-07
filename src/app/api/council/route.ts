@@ -6,22 +6,28 @@ export async function POST(req: Request) {
     console.log(`[API] Request received. Method: POST, URL: ${req.url}`);
     
     // 解析请求体
-    let body;
+    let body: any;
     try {
       body = await req.json();
       console.log(`[API] Request body parsed successfully: ${JSON.stringify(body, null, 2)}`);
-    } catch (jsonParseError) {
-      console.error(`[API Council Error] Failed to parse request body: ${(jsonParseError as Error).message}`);
-      console.error(`[API Council Error] Error stack:`, (jsonParseError as Error).stack);
+    } catch {
+      const raw = await req.text().catch(() => "");
+      console.error(`[API Council Error] Invalid JSON format. Raw body: ${raw.slice(0, 500)}`);
       return NextResponse.json(
-        { error: "Invalid JSON format in request body" },
+        { error: "Invalid JSON format in request body", details: raw.slice(0, 500) },
         { status: 400 }
       );
     }
     
     console.log(`[API] Extracting request parameters...`);
     
-    const { message = 'test', astroData, mode = 'council', activeAgent = 'strategist', history = [] } = body;
+    const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [] } = body ?? {};
+    
+    // Validate message parameter
+    if (typeof message !== "string" || !message.trim()) {
+      console.error(`[API Council Error] Missing or invalid "message" string`);
+      return NextResponse.json({ error: 'Missing "message" string' }, { status: 400 });
+    }
     const apiKey = process.env.GEMINI_API_KEY;
 
     // 检查 API 密钥是否存在
@@ -229,33 +235,33 @@ export async function POST(req: Request) {
     
     console.log(`[API] Gemini API response status: ${response.status}`);
     
+    // Read raw response text first
+    const rawResponse = await response.text();
+    console.log(`[API] Gemini API raw response: ${rawResponse}`);
+    
     if (!response.ok) {
-      const errorText = await response.text();
       console.error(`[API Council Error] Gemini API request failed: ${response.status} ${response.statusText}`);
-      console.error(`[API Council Error Details] ${errorText}`);
       return NextResponse.json(
         { 
           error: "Gemini API request failed", 
           details: `${response.status} ${response.statusText}`,
-          errorText: errorText
+          errorText: rawResponse.slice(0, 500)
         },
         { status: response.status }
       );
     }
     
-    let data;
+    let data: any;
     try {
-      data = await response.json();
+      data = JSON.parse(rawResponse);
       console.log(`[API] Gemini API response data: ${JSON.stringify(data, null, 2)}`);
     } catch (jsonError) {
       console.error(`[API Council Error] Failed to parse Gemini API response as JSON: ${(jsonError as Error).message}`);
-      // 尝试作为文本读取并记录
-      const textResponse = await response.text();
-      console.error(`[API Council Error] Gemini API raw response: ${textResponse}`);
       return NextResponse.json(
         { 
           error: "Failed to parse Gemini API response", 
-          details: (jsonError as Error).message
+          details: (jsonError as Error).message,
+          rawResponse: rawResponse.slice(0, 500)
         },
         { status: 500 }
       );
@@ -266,10 +272,15 @@ export async function POST(req: Request) {
     
     if (!rawText) {
       console.error(`[API Council Error] No text response found in API result`);
-      return NextResponse.json(
-        { error: "Gemini API returned empty response" },
-        { status: 500 }
-      );
+      // Return a fallback response instead of error
+      return NextResponse.json({
+        turnLabel: "Response",
+        responses: {
+          strategist: "The stars are aligning, but the message is unclear. Please try again.",
+          oracle: "I sense a disturbance in the cosmic flow. Let's try a different approach.",
+          alchemist: "The elements need more time to coalesce. Let's refine our query."
+        }
+      });
     }
     
     console.log(`[API] Raw response text: ${rawText}`);

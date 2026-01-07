@@ -33,6 +33,7 @@ export default function ChronoCouncilPage() {
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
   const [openInfo, setOpenInfo] = useState<Archetype | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [councilUnlocked, setCouncilUnlocked] = useState(false);
   
   // Click outside to close info popover
   useEffect(() => {
@@ -117,8 +118,8 @@ export default function ChronoCouncilPage() {
   };
 
   // Handle message send
-  const handleSend = async (mode: 'solo' | 'council' = 'solo') => {
-    const messageContent = mode === 'council' ? lastUserMessage : input;
+  const handleSend = async () => {
+    const messageContent = input;
     
     if (!messageContent.trim()) return;
     
@@ -131,7 +132,7 @@ export default function ChronoCouncilPage() {
     const history = buildHistory(activeMessageId);
     
     try {
-      // Call council API with appropriate mode
+      // Call council API with solo mode
       const response = await fetch('/api/council', {
         method: 'POST',
         headers: {
@@ -145,7 +146,7 @@ export default function ChronoCouncilPage() {
             risingSign: 'Libra'
           },
           history: history,
-          mode,
+          mode: 'solo',
           activeAgent: activeAgent // Use currently selected active agent
         })
       });
@@ -170,43 +171,18 @@ export default function ChronoCouncilPage() {
         return; // Exit early
       }
       
-      // Add AI responses to chat only for non-null responses
-      let aiMessageId: string | null = null;
-      
-      if (data.responses.strategist !== null) {
-        const id = addMessage('strategist', data.responses.strategist, userMessageId);
-        if (mode === 'solo' && activeAgent === 'strategist') {
-          aiMessageId = id;
-        }
-      }
-      
-      if (data.responses.oracle !== null) {
-        const id = addMessage('oracle', data.responses.oracle, userMessageId);
-        if (mode === 'solo' && activeAgent === 'oracle') {
-          aiMessageId = id;
-        }
-      }
-      
-      if (data.responses.alchemist !== null) {
-        const id = addMessage('alchemist', data.responses.alchemist, userMessageId);
-        if (mode === 'solo' && activeAgent === 'alchemist') {
-          aiMessageId = id;
-        }
-      }
-      
-      // Set active message to the AI response in solo mode
-      if (mode === 'solo' && aiMessageId) {
+      // Add only the current active agent's response
+      const text = data?.responses?.[activeAgent];
+      if (text) {
+        const aiMessageId = addMessage(activeAgent, text, userMessageId);
+        // Set active message to the AI response
         setActiveMessage(aiMessageId);
+      } else {
+        addMessage(activeAgent, "No response", userMessageId);
       }
       
-      // Update summon button state
-      if (mode === 'solo' && data.responses.strategist !== null) {
-        // Activate summon button after strategist replies
-        setIsSummonActive(true);
-      } else if (mode === 'council') {
-        // Deactivate summon button after council response
-        setIsSummonActive(false);
-      }
+      // Activate summon button after AI replies
+      setIsSummonActive(true);
     } catch (error) {
       console.error('Error calling council API:', error);
       // Add error message to chat if the fetch itself failed
@@ -412,6 +388,12 @@ export default function ChronoCouncilPage() {
           {/* Input Area - Floating Bar */}
           <div className="p-8 relative z-20">
             <div className="max-w-4xl mx-auto">
+              {/* Council Unlocked Message */}
+              {councilUnlocked && (
+                <div className="text-center mb-4 text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">
+                  Council is awake. Choose who speaks next.
+                </div>
+              )}
               <div className="relative group">
                 {/* Glow effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-[#D4AF37]/20 via-[#A0ECD6]/20 to-[#9D4EDD]/20 rounded-full opacity-0 group-focus-within:opacity-100 transition duration-500 blur-md"></div>
@@ -422,12 +404,12 @@ export default function ChronoCouncilPage() {
                       placeholder="Type your query..."
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSend('solo')}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                       className="flex-1 bg-transparent border-none text-[#E0E0E0] placeholder-[#555555] px-6 py-3 focus:outline-none text-sm font-light tracking-wide"
                     />
                     
                     <button 
-                      onClick={() => handleSend('solo')}
+                      onClick={() => handleSend()}
                       className="p-3 bg-white/[0.05] hover:bg-white/[0.1] rounded-full text-[#E0E0E0] transition-colors mr-1"
                     >
                       <Send size={16} />
@@ -437,15 +419,21 @@ export default function ChronoCouncilPage() {
               
               <div className="flex justify-center mt-4 gap-4">
                   {/* Summon Council Button */}
-                  <button 
-                    onClick={() => handleSend('council')}
-                    disabled={!isSummonActive}
-                    className={`text-[10px] uppercase tracking-[0.2em] transition-all duration-300 ${isSummonActive 
-                      ? 'text-[#E0E0E0] hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]' 
-                      : 'text-[#444444] cursor-not-allowed'}`}
-                  >
-                    Summon Council
-                  </button>
+                  {!councilUnlocked ? (
+                      <button 
+                        onClick={() => setCouncilUnlocked(true)}
+                        disabled={!isSummonActive}
+                        className={`text-[10px] uppercase tracking-[0.2em] transition-all duration-300 ${isSummonActive 
+                          ? 'text-[#E0E0E0] hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]' 
+                          : 'text-[#444444] cursor-not-allowed'}`}
+                      >
+                        Summon Council
+                      </button>
+                    ) : (
+                      <div className="text-center text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">
+                        Council is awake
+                      </div>
+                    )}
               </div>
             </div>
           </div>

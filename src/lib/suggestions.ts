@@ -1,75 +1,63 @@
 export type Domain = "career" | "love" | "money" | "self" | "random";
-export type AgentRole = "strategist" | "oracle" | "alchemist";
-export const STARTER_CHIPS = [
-  "I want to start a business—where do I begin?",
-  "Offer A vs Offer B: what's the hidden cost?",
-  "If I do nothing for 3 months, what happens?",
-  "What's the smallest test before I commit?",
-  "What am I avoiding admitting?",
-  "Give me 3 options and the price of each.",
-] as const;
-export function predictionChips(lastUserText: string) {
-  const base = (lastUserText ?? "").trim().slice(0, 60);
-  return [
-    `If I choose A, what happens in 30/90 days? ${base ? `(${base})` : ""}`.trim(),
-    `If I choose B, what regret appears first? ${base ? `(${base})` : ""}`.trim(),
-    "What hidden constraint am I missing?",
-  ];
-}
 
-export const DOMAIN_STARTERS: Record<Domain, string[]> = {
+const STARTERS: Record<Domain, [string, string, string]> = {
   career: [
-    "Should I switch jobs within 3 months?",
-    "If I choose Offer A vs B, what breaks first?",
-    "What is the smallest 'test' before committing?",
-    "Where am I overestimating risk?",
-    "What should I stop doing immediately?",
-    "What does success look like in 90 days?"
+    "Offer A vs Offer B: what's the hidden cost?",
+    "If I choose A, what breaks first in 30/90 days?",
+    "What's the smallest test before I commit?"
   ],
   love: [
-    "What am I afraid to ask for in this relationship?",
-    "If I stay vs leave, what do I lose?",
+    "If I stay vs leave, what do I lose first?",
     "What boundary do I need this week?",
-    "What pattern am I repeating?",
-    "What would 'secure' look like for me?",
-    "What's the next honest conversation?"
+    "What am I afraid to ask for directly?"
   ],
   money: [
-    "Where is the hidden leak in my finances?",
-    "What is the safest next move for 30 days?",
-    "What should I cut to increase freedom?",
-    "If I invest now, what's the worst-case?",
-    "What's a low-risk experiment to grow income?",
-    "What metric should I track weekly?"
+    "Where is the leak in my finances right now?",
+    "What's a low-risk experiment to raise income?",
+    "If I invest now, what's the worst-case scenario?"
   ],
   self: [
-    "What inner conflict is actually driving this?",
+    "What inner conflict is driving this decision?",
     "What am I avoiding admitting?",
-    "What would I do if shame wasn't in the room?",
-    "What is my real desire underneath the plan?",
-    "What habit will change my trajectory fastest?",
-    "What does my body feel when I imagine option A?"
+    "What would I do if shame wasn't here?"
   ],
   random: [
-    "Give me 3 options and the cost of each.",
-    "What's the real decision I'm not naming?",
     "If I do nothing for 3 months, what happens?",
-    "What is the smallest next step?",
-    "What would you advise if we remove ego?",
-    "What's the hidden constraint?"
-  ],
+    "Give me 3 options and the cost of each.",
+    "What's the smallest test before I commit?"
+  ]
 };
 
-export function followUpPredictions(params: {
-  agent: AgentRole;
-  lastUserText: string;
-  domain: Domain;
-}) {
-  // 不调用模型：用固定模板生成“预测分叉”类问题
-  const base = params.lastUserText.slice(0, 60);
+function hasOffer(text: string) {
+  return /offer|A\s*vs\s*B|A\/B|两份|对比/i.test(text);
+}
+function hasBusiness(text: string) {
+  return /business|startup|创业|开公司|合伙/i.test(text);
+}
+
+export function getSuggestions(domain: Domain, lastUserText?: string): [string, string, string] {
+  const t = (lastUserText ?? "").trim();
+  if (!t) return STARTERS[domain];
+
+  if (hasOffer(t)) {
+    return [
+      "List A/B on pay, growth, stress, freedom—pick your top 1.",
+      "If I choose A, what regret appears first?",
+      "What constraint am I ignoring (time/money/energy)?"
+    ];
+  }
+
+  if (hasBusiness(t)) {
+    return [
+      "What's the smallest sellable version I can test in 7 days?",
+      "If I do this part-time for 30 days, what is success?",
+      "What kills this first: time, money, or confidence?"
+    ];
+  }
+
   return [
-    `If I choose A, what happens in 30/90 days? (${base})`,
-    `If I choose B, what regret appears first? (${base})`,
-    `What is the hidden constraint behind this?`,
+    "If I choose path A, what happens in 30/90 days?",
+    "What constraint am I ignoring (time/money/energy)?",
+    "What am I secretly trying to avoid feeling?"
   ];
 }

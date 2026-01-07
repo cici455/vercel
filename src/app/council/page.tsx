@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Target, MoonStar, FlaskConical, ArrowLeft } from 'lucide-react';
 import { Cinzel } from 'next/font/google';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLuminaStore } from '@/store/luminaStore';
 import { FateTree } from '@/components/visualization/FateTree';
-import { STARTER_CHIPS } from '@/lib/suggestions';
+import { getSuggestions } from '@/lib/suggestions';
 
 // Utility function to convert any value to string
 const toText = (v: unknown) => {
@@ -41,12 +41,15 @@ type Archetype = "strategist" | "oracle" | "alchemist";
 // Main component
 export default function ChronoCouncilPage() {
   const router = useRouter();
+  const sp = useSearchParams();
   const { 
     messages, 
     activeMessageId, 
     addMessage, 
     setActiveMessage,
-    daily
+    daily,
+    domain,
+    setDomain
   } = useLuminaStore();
   const [input, setInput] = useState('');
   const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
@@ -55,6 +58,16 @@ export default function ChronoCouncilPage() {
   const [openInfo, setOpenInfo] = useState<Archetype | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [councilUnlocked, setCouncilUnlocked] = useState(false);
+  
+  // Set domain from search params
+  useEffect(() => {
+    const d = sp.get('domain');
+    if (d === 'career' || d === 'love' || d === 'money' || d === 'self' || d === 'random') {
+      setDomain(d);
+    } else {
+      setDomain('random');
+    }
+  }, [sp, setDomain]);
   
   // Council modal state
   const [isCouncilOpen, setIsCouncilOpen] = useState(false);
@@ -549,19 +562,23 @@ export default function ChronoCouncilPage() {
               )}
               {/* Suggestion Chips */}
               <div className="mb-3 flex flex-wrap gap-2 relative z-50">
-                {STARTER_CHIPS.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setInput(t)}
-                    className="rounded-full border border-white/15 bg-black/45 px-3 py-1.5 
+                {(() => {
+                  const lastUser = [...messages].reverse().find(m => m.role === 'user');
+                  const [s1, s2, s3] = getSuggestions(domain, lastUser?.content);
+                  return [s1, s2, s3].map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setInput(t)}
+                      className="rounded-full border border-white/15 bg-black/45 px-3 py-1.5 
                                text-[11px] tracking-wide text-white/85 
                                hover:text-white hover:border-white/25 hover:bg-black/60 
                                backdrop-blur-md"
-                  >
-                    {t}
-                  </button>
-                ))}
+                    >
+                      {t}
+                    </button>
+                  ));
+                })()}
               </div>
               
               <div className="relative group">

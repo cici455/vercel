@@ -104,10 +104,10 @@ export const useLuminaStore = create<LuminaState>()(
       edges: [],
       activeMessageId: null,
       voidEnergy: 0,
-      archives: [],
-      daily: null,
-      credits: 100,
-      domain: "random",
+  archives: [],
+  daily: null,
+  credits: 100,
+  domain: 'random' as 'career' | 'love' | 'money' | 'self' | 'random',
 
       setPhase: (phase) => set({ phase }),
       
@@ -236,7 +236,7 @@ export const useLuminaStore = create<LuminaState>()(
       },
       
       addCredits: (n) => set((state) => ({ credits: state.credits + n })),
-      setDomain: (d) => set({ domain: d }),
+      setDomain: (d: 'career' | 'love' | 'money' | 'self' | 'random') => set({ domain: d }),
     }),
     {
       name: 'lumina-storage', // name of the item in the storage (must be unique)

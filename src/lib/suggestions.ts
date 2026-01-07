@@ -1,6 +1,24 @@
 export type Domain = "career" | "love" | "money" | "self" | "random";
 export type AgentRole = "strategist" | "oracle" | "alchemist";
 
+export const STARTER_CHIPS = [
+  "Should I switch jobs within 3 months?",
+  "If I choose A vs B, what breaks first?",
+  "What is the smallest test before committing?",
+  "What am I avoiding admitting?",
+  "If I do nothing for 3 months, what happens?",
+  "Give me 3 options and the cost of each.",
+] as const;
+
+export function predictionChips(lastUserText: string) {
+  const base = (lastUserText ?? "").trim().slice(0, 60);
+  return [
+    `If I choose A, what happens in 30/90 days? ${base ? `(${base})` : ""}`.trim(),
+    `If I choose B, what regret appears first? ${base ? `(${base})` : ""}`.trim(),
+    "What hidden constraint am I missing?",
+  ];
+}
+
 export const DOMAIN_STARTERS: Record<Domain, string[]> = {
   career: [
     "Should I switch jobs within 3 months?",

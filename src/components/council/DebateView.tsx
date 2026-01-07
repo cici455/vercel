@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { FateTree } from '@/components/visualization/FateTree';
 import { TheVoid } from '@/components/alchemy/TheVoid';
 import { CouncilDebateModal } from '@/components/CouncilDebateModal';
-import { DOMAIN_STARTERS, followUpPredictions } from '@/lib/suggestions';
+import { STARTER_CHIPS, predictionChips } from '@/lib/suggestions';
 import { Send, Terminal, AlertTriangle, RefreshCw, X, Users } from 'lucide-react';
 
 const AGENT_CONFIG: Record<AgentRole, { name: string; color: string; border: string; font: string }> = {
@@ -370,30 +370,23 @@ export function DebateView() {
         {/* Command Line Input */}
         <div className="absolute bottom-0 left-0 w-full bg-[#050505]/90 backdrop-blur-md pt-4 pb-4 px-4">
           {/* Suggestion Chips */}
-          <div className="mb-3">
-            <div className="flex flex-wrap gap-2">
-              {(() => {
-                const lastUser = [...messages].reverse().find(m => m.role === "user");
-                const chips =
-                  messages.length === 0
-                    ? DOMAIN_STARTERS[domain].slice(0, 6)
-                    : followUpPredictions({
-                        agent: activeAgent,
-                        lastUserText: lastUser?.content ?? "",
-                        domain,
-                      });
-                return chips.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setInput(t)}
-                    className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] tracking-wide text-white/70 hover:text-white hover:border-white/20 hover:bg-black/50 backdrop-blur-md transition-all"
-                  >
-                    {t}
-                  </button>
-                ));
-              })()}
-            </div>
+          <div className="flex flex-wrap gap-2 mb-3 relative z-50">
+            {(() => {
+              const lastUser = [...messages].reverse().find((m) => m.role === "user");
+              const chips = messages.length === 0
+                ? [...STARTER_CHIPS]
+                : predictionChips(lastUser?.content ?? "");
+              return chips.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setInput(t)}
+                  className="rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] tracking-wide text-white/80 hover:text-white hover:border-white/25 hover:bg-black/55 backdrop-blur-md"
+                >
+                  {t}
+                </button>
+              ));
+            })()}
           </div>
           
           {/* Input Field */}

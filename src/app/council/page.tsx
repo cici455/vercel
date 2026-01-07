@@ -7,6 +7,7 @@ import { Cinzel } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { useLuminaStore } from '@/store/luminaStore';
 import { FateTree } from '@/components/visualization/FateTree';
+import { STARTER_CHIPS } from '@/lib/suggestions';
 
 // Utility function to convert any value to string
 const toText = (v: unknown) => {
@@ -244,6 +245,10 @@ export default function ChronoCouncilPage() {
 
   return (
     <div className={`h-screen w-full bg-transparent text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
+      {/* Watermark to confirm this is the active component */}
+      <div className="fixed left-4 bottom-4 z-[9999] text-xs text-white/80 bg-black/40 px-2 py-1 rounded">
+        COUNCIL_VIEW_ACTIVE
+      </div>
         <div className="flex h-full">
           {/* Left Panel: CouncilChamber (75%) */}
           <div className="w-[75%] h-full flex flex-col relative z-10">
@@ -419,10 +424,10 @@ export default function ChronoCouncilPage() {
                               {(() => {
                                 try {
                                   const structuredContent = JSON.parse(message.content);
-                                  if (structuredContent.omen || structuredContent.interpretation) {
+                                  if (structuredContent.omen || structuredContent.core) {
                                     return (
                                       <div className="space-y-3">
-                                        {/* Omen */}
+                                        {/* Omen and Transit lines - small, mysterious */}
                                         {structuredContent.omen && (
                                           <div className={`
                                             text-sm italic text-amber-400/80 
@@ -433,7 +438,6 @@ export default function ChronoCouncilPage() {
                                             "{structuredContent.omen}"
                                           </div>
                                         )}
-                                        {/* Transit */}
                                         {structuredContent.transit && (
                                           <div className={`
                                             text-sm text-blue-400/60 
@@ -444,50 +448,55 @@ export default function ChronoCouncilPage() {
                                             "{structuredContent.transit}"
                                           </div>
                                         )}
-                                        {/* Interpretation */}
-                                        {structuredContent.interpretation && (
-                                          <div className={`
-                                            ${message.role === 'strategist' ? 'font-mono text-sm tracking-wide' : ''}
-                                            ${message.role === 'oracle' ? 'font-serif italic leading-relaxed text-gray-300' : ''}
+                                        
+                                        {/* Core - title */}
+                                        {structuredContent.core && (
+                                          <h4 className={`
+                                            text-lg font-bold text-white
+                                            ${message.role === 'strategist' ? 'font-mono tracking-wide' : ''}
+                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
                                             ${message.role === 'alchemist' ? 'font-sans' : ''}
                                           `}>
-                                            {structuredContent.interpretation}
+                                            {structuredContent.core}
+                                          </h4>
+                                        )}
+                                        
+                                        {/* Reading - body text */}
+                                        {structuredContent.reading && (
+                                          <p className={`
+                                            text-sm leading-relaxed text-white/90
+                                            ${message.role === 'strategist' ? 'font-mono tracking-wide' : ''}
+                                            ${message.role === 'oracle' ? 'font-serif italic leading-relaxed' : ''}
+                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
+                                          `}>
+                                            {structuredContent.reading}
+                                          </p>
+                                        )}
+                                        
+                                        {/* Moves - list/chips */}
+                                        {structuredContent.moves && Array.isArray(structuredContent.moves) && structuredContent.moves.length > 0 && (
+                                          <div className="flex flex-wrap gap-2 mt-1">
+                                            {structuredContent.moves.map((move: string, index: number) => (
+                                              <span 
+                                                key={index} 
+                                                className="px-2 py-1 bg-starlight/20 text-starlight text-xs rounded-sm"
+                                              >
+                                                {move}
+                                              </span>
+                                            ))}
                                           </div>
                                         )}
-                                        {/* Next actions */}
-                                        {structuredContent.next && Array.isArray(structuredContent.next) && structuredContent.next.length > 0 && (
-                                          <div className="mt-4 space-y-2">
-                                            <div className={`
-                                              ${message.role === 'strategist' ? 'text-xs uppercase tracking-wider text-amber-500/80' : ''}
-                                              ${message.role === 'oracle' ? 'text-xs italic text-blue-400/80' : ''}
-                                              ${message.role === 'alchemist' ? 'text-xs uppercase tracking-wider text-fuchsia-400/80' : ''}
-                                            `}>
-                                              {message.role === 'strategist' ? 'TACTICAL ACTIONS' : 
-                                               message.role === 'oracle' ? 'INTUITIVE STEPS' : 
-                                               'ALCHEMICAL HACKS'}
-                                            </div>
-                                            <div className={`
-                                              ${message.role === 'strategist' ? 'space-y-1' : ''}
-                                              ${message.role === 'oracle' ? 'space-y-1' : ''}
-                                              ${message.role === 'alchemist' ? 'flex flex-wrap gap-2' : ''}
-                                            `}>
-                                              {structuredContent.next.map((action: string, index: number) => (
-                                                <div key={index} className={`
-                                                  ${message.role === 'strategist' ? 'text-sm font-mono tracking-wide' : ''}
-                                                  ${message.role === 'oracle' ? 'text-sm font-serif italic text-gray-400' : ''}
-                                                  ${message.role === 'alchemist' ? 'bg-fuchsia-900/20 text-fuchsia-300/90 px-3 py-1 rounded-full text-xs font-sans' : ''}
-                                                `}>
-                                                  {message.role === 'strategist' && (
-                                                    <span className="text-amber-500/60 mr-2">{index + 1}.</span>
-                                                  )}
-                                                  {message.role === 'oracle' && (
-                                                    <span className="text-blue-400/60 mr-2">•</span>
-                                                  )}
-                                                  {action}
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
+                                        
+                                        {/* Question - bottom line for continuing */}
+                                        {structuredContent.question && (
+                                          <p className={`
+                                            text-sm text-starlight mt-2 italic
+                                            ${message.role === 'strategist' ? 'font-mono tracking-wide' : ''}
+                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
+                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
+                                          `}>
+                                            {structuredContent.question}
+                                          </p>
                                         )}
                                       </div>
                                     );
@@ -538,6 +547,23 @@ export default function ChronoCouncilPage() {
                   Council is awake. Choose who speaks next.
                 </div>
               )}
+              {/* Suggestion Chips */}
+              <div className="mb-3 flex flex-wrap gap-2 relative z-50">
+                {STARTER_CHIPS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setInput(t)}
+                    className="rounded-full border border-white/15 bg-black/45 px-3 py-1.5 
+                               text-[11px] tracking-wide text-white/85 
+                               hover:text-white hover:border-white/25 hover:bg-black/60 
+                               backdrop-blur-md"
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+              
               <div className="relative group">
                 {/* Glow effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-[#D4AF37]/20 via-[#A0ECD6]/20 to-[#9D4EDD]/20 rounded-full opacity-0 group-focus-within:opacity-100 transition duration-500 blur-md"></div>

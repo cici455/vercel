@@ -370,23 +370,20 @@ export function DebateView() {
         {/* Command Line Input */}
         <div className="absolute bottom-0 left-0 w-full bg-[#050505]/90 backdrop-blur-md pt-4 pb-4 px-4">
           {/* Suggestion Chips */}
-          <div className="flex flex-wrap gap-2 mb-3 relative z-50">
-            {(() => {
-              const lastUser = [...messages].reverse().find((m) => m.role === "user");
-              const chips = messages.length === 0
-                ? [...STARTER_CHIPS]
-                : predictionChips(lastUser?.content ?? "");
-              return chips.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setInput(t)}
-                  className="rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] tracking-wide text-white/80 hover:text-white hover:border-white/25 hover:bg-black/55 backdrop-blur-md"
-                >
-                  {t}
-                </button>
-              ));
-            })()}
+          <div className="mb-3 flex flex-wrap gap-2 relative z-50">
+            {STARTER_CHIPS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setInput(t)}
+                className="rounded-full border border-white/15 bg-black/45 px-3 py-1.5 
+                           text-[11px] tracking-wide text-white/85 
+                           hover:text-white hover:border-white/25 hover:bg-black/60 
+                           backdrop-blur-md"
+              >
+                {t}
+              </button>
+            ))}
           </div>
           
           {/* Input Field */}

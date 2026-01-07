@@ -1,15 +1,13 @@
 export type Domain = "career" | "love" | "money" | "self" | "random";
 export type AgentRole = "strategist" | "oracle" | "alchemist";
-
 export const STARTER_CHIPS = [
-  "Should I switch jobs within 3 months?",
-  "If I choose A vs B, what breaks first?",
-  "What is the smallest test before committing?",
-  "What am I avoiding admitting?",
+  "I want to start a business—where do I begin?",
+  "Offer A vs Offer B: what's the hidden cost?",
   "If I do nothing for 3 months, what happens?",
-  "Give me 3 options and the cost of each.",
+  "What's the smallest test before I commit?",
+  "What am I avoiding admitting?",
+  "Give me 3 options and the price of each.",
 ] as const;
-
 export function predictionChips(lastUserText: string) {
   const base = (lastUserText ?? "").trim().slice(0, 60);
   return [

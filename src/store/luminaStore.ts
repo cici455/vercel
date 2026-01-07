@@ -31,6 +31,9 @@ export interface UserData {
   birthDate: string;
   birthTime: string;
   birthPlace: string;
+  sunSign?: string;
+  moonSign?: string;
+  risingSign?: string;
 }
 
 export interface ArchiveItem {
@@ -86,6 +89,9 @@ const initialUserData: UserData = {
   birthDate: '',
   birthTime: '',
   birthPlace: '',
+  sunSign: undefined,
+  moonSign: undefined,
+  risingSign: undefined,
 };
 
 export const useLuminaStore = create<LuminaState>()(

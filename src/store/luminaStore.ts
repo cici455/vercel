@@ -58,6 +58,8 @@ interface LuminaState {
   voidEnergy: number;
   archives: ArchiveItem[];
   daily: DailyLines | null;
+  credits: number;
+  domain: "career" | "love" | "money" | "self" | "random";
   
   // Actions
   setPhase: (phase: Phase) => void;
@@ -74,6 +76,9 @@ interface LuminaState {
   saveSession: (outcome: 'gold' | 'blue' | 'red') => void;
   reset: () => void;
   setDaily: (daily: DailyLines | null) => void;
+  spendCredits: (n: number) => boolean;
+  addCredits: (n: number) => void;
+  setDomain: (d: "career" | "love" | "money" | "self" | "random") => void;
 }
 
 const initialUserData: UserData = {
@@ -95,6 +100,8 @@ export const useLuminaStore = create<LuminaState>()(
       voidEnergy: 0,
       archives: [],
       daily: null,
+      credits: 100,
+      domain: "random",
 
       setPhase: (phase) => set({ phase }),
       
@@ -214,6 +221,16 @@ export const useLuminaStore = create<LuminaState>()(
       }),
       
       setDaily: (daily) => set({ daily }),
+      
+      spendCredits: (n) => {
+        const cur = get().credits;
+        if (cur < n) return false;
+        set({ credits: cur - n });
+        return true;
+      },
+      
+      addCredits: (n) => set((state) => ({ credits: state.credits + n })),
+      setDomain: (d) => set({ domain: d }),
     }),
     {
       name: 'lumina-storage', // name of the item in the storage (must be unique)
@@ -221,7 +238,9 @@ export const useLuminaStore = create<LuminaState>()(
       partialize: (state) => ({ 
         userData: state.userData, 
         archives: state.archives,
-        voidEnergy: state.voidEnergy 
+        voidEnergy: state.voidEnergy,
+        credits: state.credits,
+        domain: state.domain
       }), // Only persist these fields
     }
   )

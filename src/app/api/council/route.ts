@@ -122,9 +122,10 @@ export async function POST(req: Request) {
     const astroProfile = `Sun=${astroData?.sunSign || 'Unknown'}, Moon=${astroData?.moonSign || 'Unknown'}, Rising=${astroData?.risingSign || 'Unknown'}`;
     
     // Get daily lines for consistency
-    const dailyLines = getDailyLines({
+    const { omen: omenLine, transit: transitLine } = getDailyLines({
       agent: activeAgent as any,
       astroProfile,
+      userSeed: body?.userSeed ?? "",
       dayKey
     });
     
@@ -158,34 +159,39 @@ export async function POST(req: Request) {
         `User: "${message.replace(/"/g, '\\"')}"`,
         `Astro Profile: ${astroProfile}`,
         "",
-        "**DAILY LINES (DO NOT REWRITE - USE THESE EXACTLY):**",
-        `Omen: "${dailyLines.omen.replace(/"/g, '\\"')}"`,
-        `Transit: "${dailyLines.transit.replace(/"/g, '\\"')}"`,
+        "**FIXED LINES (DO NOT REWRITE):**",
+        `OMEN="${omenLine.replace(/"/g, '\\"')}"`,
+        `TRANSIT="${transitLine.replace(/"/g, '\\"')}"`,
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
-        "**MANDATORY STRUCTURE:**",
         "{",
-        `  \"omen\": \"${dailyLines.omen.replace(/"/g, '\\"')}\",`,
-        `  \"transit\": \"${dailyLines.transit.replace(/"/g, '\\"')}\",`,
-        `  \"interpretation\": \"2-3 sentences, <= 60 words\",`,
-        `  \"next\": [\"Maximum 3 actions, <= 14 words each\"]`,
+        `  \"omen\": \"${omenLine.replace(/"/g, '\\"')}\",`,
+        `  \"transit\": \"${transitLine.replace(/"/g, '\\"')}\",`,
+        `  \"core\": \"...\",`,
+        `  \"reading\": \"...\",`,
+        `  \"moves\": [\"...\", \"...\"],`,
+        `  \"question\": \"...\"`,
         `}`,
         "",
         "**HARD CONSTRAINTS:**",
-        "Do NOT exceed 160 words total.",
+        "总字数 <= 160 words",
+        "core <= 18 words",
+        "reading 2-3 句 <= 60 words",
+        "moves 1-3 条，每条 <= 12 words",
+        "question 1 句",
+        "omen/transit 必须逐字回传",
         "No extra sections.",
         "No preamble.",
         "Keep each section concise and focused.",
         "",
         "**FINAL OUTPUT MUST BE JSON ONLY:**",
         "{",
-        `  \"turnLabel\": \"Brief, punchy title like a mission briefing\",`,
-        `  \"responses\": {`,
-        // 只返回当前activeAgent的回复，其他agent返回null
-        `    \"strategist\": ${activeAgent === 'strategist' ? '{\\\"omen\\\": \\"Short sentence\\\", \\\"transit\\\": \\"Short sentence\\\", \\\"interpretation\\\": \\"Brief interpretation\\\", \\\"next\\\": [\\\"Action 1\\\", \\\"Action 2\\\"]}' : "null"},`,
-        `    \"oracle\": ${activeAgent === 'oracle' ? '{\\\"omen\\\": \\"Short sentence\\\", \\\"transit\\\": \\"Short sentence\\\", \\\"interpretation\\\": \\"Brief interpretation\\\", \\\"next\\\": [\\\"Action 1\\\", \\\"Action 2\\\"]}' : "null"},`,
-        `    \"alchemist\": ${activeAgent === 'alchemist' ? '{\\\"omen\\\": \\"Short sentence\\\", \\\"transit\\\": \\"Short sentence\\\", \\\"interpretation\\\": \\"Brief interpretation\\\", \\\"next\\\": [\\\"Action 1\\\", \\\"Action 2\\\"]}' : "null"},`,
-        `  }`,
+        `  \"omen\": \"${omenLine.replace(/"/g, '\\"')}\",`,
+        `  \"transit\": \"${transitLine.replace(/"/g, '\\"')}\",`,
+        `  \"core\": \"...\",`,
+        `  \"reading\": \"...\",`,
+        `  \"moves\": [\"...\", \"...\"],`,
+        `  \"question\": \"...\"`,
         `}`
       ].join('\n');
     } else {
@@ -352,30 +358,75 @@ export async function POST(req: Request) {
       console.log(`[API] Response parsed successfully. Returning result.`);
       
       // 确保返回格式符合预期，特别是在solo模式下
-      const formattedResult = {
-        turnLabel: parsedResult.turnLabel || "Title",
-        responses: {
-          // solo模式下，非activeAgent返回null
-          strategist: mode === 'solo' && activeAgent !== 'strategist' ? null : normalize(parsedResult.responses?.strategist),
-          oracle: mode === 'solo' && activeAgent !== 'oracle' ? null : normalize(parsedResult.responses?.oracle),
-          alchemist: mode === 'solo' && activeAgent !== 'alchemist' ? null : normalize(parsedResult.responses?.alchemist)
-        }
-      };
-      
-      return NextResponse.json(formattedResult);
+      if (mode === 'solo') {
+        // 归一化数组
+        const normalizeArray = (v: any) => Array.isArray(v) ? v.map(String).slice(0, 3) : [];
+        
+        // 构建结构化响应
+        const structured = {
+          omen: omenLine,
+          transit: transitLine,
+          core: typeof parsedResult?.core === "string" ? parsedResult.core : "",
+          reading: typeof parsedResult?.reading === "string" ? parsedResult.reading : "",
+          moves: normalizeArray(parsedResult?.moves),
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "",
+        };
+        
+        // 构建最终结果
+        const formattedResult = {
+          turnLabel: "Mission Briefing",
+          responses: {
+            [activeAgent]: structured
+          }
+        };
+        
+        return NextResponse.json(formattedResult);
+      } else {
+        // council模式保持原有逻辑
+        const formattedResult = {
+          turnLabel: parsedResult.turnLabel || "Title",
+          responses: {
+            strategist: normalize(parsedResult.responses?.strategist),
+            oracle: normalize(parsedResult.responses?.oracle),
+            alchemist: normalize(parsedResult.responses?.alchemist)
+          }
+        };
+        
+        return NextResponse.json(formattedResult);
+      }
     } catch (parseError) {
       console.error(`[API Council Error] Failed to parse cleaned response as JSON: ${(parseError as Error).message}`);
       console.error(`[API Council Error] Cleaned text: ${cleanText}`);
       
       // 作为备选方案，返回一个符合格式的默认响应
-      return NextResponse.json({
-        turnLabel: "Title",
-        responses: {
-          strategist: mode === 'solo' && activeAgent !== 'strategist' ? null : (activeAgent === 'strategist' ? {"analysis": "Default analysis", "advice": "Default strategic advice"} : "Your strategic advice here"),
-          oracle: mode === 'solo' && activeAgent !== 'oracle' ? null : (activeAgent === 'oracle' ? {"analysis": "Default emotional insight", "advice": "Default oracle advice"} : "Your oracle insight here"),
-          alchemist: mode === 'solo' && activeAgent !== 'alchemist' ? null : (activeAgent === 'alchemist' ? {"analysis": "Default synthesis", "advice": "Default alchemical action"} : "Your alchemical transformation here")
-        }
-      });
+      if (mode === 'solo') {
+        // solo模式返回结构化默认响应
+        const structured = {
+          omen: omenLine,
+          transit: transitLine,
+          core: "The stars are aligning.",
+          reading: "A new path is emerging. Stay focused on your goals.",
+          moves: ["Take a small step forward", "Trust your intuition"],
+          question: "What is the next step you can take today?"
+        };
+        
+        return NextResponse.json({
+          turnLabel: "Mission Briefing",
+          responses: {
+            [activeAgent]: structured
+          }
+        });
+      } else {
+        // council模式返回默认响应
+        return NextResponse.json({
+          turnLabel: "Response",
+          responses: {
+            strategist: "The stars are aligning, but the message is unclear. Please try again.",
+            oracle: "I sense a disturbance in the cosmic flow. Let's try a different approach.",
+            alchemist: "The elements need more time to coalesce. Let's refine our query."
+          }
+        });
+      }
     }
 
   } catch (error: any) {

@@ -12,23 +12,25 @@ import ReactFlow, {
   NodeProps,
   NodeTypes
 } from 'reactflow';
-import { Target, MoonStar, FlaskConical } from 'lucide-react';
+import { Target, MoonStar, FlaskConical, Users } from 'lucide-react';
 
 import { useLuminaStore } from '@/store/luminaStore';
 
 type FateNodeData = {
-  role: "strategist" | "oracle" | "alchemist";
+  role: "strategist" | "oracle" | "alchemist" | "council";
 };
 
 function FateNode({ data, selected }: NodeProps<FateNodeData>) {
   const Icon =
     data.role === "strategist" ? Target :
     data.role === "oracle" ? MoonStar :
+    data.role === "council" ? Users :
     FlaskConical;
 
   const glow =
     data.role === "strategist" ? "shadow-[0_0_18px_rgba(245,158,11,0.25)] border-amber-400/30 text-amber-300" :
     data.role === "oracle" ? "shadow-[0_0_18px_rgba(59,130,246,0.22)] border-blue-300/30 text-blue-200" :
+    data.role === "council" ? "shadow-[0_0_18px_rgba(16,185,129,0.22)] border-green-300/30 text-green-200" :
     "shadow-[0_0_18px_rgba(236,72,153,0.22)] border-fuchsia-300/30 text-fuchsia-200";
 
   return (
@@ -134,6 +136,8 @@ export const FateTree = () => {
           edgeColor = '#8b5cf6';
         } else if (msg.role === 'alchemist') {
           edgeColor = '#ec4899';
+        } else if (msg.role === 'council') {
+          edgeColor = '#10b981';
         }
         
         newEdges.push({

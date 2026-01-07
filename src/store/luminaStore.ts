@@ -4,7 +4,7 @@ import { Node, Edge } from 'reactflow';
 
 export type Phase = 'intro' | 'calibration' | 'observatory' | 'solo' | 'debate' | 'archive';
 
-export type AgentRole = 'strategist' | 'oracle' | 'alchemist';
+export type AgentRole = 'strategist' | 'oracle' | 'alchemist' | 'council';
 
 export type StructuredReply = {
   omen: string;

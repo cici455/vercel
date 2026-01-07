@@ -68,7 +68,24 @@ export default function ChronoCouncilPage() {
           history: buildHistory(parentAssistantId), 
         }), 
       }); 
-      const data = await res.json(); 
+
+      if (!res.ok) {
+        const errText = await res.text();
+        addMessage("alchemist", `Request failed: ${errText}`, parentAssistantId);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data?.responses) {
+        addMessage("alchemist", `No responses returned`, parentAssistantId);
+        return;
+      }
+      
+      if (data.error) {
+        addMessage("alchemist", `Error: ${data.error}`, parentAssistantId);
+        return;
+      }
 
       Object.entries(data.responses).forEach(([role, content]: any) => { 
         if (content !== null) {
@@ -80,6 +97,7 @@ export default function ChronoCouncilPage() {
       setActiveMessage(parentAssistantId); 
     } catch (error) {
       console.error("Error summoning council:", error);
+      addMessage("alchemist", `Error: ${String(error)}`, parentAssistantId);
     } finally { 
       setIsLoading(false); 
     } 
@@ -132,12 +150,23 @@ export default function ChronoCouncilPage() {
         })
       });
 
+      if (!response.ok) {
+        const errText = await response.text();
+        addMessage('alchemist', `Request failed: ${errText}`, userMessageId);
+        return;
+      }
+
       const data = await response.json();
       
-      // Check if API returned an error or if responses are missing
-      if (data.error || !data.responses) {
+      if (!data?.responses) {
+        addMessage('alchemist', `No responses returned`, userMessageId);
+        return;
+      }
+      
+      // Check if API returned an error
+      if (data.error) {
         // Add error message to chat
-        addMessage('strategist', "The stars are silent right now... Please try again later.", userMessageId);
+        addMessage('alchemist', `Error: ${data.error}`, userMessageId);
         return; // Exit early
       }
       

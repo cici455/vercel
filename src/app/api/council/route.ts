@@ -151,13 +151,28 @@ export async function POST(req: Request) {
         `Astro Profile: ${astroProfile}`,
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
+        "**MANDATORY STRUCTURE:**",
+        "{",
+        `  \"omen\": \"One short sentence (quoted from corpus, do not rewrite)\",`,
+        `  \"transit\": \"One short sentence (quoted from corpus, do not rewrite)\",`,
+        `  \"interpretation\": \"2-3 sentences, <= 60 words\",`,
+        `  \"next\": [\"Maximum 3 actions, <= 14 words each\"]`,
+        `}`,
+        "",
+        "**HARD CONSTRAINTS:**",
+        "Do NOT exceed 160 words total.",
+        "No extra sections.",
+        "No preamble.",
+        "Keep each section concise and focused.",
+        "",
+        "**FINAL OUTPUT MUST BE JSON ONLY:**",
         "{",
         `  \"turnLabel\": \"Brief, punchy title like a mission briefing\",`,
         `  \"responses\": {`,
         // 只返回当前activeAgent的回复，其他agent返回null
-        `    \"strategist\": ${activeAgent === 'strategist' ? '{\\\"analysis\\\": \\"Briefly state the logical conflict based on Sun sign characteristics.\\\", \\"advice\\\": \\"The specific strategic advice using corporate/military metaphors.\\\"}' : "null"},`,
-        `    \"oracle\": ${activeAgent === 'oracle' ? '{\\\"analysis\\\": \\"Briefly state the emotional conflict based on Moon sign characteristics.\\\", \\"advice\\\": \\"The specific intuitive advice using poetic/mystical metaphors.\\\"}' : "null"},`,
-        `    \"alchemist\": ${activeAgent === 'alchemist' ? '{\\\"analysis\\\": \\"Briefly state the synthesis of strategic and emotional perspectives.\\\", \\"advice\\\": \\"The specific micro-action using gaming/tech metaphors.\\\"}' : "null"},`,
+        `    \"strategist\": ${activeAgent === 'strategist' ? '{\\\"omen\\\": \\"Short sentence\\\", \\\"transit\\\": \\"Short sentence\\\", \\\"interpretation\\\": \\"Brief interpretation\\\", \\\"next\\\": [\\\"Action 1\\\", \\\"Action 2\\\"]}' : "null"},`,
+        `    \"oracle\": ${activeAgent === 'oracle' ? '{\\\"omen\\\": \\"Short sentence\\\", \\\"transit\\\": \\"Short sentence\\\", \\\"interpretation\\\": \\"Brief interpretation\\\", \\\"next\\\": [\\\"Action 1\\\", \\\"Action 2\\\"]}' : "null"},`,
+        `    \"alchemist\": ${activeAgent === 'alchemist' ? '{\\\"omen\\\": \\"Short sentence\\\", \\\"transit\\\": \\"Short sentence\\\", \\\"interpretation\\\": \\"Brief interpretation\\\", \\\"next\\\": [\\\"Action 1\\\", \\\"Action 2\\\"]}' : "null"},`,
         `  }`,
         `}`
       ].join('\n');
@@ -186,14 +201,24 @@ export async function POST(req: Request) {
         `Astro Profile: ${astroProfile}`,
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
+        "**MANDATORY STRUCTURE:**",
+        "Each response must be concise and focused.",
         "{",
         `  \"turnLabel\": \"A mystical yet cybernetic title for this session\",`,
         `  \"responses\": {`,
-        `    \"strategist\": \"Focus on logic/risk. Start with 'Look at the data...' or 'Strategically speaking...'\",`,
-        `    \"oracle\": \"Focus on feelings/shadow. Start with 'Ignore him...' or 'I feel a disturbance...'\",`,
-        `    \"alchemist\": \"Focus on synthesis/action. Start with 'Enough noise...' or 'Here is the hack...'\"`,
+        `    \"strategist\": \"Focus on logic/risk. Maximum 80 words.\",`,
+        `    \"oracle\": \"Focus on feelings/shadow. Maximum 80 words.\",`,
+        `    \"alchemist\": \"Focus on synthesis/action. Maximum 80 words.\"`,
         `  }`,
-        `}`
+        `}`,
+        "",
+        "**HARD CONSTRAINTS:**",
+        "Do NOT exceed 250 words total.",
+        "No extra sections.",
+        "No preamble.",
+        "Keep each response concise and focused.",
+        "",
+        "**FINAL OUTPUT MUST BE JSON ONLY:**"
       ].join('\n');
     }
     
@@ -208,7 +233,7 @@ export async function POST(req: Request) {
       }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 2000, // 增加maxOutputTokens，确保完整响应
+        maxOutputTokens: mode === 'solo' ? 320 : 2000, // 限制solo模式的token数
         responseMimeType: "application/json"
       }
     };

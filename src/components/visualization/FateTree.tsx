@@ -8,11 +8,45 @@ import ReactFlow, {
   Edge,
   useNodesState,
   useEdgesState,
-  MarkerType
+  MarkerType,
+  NodeProps,
+  NodeTypes
 } from 'reactflow';
 import { Target, MoonStar, FlaskConical } from 'lucide-react';
 
 import { useLuminaStore } from '@/store/luminaStore';
+
+type FateNodeData = {
+  role: "strategist" | "oracle" | "alchemist";
+};
+
+function FateNode({ data, selected }: NodeProps<FateNodeData>) {
+  const Icon =
+    data.role === "strategist" ? Target :
+    data.role === "oracle" ? MoonStar :
+    FlaskConical;
+
+  const glow =
+    data.role === "strategist" ? "shadow-[0_0_18px_rgba(245,158,11,0.25)] border-amber-400/30 text-amber-300" :
+    data.role === "oracle" ? "shadow-[0_0_18px_rgba(59,130,246,0.22)] border-blue-300/30 text-blue-200" :
+    "shadow-[0_0_18px_rgba(236,72,153,0.22)] border-fuchsia-300/30 text-fuchsia-200";
+
+  return (
+    <div
+      className={[
+        "rounded-2xl px-4 py-3 bg-black/55 backdrop-blur-md border",
+        glow,
+        selected ? "ring-2 ring-white/30" : ""
+      ].join(" ")}
+    >
+      <div className="flex items-center gap-2">
+        <Icon size={18} />
+      </div>
+    </div>
+  );
+}
+
+const nodeTypes: NodeTypes = { fate: FateNode };
 
 export const FateTree = () => {
   const { messages, setActiveMessage } = useLuminaStore();
@@ -77,47 +111,14 @@ export const FateTree = () => {
       const x = 100 + siblingIndex * 140;
       const y = depth * 120;
       
-      // Determine icon and colors based on role
-      let IconComponent: React.ElementType = Target;
-      let color = '#f59e0b';
-      let borderColor = '#fbbf24';
-      
-      if (msg.role === 'strategist') {
-        IconComponent = Target;
-        color = '#f59e0b';
-        borderColor = '#fbbf24';
-      } else if (msg.role === 'oracle') {
-        IconComponent = MoonStar;
-        color = '#8b5cf6';
-        borderColor = '#a78bfa';
-      } else if (msg.role === 'alchemist') {
-        IconComponent = FlaskConical;
-        color = '#ec4899';
-        borderColor = '#f472b6';
-      }
-      
-      // Create node with only icon + glow, no text
+      // Create node with fate type and minimal data
       newNodes.push({
         id: msg.id,
+        type: 'fate',
         position: { x, y },
         data: { 
-          messageId: msg.id,
           role: msg.role
-        },
-        style: {
-          background: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.1)`,
-          border: `1px solid ${borderColor}`,
-          borderRadius: '50%',
-          width: 60,
-          height: 60,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: `0 0 20px ${borderColor}40`,
-          backdropFilter: 'blur(5px)'
-        },
-        // Custom node component will be handled in the ReactFlow render
-        type: 'default'
+        }
       });
     });
     
@@ -172,26 +173,7 @@ export const FateTree = () => {
         elementsSelectable={false}
         panOnDrag={true}
         zoomOnScroll={true}
-        // Custom node renderer
-        nodeTypes={{
-          default: ({ data, style }) => {
-            let IconComponent: React.ElementType = Target;
-            
-            if (data.role === 'strategist') {
-              IconComponent = Target;
-            } else if (data.role === 'oracle') {
-              IconComponent = MoonStar;
-            } else if (data.role === 'alchemist') {
-              IconComponent = FlaskConical;
-            }
-            
-            return (
-              <div style={style}>
-                <IconComponent size={24} className="text-white" />
-              </div>
-            );
-          }
-        }}
+        nodeTypes={nodeTypes}
       >
         <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.05 }} />
         <Controls className="bg-black/50 border border-white/10 text-white fill-white" />

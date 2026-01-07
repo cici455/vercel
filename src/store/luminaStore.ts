@@ -6,11 +6,23 @@ export type Phase = 'intro' | 'calibration' | 'observatory' | 'solo' | 'debate' 
 
 export type AgentRole = 'strategist' | 'oracle' | 'alchemist';
 
+export type StructuredReply = {
+  omen: string;
+  transit: string;
+  core: string;
+  reading: string;
+  moves: string[];
+  question: string;
+};
+
 export interface Message {
   id: string;
   role: AgentRole | 'user';
   content: string;
+  structured?: StructuredReply;
   timestamp: number;
+  parentId?: string;
+  childrenIds: string[];
   isGlitch?: boolean;
 }
 
@@ -19,16 +31,6 @@ export interface UserData {
   birthDate: string;
   birthTime: string;
   birthPlace: string;
-}
-
-export interface Message {
-  id: string;
-  role: AgentRole | 'user';
-  content: string;
-  timestamp: number;
-  parentId?: string;
-  childrenIds: string[];
-  isGlitch?: boolean;
 }
 
 export interface ArchiveItem {
@@ -60,7 +62,9 @@ interface LuminaState {
   // Actions
   setPhase: (phase: Phase) => void;
   setUserData: (data: Partial<UserData>) => void;
-  addMessage: (role: AgentRole | 'user', content: string, parentId?: string) => string;
+
+  addMessage: (role: AgentRole | 'user', content: string, parentId?: string, structured?: StructuredReply) => string;
+
   updateMessage: (id: string, updates: Partial<Message>) => void;
   deleteMessage: (id: string) => void;
   setActiveMessage: (id: string | null) => void;
@@ -98,12 +102,13 @@ export const useLuminaStore = create<LuminaState>()(
         userData: { ...state.userData, ...data } 
       })),
       
-      addMessage: (role, content, parentId) => {
+      addMessage: (role, content, parentId, structured) => {
         const id = `msg-${Date.now()}-${Math.random().toString(36).substring(7)}`;
         const newMessage: Message = {
           id,
           role,
           content,
+          structured,
           timestamp: Date.now(),
           parentId,
           childrenIds: [],

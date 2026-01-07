@@ -176,7 +176,6 @@ export const FateTree = () => {
         nodeTypes={nodeTypes}
       >
         <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.05 }} />
-        <Controls className="bg-black/50 border border-white/10 text-white fill-white" />
       </ReactFlow>
       <div className="absolute top-4 right-4 pointer-events-none">
         <h3 className="text-xs uppercase tracking-widest text-white/50 font-cinzel">DESTINY TREE</h3>

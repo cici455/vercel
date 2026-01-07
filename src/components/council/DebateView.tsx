@@ -292,13 +292,13 @@ export function DebateView() {
                 ) : msg.structured ? (
                   // Structured message with ceremonial card layout
                   <div className="mt-2 space-y-3">
-                    {/* Omen and Transit lines */}
-                    <div className="text-xs text-white/60 space-y-1">
-                      <p className="font-serif italic">{msg.structured.omen}</p>
-                      <p className="font-serif italic">{msg.structured.transit}</p>
+                    {/* Omen and Transit lines - small, mysterious */}
+                    <div className="text-xs text-white/60 space-y-1 font-serif italic">
+                      <p>{msg.structured.omen}</p>
+                      <p>{msg.structured.transit}</p>
                     </div>
                     
-                    {/* Core (title) */}
+                    {/* Core - title */}
                     <h4 className={cn(
                       "text-lg font-bold text-white",
                       msg.role === 'strategist' ? "font-mono tracking-wide" :
@@ -308,7 +308,7 @@ export function DebateView() {
                       {msg.structured.core}
                     </h4>
                     
-                    {/* Reading (body) */}
+                    {/* Reading - body text */}
                     <p className={cn(
                       "text-sm leading-relaxed text-white/90",
                       msg.role === 'strategist' ? "font-mono tracking-wide" :
@@ -318,7 +318,7 @@ export function DebateView() {
                       {msg.structured.reading}
                     </p>
                     
-                    {/* Moves (chips) */}
+                    {/* Moves - list/chips */}
                     {Array.isArray(msg.structured.moves) && msg.structured.moves.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
                         {msg.structured.moves.map((move: string, index: number) => (
@@ -332,7 +332,7 @@ export function DebateView() {
                       </div>
                     )}
                     
-                    {/* Question (prompt) */}
+                    {/* Question - bottom line for continuing */}
                     {msg.structured.question && (
                       <p className={cn(
                         "text-sm text-starlight mt-2 italic",

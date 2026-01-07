@@ -404,10 +404,10 @@ export async function POST(req: Request) {
         const structured = {
           omen: omenLine,
           transit: transitLine,
-          core: "The stars are aligning.",
-          reading: "A new path is emerging. Stay focused on your goals.",
-          moves: ["Take a small step forward", "Trust your intuition"],
-          question: "What is the next step you can take today?"
+          core: "Channel is overloaded.",
+          reading: "现在模型拥堵，但你可以先把问题变具体，增加约束条件来获得更精准的回应。",
+          moves: ["缩小问题", "给约束", "再试一次"],
+          question: "你更想要\"快速方案\"还是\"深挖动机\"？"
         };
         
         return NextResponse.json({

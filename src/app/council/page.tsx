@@ -69,11 +69,7 @@ export default function ChronoCouncilPage() {
     }
   }, [sp, setDomain]);
   
-  // Council modal state
-  const [isCouncilOpen, setIsCouncilOpen] = useState(false);
-  const [councilAnchorMessageId, setCouncilAnchorMessageId] = useState<string | null>(null);
-  const [councilReplies, setCouncilReplies] = useState<Partial<Record<'strategist' | 'oracle' | 'alchemist', string | any>>>({});
-  const [councilLoading, setCouncilLoading] = useState<Partial<Record<'strategist' | 'oracle' | 'alchemist', boolean>>>({});
+
   
   // Click outside to close info popover
   useEffect(() => {
@@ -111,60 +107,7 @@ export default function ChronoCouncilPage() {
     return anchorMessage.content.slice(0, 200);
   };
 
-  // Activate agent in council modal
-  const activateAgentInCouncil = async (agent: 'strategist' | 'oracle' | 'alchemist') => {
-    if (!councilAnchorMessageId) return;
-    
-    setCouncilLoading(prev => ({ ...prev, [agent]: true }));
-    
-    try {
-      const debateSeed = getDebateSeed(councilAnchorMessageId);
-      const history = buildHistory(councilAnchorMessageId);
-      
-      const response = await fetch('/api/council', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: debateSeed,
-          astroData: {
-            sunSign: 'Leo',
-            moonSign: 'Virgo',
-            risingSign: 'Libra'
-          },
-          history: history,
-          mode: 'solo',
-          activeAgent: agent,
-          dayKey: daily?.dayKey
-        })
-      });
-      
-      if (!response.ok) {
-        const errText = await response.text();
-        setCouncilReplies(prev => ({ ...prev, [agent]: `Error: ${errText}` }));
-        return;
-      }
-      
-      const data = await response.json();
-      const agentResponse = data?.responses?.[agent];
-      
-      setCouncilReplies(prev => ({ ...prev, [agent]: agentResponse }));
-    } catch (error) {
-      console.error('Error activating agent:', error);
-      setCouncilReplies(prev => ({ ...prev, [agent]: `Error: ${String(error)}` }));
-    } finally {
-      setCouncilLoading(prev => ({ ...prev, [agent]: false }));
-    }
-  };
 
-  // Open council modal from a specific assistant message
-  const openCouncilModal = (parentAssistantId: string) => {
-    setCouncilAnchorMessageId(parentAssistantId);
-    setCouncilReplies({});
-    setCouncilLoading({});
-    setIsCouncilOpen(true);
-  };
 
   // Build history from activeMessageId
   const buildHistory = (fromId: string | null) => {
@@ -529,7 +472,10 @@ export default function ChronoCouncilPage() {
                             {/* Summon Council button for assistant messages */}
                             {message.role !== "user" && ( 
                               <button 
-                                onClick={() => openCouncilModal(message.id)} 
+                                onClick={() => {
+                                  const councilId = addMessage('council', 'Council convened.', message.id);
+                                  setActiveMessage(councilId);
+                                }} 
                                 className="mt-3 text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white" 
                               > 
                                 SUMMON COUNCIL 
@@ -608,7 +554,11 @@ export default function ChronoCouncilPage() {
                   {/* Summon Council Button */}
                   {!councilUnlocked ? (
                       <button 
-                        onClick={() => setCouncilUnlocked(true)}
+                        onClick={() => {
+                          const parent = activeMessageId || (messages.findLast?.(m => m.role !== 'user')?.id ?? null);
+                          const councilId = addMessage('council', 'Council convened.', parent || undefined);
+                          setActiveMessage(councilId);
+                        }}
                         disabled={!isSummonActive}
                         className={`text-[10px] uppercase tracking-[0.2em] transition-all duration-300 ${isSummonActive 
                           ? 'text-[#E0E0E0] hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]' 
@@ -631,145 +581,7 @@ export default function ChronoCouncilPage() {
           <FateTree />
         </div>
       </div>
-      
-      {/* Council Modal */}
-      {isCouncilOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setIsCouncilOpen(false)}
-          />
-          
-          {/* Modal Content */}
-          <div className="relative bg-[#121212] border border-white/10 rounded-xl p-6 max-w-6xl w-full max-h-[80vh] overflow-y-auto">
-            {/* Close Button */}
-            <button 
-              onClick={() => setIsCouncilOpen(false)}
-              className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white/80 hover:text-white"
-              aria-label="Close"
-            >
-              <span className="text-xl">×</span>
-            </button>
-            
-            {/* Modal Header */}
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-serif text-[#D4AF37] mb-2">COUNCIL DEBATE</h2>
-              <p className="text-sm text-white/60">
-                Three perspectives on your situation
-              </p>
-            </div>
-            
-            {/* Agent Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Strategist */}
-              <div className="border border-amber-500/20 bg-black/35 p-5 rounded-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <Target className="text-amber-500" size={20} />
-                  <h3 className="text-lg font-mono tracking-wide text-amber-500">STRATEGIST</h3>
-                </div>
-                <button
-                  onClick={() => activateAgentInCouncil('strategist')}
-                  disabled={councilLoading.strategist}
-                  className={`
-                    w-full mb-4 py-2 rounded-lg text-sm uppercase tracking-wider
-                    ${councilLoading.strategist 
-                      ? 'bg-amber-500/20 text-amber-500/60 cursor-not-allowed' 
-                      : 'bg-amber-500/30 text-amber-500 hover:bg-amber-500/40'
-                    }
-                  `}
-                >
-                  {councilLoading.strategist ? 'ACTIVATING...' : 'ACTIVATE'}
-                </button>
-                <div className="text-sm text-white/80 font-mono">
-                  {councilReplies.strategist ? (
-                    <div className="whitespace-pre-wrap">
-                      {typeof councilReplies.strategist === 'string' 
-                        ? councilReplies.strategist 
-                        : JSON.stringify(councilReplies.strategist, null, 2)
-                      }
-                    </div>
-                  ) : (
-                    <div className="text-white/40 italic">
-                      Click ACTIVATE to summon the Strategist's insight
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Oracle */}
-              <div className="border border-blue-400/20 bg-black/25 p-5 rounded-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <MoonStar className="text-blue-400" size={20} />
-                  <h3 className="text-lg font-serif italic text-blue-400">ORACLE</h3>
-                </div>
-                <button
-                  onClick={() => activateAgentInCouncil('oracle')}
-                  disabled={councilLoading.oracle}
-                  className={`
-                    w-full mb-4 py-2 rounded-lg text-sm uppercase tracking-wider
-                    ${councilLoading.oracle 
-                      ? 'bg-blue-400/20 text-blue-400/60 cursor-not-allowed' 
-                      : 'bg-blue-400/30 text-blue-400 hover:bg-blue-400/40'
-                    }
-                  `}
-                >
-                  {councilLoading.oracle ? 'ACTIVATING...' : 'ACTIVATE'}
-                </button>
-                <div className="text-sm text-white/80 font-serif italic leading-relaxed">
-                  {councilReplies.oracle ? (
-                    <div className="whitespace-pre-wrap">
-                      {typeof councilReplies.oracle === 'string' 
-                        ? councilReplies.oracle 
-                        : JSON.stringify(councilReplies.oracle, null, 2)
-                      }
-                    </div>
-                  ) : (
-                    <div className="text-white/40 italic">
-                      Click ACTIVATE to summon the Oracle's vision
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Alchemist */}
-              <div className="border border-fuchsia-400/20 bg-black/30 p-5 rounded-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <FlaskConical className="text-fuchsia-400" size={20} />
-                  <h3 className="text-lg font-sans text-fuchsia-400">ALCHEMIST</h3>
-                </div>
-                <button
-                  onClick={() => activateAgentInCouncil('alchemist')}
-                  disabled={councilLoading.alchemist}
-                  className={`
-                    w-full mb-4 py-2 rounded-lg text-sm uppercase tracking-wider
-                    ${councilLoading.alchemist 
-                      ? 'bg-fuchsia-400/20 text-fuchsia-400/60 cursor-not-allowed' 
-                      : 'bg-fuchsia-400/30 text-fuchsia-400 hover:bg-fuchsia-400/40'
-                    }
-                  `}
-                >
-                  {councilLoading.alchemist ? 'ACTIVATING...' : 'ACTIVATE'}
-                </button>
-                <div className="text-sm text-white/80 font-sans">
-                  {councilReplies.alchemist ? (
-                    <div className="whitespace-pre-wrap">
-                      {typeof councilReplies.alchemist === 'string' 
-                        ? councilReplies.alchemist 
-                        : JSON.stringify(councilReplies.alchemist, null, 2)
-                      }
-                    </div>
-                  ) : (
-                    <div className="text-white/40 italic">
-                      Click ACTIVATE to summon the Alchemist's transformation
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

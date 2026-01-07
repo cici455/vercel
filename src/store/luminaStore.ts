@@ -40,6 +40,12 @@ export interface ArchiveItem {
   edges: Edge[];
 }
 
+export interface DailyLines {
+  dayKey: string;
+  astroProfile: string;
+  lines: Record<AgentRole, { omen: string; transit: string }>;
+}
+
 interface LuminaState {
   phase: Phase;
   userData: UserData;
@@ -49,6 +55,7 @@ interface LuminaState {
   activeMessageId: string | null;
   voidEnergy: number;
   archives: ArchiveItem[];
+  daily: DailyLines | null;
   
   // Actions
   setPhase: (phase: Phase) => void;
@@ -62,6 +69,7 @@ interface LuminaState {
   addEdge: (edge: Edge) => void;
   saveSession: (outcome: 'gold' | 'blue' | 'red') => void;
   reset: () => void;
+  setDaily: (daily: DailyLines | null) => void;
 }
 
 const initialUserData: UserData = {
@@ -82,6 +90,7 @@ export const useLuminaStore = create<LuminaState>()(
       activeMessageId: null,
       voidEnergy: 0,
       archives: [],
+      daily: null,
 
       setPhase: (phase) => set({ phase }),
       
@@ -196,7 +205,10 @@ export const useLuminaStore = create<LuminaState>()(
         edges: [],
         activeMessageId: null,
         voidEnergy: 0,
+        daily: null,
       }),
+      
+      setDaily: (daily) => set({ daily }),
     }),
     {
       name: 'lumina-storage', // name of the item in the storage (must be unique)

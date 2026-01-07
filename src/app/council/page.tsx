@@ -54,6 +54,12 @@ export default function ChronoCouncilPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [councilUnlocked, setCouncilUnlocked] = useState(false);
   
+  // Council modal state
+  const [isCouncilOpen, setIsCouncilOpen] = useState(false);
+  const [councilAnchorMessageId, setCouncilAnchorMessageId] = useState<string | null>(null);
+  const [councilReplies, setCouncilReplies] = useState<Partial<Record<'strategist' | 'oracle' | 'alchemist', string | any>>>({});
+  const [councilLoading, setCouncilLoading] = useState<Partial<Record<'strategist' | 'oracle' | 'alchemist', boolean>>>({});
+  
   // Click outside to close info popover
   useEffect(() => {
     const onDown = () => setOpenInfo(null);
@@ -72,55 +78,76 @@ export default function ChronoCouncilPage() {
     return ""; 
   }; 
 
-  // Summon council from a specific assistant message
-  const summonCouncilFrom = async (parentAssistantId: string) => { 
-    setIsLoading(true); 
-    try { 
-      const userText = findNearestUserText(parentAssistantId) || input; 
-      const res = await fetch("/api/council", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ 
-          message: userText, 
-          mode: "council", 
-          activeAgent, 
-          astroData: { sunSign: "Leo", moonSign: "Virgo", risingSign: "Libra" }, 
-          history: buildHistory(parentAssistantId), 
-        }), 
-      }); 
-
-      if (!res.ok) {
-        const errText = await res.text();
-        addMessage("alchemist", `Request failed: ${errText}`, parentAssistantId);
-        return;
+  // Get debate seed from anchor message
+  const getDebateSeed = (anchorMessageId: string) => {
+    const anchorMessage = messages.find(msg => msg.id === anchorMessageId);
+    if (!anchorMessage) return "";
+    
+    try {
+      const structuredContent = JSON.parse(anchorMessage.content);
+      if (structuredContent.interpretation) {
+        // Take first sentence of interpretation
+        return structuredContent.interpretation.split('.')[0].slice(0, 200);
       }
+    } catch (e) {
+      // Fallback to plain text
+      return anchorMessage.content.slice(0, 200);
+    }
+    return anchorMessage.content.slice(0, 200);
+  };
 
-      const data = await res.json();
-
-      if (!data?.responses) {
-        addMessage("alchemist", `No responses returned`, parentAssistantId);
+  // Activate agent in council modal
+  const activateAgentInCouncil = async (agent: 'strategist' | 'oracle' | 'alchemist') => {
+    if (!councilAnchorMessageId) return;
+    
+    setCouncilLoading(prev => ({ ...prev, [agent]: true }));
+    
+    try {
+      const debateSeed = getDebateSeed(councilAnchorMessageId);
+      const history = buildHistory(councilAnchorMessageId);
+      
+      const response = await fetch('/api/council', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: debateSeed,
+          astroData: {
+            sunSign: 'Leo',
+            moonSign: 'Virgo',
+            risingSign: 'Libra'
+          },
+          history: history,
+          mode: 'solo',
+          activeAgent: agent
+        })
+      });
+      
+      if (!response.ok) {
+        const errText = await response.text();
+        setCouncilReplies(prev => ({ ...prev, [agent]: `Error: ${errText}` }));
         return;
       }
       
-      if (data.error) {
-        addMessage("alchemist", `Error: ${data.error}`, parentAssistantId);
-        return;
-      }
-
-      Object.entries(data.responses).forEach(([role, content]: any) => { 
-        if (content !== null) {
-          addMessage(role as any, toText(content), parentAssistantId); 
-        }
-      }); 
-
-      // Set active message to the parent assistant message
-      setActiveMessage(parentAssistantId); 
+      const data = await response.json();
+      const agentResponse = data?.responses?.[agent];
+      
+      setCouncilReplies(prev => ({ ...prev, [agent]: agentResponse }));
     } catch (error) {
-      console.error("Error summoning council:", error);
-      addMessage("alchemist", `Error: ${String(error)}`, parentAssistantId);
-    } finally { 
-      setIsLoading(false); 
-    } 
+      console.error('Error activating agent:', error);
+      setCouncilReplies(prev => ({ ...prev, [agent]: `Error: ${String(error)}` }));
+    } finally {
+      setCouncilLoading(prev => ({ ...prev, [agent]: false }));
+    }
+  };
+
+  // Open council modal from a specific assistant message
+  const openCouncilModal = (parentAssistantId: string) => {
+    setCouncilAnchorMessageId(parentAssistantId);
+    setCouncilReplies({});
+    setCouncilLoading({});
+    setIsCouncilOpen(true);
   };
 
   // Build history from activeMessageId
@@ -367,23 +394,117 @@ export default function ChronoCouncilPage() {
                               </div>
                             )}
 
-                            {/* Message content */}
-                            <div 
-                              className={`text-base leading-[1.6] font-light
-                                ${message.role === 'user' 
-                                  ? 'text-[#E0E0E0]' 
-                                  : 'text-[#CCCCCC]' 
-                                }`}
-                            >
-                              <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
-                                {message.content}
-                              </p>
+                            {/* Role-specific styles */}
+                            <div className={`
+                              ${message.role === 'strategist' ? 'border-amber-500/20 bg-black/35 font-mono tracking-wide' : ''}
+                              ${message.role === 'oracle' ? 'border-blue-400/20 bg-black/25 font-serif italic leading-relaxed' : ''}
+                              ${message.role === 'alchemist' ? 'border-fuchsia-400/20 bg-black/30 font-sans' : ''}
+                              ${message.role === 'user' ? 'text-[#E0E0E0]' : 'text-[#CCCCCC]'}
+                              text-base leading-[1.6] font-light p-5 rounded-lg relative overflow-hidden
+                            `}>
+                              {/* Role-specific background effects */}
+                              {message.role === 'strategist' && (
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+                              )}
+                              {message.role === 'oracle' && (
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none" />
+                              )}
+                              {message.role === 'alchemist' && (
+                                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-400/5 to-transparent pointer-events-none" />
+                              )}
+                              {/* Try to parse as structured content */}
+                              {(() => {
+                                try {
+                                  const structuredContent = JSON.parse(message.content);
+                                  if (structuredContent.omen || structuredContent.interpretation) {
+                                    return (
+                                      <div className="space-y-3">
+                                        {/* Omen */}
+                                        {structuredContent.omen && (
+                                          <div className={`
+                                            text-sm italic text-amber-400/80 
+                                            ${message.role === 'strategist' ? 'font-mono' : ''}
+                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
+                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
+                                          `}>
+                                            "{structuredContent.omen}"
+                                          </div>
+                                        )}
+                                        {/* Transit */}
+                                        {structuredContent.transit && (
+                                          <div className={`
+                                            text-sm text-blue-400/60 
+                                            ${message.role === 'strategist' ? 'font-mono' : ''}
+                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
+                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
+                                          `}>
+                                            "{structuredContent.transit}"
+                                          </div>
+                                        )}
+                                        {/* Interpretation */}
+                                        {structuredContent.interpretation && (
+                                          <div className={`
+                                            ${message.role === 'strategist' ? 'font-mono text-sm tracking-wide' : ''}
+                                            ${message.role === 'oracle' ? 'font-serif italic leading-relaxed text-gray-300' : ''}
+                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
+                                          `}>
+                                            {structuredContent.interpretation}
+                                          </div>
+                                        )}
+                                        {/* Next actions */}
+                                        {structuredContent.next && Array.isArray(structuredContent.next) && structuredContent.next.length > 0 && (
+                                          <div className="mt-4 space-y-2">
+                                            <div className={`
+                                              ${message.role === 'strategist' ? 'text-xs uppercase tracking-wider text-amber-500/80' : ''}
+                                              ${message.role === 'oracle' ? 'text-xs italic text-blue-400/80' : ''}
+                                              ${message.role === 'alchemist' ? 'text-xs uppercase tracking-wider text-fuchsia-400/80' : ''}
+                                            `}>
+                                              {message.role === 'strategist' ? 'TACTICAL ACTIONS' : 
+                                               message.role === 'oracle' ? 'INTUITIVE STEPS' : 
+                                               'ALCHEMICAL HACKS'}
+                                            </div>
+                                            <div className={`
+                                              ${message.role === 'strategist' ? 'space-y-1' : ''}
+                                              ${message.role === 'oracle' ? 'space-y-1' : ''}
+                                              ${message.role === 'alchemist' ? 'flex flex-wrap gap-2' : ''}
+                                            `}>
+                                              {structuredContent.next.map((action: string, index: number) => (
+                                                <div key={index} className={`
+                                                  ${message.role === 'strategist' ? 'text-sm font-mono tracking-wide' : ''}
+                                                  ${message.role === 'oracle' ? 'text-sm font-serif italic text-gray-400' : ''}
+                                                  ${message.role === 'alchemist' ? 'bg-fuchsia-900/20 text-fuchsia-300/90 px-3 py-1 rounded-full text-xs font-sans' : ''}
+                                                `}>
+                                                  {message.role === 'strategist' && (
+                                                    <span className="text-amber-500/60 mr-2">{index + 1}.</span>
+                                                  )}
+                                                  {message.role === 'oracle' && (
+                                                    <span className="text-blue-400/60 mr-2">•</span>
+                                                  )}
+                                                  {action}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                } catch (e) {
+                                  // Fallback to plain text
+                                }
+                                // Plain text fallback
+                                return (
+                                  <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
+                                    {message.content}
+                                  </p>
+                                );
+                              })()}
                             </div>
                             
                             {/* Summon Council button for assistant messages */}
                             {message.role !== "user" && ( 
                               <button 
-                                onClick={() => summonCouncilFrom(message.id)} 
+                                onClick={() => openCouncilModal(message.id)} 
                                 className="mt-3 text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white" 
                               > 
                                 SUMMON COUNCIL 
@@ -464,6 +585,145 @@ export default function ChronoCouncilPage() {
           <FateTree />
         </div>
       </div>
+      
+      {/* Council Modal */}
+      {isCouncilOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setIsCouncilOpen(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-[#121212] border border-white/10 rounded-xl p-6 max-w-6xl w-full max-h-[80vh] overflow-y-auto">
+            {/* Close Button */}
+            <button 
+              onClick={() => setIsCouncilOpen(false)}
+              className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white/80 hover:text-white"
+              aria-label="Close"
+            >
+              <span className="text-xl">×</span>
+            </button>
+            
+            {/* Modal Header */}
+            <div className="mb-8 text-center">
+              <h2 className="text-2xl font-serif text-[#D4AF37] mb-2">COUNCIL DEBATE</h2>
+              <p className="text-sm text-white/60">
+                Three perspectives on your situation
+              </p>
+            </div>
+            
+            {/* Agent Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Strategist */}
+              <div className="border border-amber-500/20 bg-black/35 p-5 rounded-lg">
+                <div className="flex items-center gap-2 mb-4">
+                  <Target className="text-amber-500" size={20} />
+                  <h3 className="text-lg font-mono tracking-wide text-amber-500">STRATEGIST</h3>
+                </div>
+                <button
+                  onClick={() => activateAgentInCouncil('strategist')}
+                  disabled={councilLoading.strategist}
+                  className={`
+                    w-full mb-4 py-2 rounded-lg text-sm uppercase tracking-wider
+                    ${councilLoading.strategist 
+                      ? 'bg-amber-500/20 text-amber-500/60 cursor-not-allowed' 
+                      : 'bg-amber-500/30 text-amber-500 hover:bg-amber-500/40'
+                    }
+                  `}
+                >
+                  {councilLoading.strategist ? 'ACTIVATING...' : 'ACTIVATE'}
+                </button>
+                <div className="text-sm text-white/80 font-mono">
+                  {councilReplies.strategist ? (
+                    <div className="whitespace-pre-wrap">
+                      {typeof councilReplies.strategist === 'string' 
+                        ? councilReplies.strategist 
+                        : JSON.stringify(councilReplies.strategist, null, 2)
+                      }
+                    </div>
+                  ) : (
+                    <div className="text-white/40 italic">
+                      Click ACTIVATE to summon the Strategist's insight
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Oracle */}
+              <div className="border border-blue-400/20 bg-black/25 p-5 rounded-lg">
+                <div className="flex items-center gap-2 mb-4">
+                  <MoonStar className="text-blue-400" size={20} />
+                  <h3 className="text-lg font-serif italic text-blue-400">ORACLE</h3>
+                </div>
+                <button
+                  onClick={() => activateAgentInCouncil('oracle')}
+                  disabled={councilLoading.oracle}
+                  className={`
+                    w-full mb-4 py-2 rounded-lg text-sm uppercase tracking-wider
+                    ${councilLoading.oracle 
+                      ? 'bg-blue-400/20 text-blue-400/60 cursor-not-allowed' 
+                      : 'bg-blue-400/30 text-blue-400 hover:bg-blue-400/40'
+                    }
+                  `}
+                >
+                  {councilLoading.oracle ? 'ACTIVATING...' : 'ACTIVATE'}
+                </button>
+                <div className="text-sm text-white/80 font-serif italic leading-relaxed">
+                  {councilReplies.oracle ? (
+                    <div className="whitespace-pre-wrap">
+                      {typeof councilReplies.oracle === 'string' 
+                        ? councilReplies.oracle 
+                        : JSON.stringify(councilReplies.oracle, null, 2)
+                      }
+                    </div>
+                  ) : (
+                    <div className="text-white/40 italic">
+                      Click ACTIVATE to summon the Oracle's vision
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Alchemist */}
+              <div className="border border-fuchsia-400/20 bg-black/30 p-5 rounded-lg">
+                <div className="flex items-center gap-2 mb-4">
+                  <FlaskConical className="text-fuchsia-400" size={20} />
+                  <h3 className="text-lg font-sans text-fuchsia-400">ALCHEMIST</h3>
+                </div>
+                <button
+                  onClick={() => activateAgentInCouncil('alchemist')}
+                  disabled={councilLoading.alchemist}
+                  className={`
+                    w-full mb-4 py-2 rounded-lg text-sm uppercase tracking-wider
+                    ${councilLoading.alchemist 
+                      ? 'bg-fuchsia-400/20 text-fuchsia-400/60 cursor-not-allowed' 
+                      : 'bg-fuchsia-400/30 text-fuchsia-400 hover:bg-fuchsia-400/40'
+                    }
+                  `}
+                >
+                  {councilLoading.alchemist ? 'ACTIVATING...' : 'ACTIVATE'}
+                </button>
+                <div className="text-sm text-white/80 font-sans">
+                  {councilReplies.alchemist ? (
+                    <div className="whitespace-pre-wrap">
+                      {typeof councilReplies.alchemist === 'string' 
+                        ? councilReplies.alchemist 
+                        : JSON.stringify(councilReplies.alchemist, null, 2)
+                      }
+                    </div>
+                  ) : (
+                    <div className="text-white/40 italic">
+                      Click ACTIVATE to summon the Alchemist's transformation
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

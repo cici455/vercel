@@ -10,24 +10,9 @@ import ReactFlow, {
   useEdgesState,
   MarkerType
 } from 'reactflow';
+import { Target, MoonStar, FlaskConical } from 'lucide-react';
 
 import { useLuminaStore } from '@/store/luminaStore';
-
-const initialNodes: Node[] = [
-  { 
-    id: 'root', 
-    position: { x: 250, y: 0 }, 
-    data: { label: 'Fate Origin' },
-    style: { 
-      background: 'rgba(5, 5, 5, 0.8)', 
-      border: '1px solid rgba(212, 175, 55, 0.5)', 
-      color: '#ededed',
-      borderRadius: '8px',
-      padding: '10px',
-      boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)'
-    }
-  },
-];
 
 export const FateTree = () => {
   const { messages, setActiveMessage } = useLuminaStore();
@@ -40,6 +25,9 @@ export const FateTree = () => {
 
     // Create a map for quick lookup
     const messageMap = new Map(messages.map(msg => [msg.id, msg]));
+    
+    // Filter out user messages, only keep assistant messages
+    const assistantMessages = messages.filter(msg => msg.role !== 'user');
     
     // Create nodes with proper layout
     const newNodes: Node[] = [];
@@ -58,7 +46,7 @@ export const FateTree = () => {
     
     // Get all nodes at each depth
     const depthMap = new Map<number, string[]>();
-    messages.forEach(msg => {
+    assistantMessages.forEach(msg => {
       const depth = calculateDepth(msg.id);
       if (!depthMap.has(depth)) {
         depthMap.set(depth, []);
@@ -66,88 +54,101 @@ export const FateTree = () => {
       depthMap.get(depth)?.push(msg.id);
     });
     
-    // Function to recursively create nodes and edges
-    const createNode = (messageId: string, x: number, y: number, level: number) => {
-      const message = messageMap.get(messageId);
-      if (!message) return;
-      
-      // Calculate position based on depth
-      const depth = calculateDepth(messageId);
+    // Function to find the nearest assistant parent
+    const findAssistantParent = (messageId: string): string | null => {
+      let current = messageMap.get(messageId);
+      while (current?.parentId) {
+        const parent = messageMap.get(current.parentId);
+        if (parent?.role !== 'user') {
+          return parent.id;
+        }
+        current = parent;
+      }
+      return null;
+    };
+    
+    // Create nodes
+    assistantMessages.forEach(msg => {
+      const depth = calculateDepth(msg.id);
       const siblings = depthMap.get(depth) || [];
-      const index = siblings.indexOf(messageId);
+      const siblingIndex = siblings.indexOf(msg.id);
       
-      const nodeX = 150 + index * 160;
-      const nodeY = depth * 90;
+      // Calculate position using depth-based layout
+      const x = 100 + siblingIndex * 140;
+      const y = depth * 120;
       
-      let color = '#666';
-      let borderColor = '#333';
+      // Determine icon and colors based on role
+      let IconComponent: React.ElementType = Target;
+      let color = '#f59e0b';
+      let borderColor = '#fbbf24';
       
-      if (message.role === 'user') {
-        color = '#3b82f6';
-        borderColor = '#60a5fa';
-      } else if (message.role === 'strategist') {
+      if (msg.role === 'strategist') {
+        IconComponent = Target;
         color = '#f59e0b';
         borderColor = '#fbbf24';
-      } else if (message.role === 'oracle') {
+      } else if (msg.role === 'oracle') {
+        IconComponent = MoonStar;
         color = '#8b5cf6';
         borderColor = '#a78bfa';
-      } else if (message.role === 'alchemist') {
+      } else if (msg.role === 'alchemist') {
+        IconComponent = FlaskConical;
         color = '#ec4899';
         borderColor = '#f472b6';
       }
-      // Add node
-      const contentText = typeof message.content === "string" ? message.content : JSON.stringify(message.content);
-      const displayText = contentText.substring(0, 30) + (contentText.length > 30 ? "..." : "");
+      
+      // Create node with only icon + glow, no text
       newNodes.push({
-        id: messageId,
-        position: { x: nodeX, y: nodeY },
+        id: msg.id,
+        position: { x, y },
         data: { 
-          label: message.role === 'user' ? 'You' : message.role.charAt(0).toUpperCase() + message.role.slice(1),
-          messageId: message.id,
-          content: displayText
+          messageId: msg.id,
+          role: msg.role
         },
         style: {
           background: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.1)`,
           border: `1px solid ${borderColor}`,
-          color: '#fff',
-          borderRadius: '8px',
-          padding: '10px',
-          fontSize: '10px',
-          width: 120,
+          borderRadius: '50%',
+          width: 60,
+          height: 60,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: `0 0 20px ${borderColor}40`,
           backdropFilter: 'blur(5px)'
-        }
+        },
+        // Custom node component will be handled in the ReactFlow render
+        type: 'default'
       });
-      
-      // Add edges to children
-      if (message.childrenIds.length > 0) {
-        message.childrenIds.forEach((childId, index) => {
-          // Calculate x position for children (spread out horizontally)
-          const childX = nodeX + (index - (message.childrenIds.length - 1) / 2) * 150;
-          
-          // Add edge
-          newEdges.push({
-            id: `edge-${messageId}-${childId}`,
-            source: messageId,
-            target: childId,
-            animated: true,
-            style: { stroke: borderColor, strokeWidth: 1 },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: borderColor,
-            },
-          });
-          
-          // Recursively create child nodes
-          createNode(childId, childX, nodeY, level + 1);
+    });
+    
+    // Create edges - skip user nodes
+    assistantMessages.forEach(msg => {
+      const assistantParentId = findAssistantParent(msg.id);
+      if (assistantParentId) {
+        // Determine edge color based on child role
+        let edgeColor = '#f59e0b';
+        if (msg.role === 'strategist') {
+          edgeColor = '#f59e0b';
+        } else if (msg.role === 'oracle') {
+          edgeColor = '#8b5cf6';
+        } else if (msg.role === 'alchemist') {
+          edgeColor = '#ec4899';
+        }
+        
+        newEdges.push({
+          id: `edge-${assistantParentId}-${msg.id}`,
+          source: assistantParentId,
+          target: msg.id,
+          animated: true,
+          style: { stroke: edgeColor, strokeWidth: 1.5 },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: edgeColor,
+            width: 10,
+            height: 10
+          },
         });
       }
-    };
-    
-    // Find root messages (no parent) and create nodes for them
-    const rootMessages = messages.filter(msg => !msg.parentId);
-    rootMessages.forEach((rootMsg, index) => {
-      const rootX = 250 + (index - (rootMessages.length - 1) / 2) * 300;
-      createNode(rootMsg.id, rootX, 0, 0);
     });
     
     setNodes(newNodes);
@@ -166,6 +167,31 @@ export const FateTree = () => {
         attributionPosition="bottom-right"
         className="bg-transparent"
         defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnDrag={true}
+        zoomOnScroll={true}
+        // Custom node renderer
+        nodeTypes={{
+          default: ({ data, style }) => {
+            let IconComponent: React.ElementType = Target;
+            
+            if (data.role === 'strategist') {
+              IconComponent = Target;
+            } else if (data.role === 'oracle') {
+              IconComponent = MoonStar;
+            } else if (data.role === 'alchemist') {
+              IconComponent = FlaskConical;
+            }
+            
+            return (
+              <div style={style}>
+                <IconComponent size={24} className="text-white" />
+              </div>
+            );
+          }
+        }}
       >
         <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.05 }} />
         <Controls className="bg-black/50 border border-white/10 text-white fill-white" />

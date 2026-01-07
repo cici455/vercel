@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Sun, Moon, Sparkles, Orbit, Star, MessageCircle, 
@@ -7,6 +7,7 @@ import {
 import { useUserChart } from '../hooks/useUserChart';
 import { OmenOutput } from '../utils/narrativeGenerator';
 import type { PlanetKey } from '../utils/planetArchetypes';
+import { useLuminaStore } from '../store/luminaStore';
 
 // --- Types ---
 type CardConfig = {
@@ -155,11 +156,71 @@ const PlanetRow = ({ item }: { item: CardItem }) => {
     </motion.div>
   );
 };
-
 // --- Main Component ---
 const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, onBack }) => {
   const { chartData, narrativeProfile, tensionLabel, tensionLine, planetCopy, natalDisplayPositions, loading, error } = useUserChart(userData);
+  const { setDaily } = useLuminaStore();
+  
+  // Daily lines state
+  const [dailyLines, setDailyLines] = useState<any>(null);
+  const [loadingDaily, setLoadingDaily] = useState(true);
+  const [errorDaily, setErrorDaily] = useState<string | null>(null);
 
+  // Generate astro profile string
+  const generateAstroProfile = () => {
+    if (!chartData?.trinity) return "Sun=Unknown, Moon=Unknown, Rising=Unknown";
+    
+    const trinityMap = new Map();
+    chartData.trinity.forEach(item => {
+      trinityMap.set(item.type.toLowerCase(), item.sign);
+    });
+    
+    return `Sun=${trinityMap.get('sun') || 'Unknown'}, Moon=${trinityMap.get('moon') || 'Unknown'}, Rising=${trinityMap.get('rising') || 'Unknown'}`;
+  };
+
+  // Fetch daily lines
+  useEffect(() => {
+    const fetchDailyLines = async () => {
+      if (!chartData) return;
+      
+      setLoadingDaily(true);
+      setErrorDaily(null);
+      
+      try {
+        const astroProfile = generateAstroProfile();
+        const response = await fetch('/api/daily', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            astroProfile,
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch daily lines');
+        }
+        
+        const data = await response.json();
+        setDailyLines(data);
+        
+        // Save to zustand store
+        setDaily({
+          dayKey: data.dayKey,
+          astroProfile,
+          lines: data.lines,
+        });
+      } catch (error) {
+        console.error('Error fetching daily lines:', error);
+        setErrorDaily('Failed to load daily guidance');
+      } finally {
+        setLoadingDaily(false);
+      }
+    };
+    
+    fetchDailyLines();
+  }, [chartData, setDaily]);
   const trinityCards = useMemo(() => {
     if (!chartData) return [];
     return chartData.trinity.map((card) => {

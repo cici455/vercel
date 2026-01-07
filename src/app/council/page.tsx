@@ -44,7 +44,8 @@ export default function ChronoCouncilPage() {
     messages, 
     activeMessageId, 
     addMessage, 
-    setActiveMessage 
+    setActiveMessage,
+    daily
   } = useLuminaStore();
   const [input, setInput] = useState('');
   const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
@@ -120,7 +121,8 @@ export default function ChronoCouncilPage() {
           },
           history: history,
           mode: 'solo',
-          activeAgent: agent
+          activeAgent: agent,
+          dayKey: daily?.dayKey
         })
       });
       
@@ -193,7 +195,8 @@ export default function ChronoCouncilPage() {
           },
           history: history,
           mode: 'solo',
-          activeAgent: activeAgent // Use currently selected active agent
+          activeAgent: activeAgent, // Use currently selected active agent
+          dayKey: daily?.dayKey
         })
       });
 

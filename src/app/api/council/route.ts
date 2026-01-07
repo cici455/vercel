@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getDailyLines } from '@/lib/dailyLines';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export async function POST(req: Request) {
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     
     console.log(`[API] Extracting request parameters...`);
     
-    const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [] } = body ?? {};
+    const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [], dayKey } = body ?? {};
     
     // Validate message parameter
     if (typeof message !== "string" || !message.trim()) {
@@ -120,6 +121,13 @@ export async function POST(req: Request) {
     
     const astroProfile = `Sun=${astroData?.sunSign || 'Unknown'}, Moon=${astroData?.moonSign || 'Unknown'}, Rising=${astroData?.risingSign || 'Unknown'}`;
     
+    // Get daily lines for consistency
+    const dailyLines = getDailyLines({
+      agent: activeAgent as any,
+      astroProfile,
+      dayKey
+    });
+    
     if (mode === 'solo') {
       // solo模式：只让模型扮演当前选中的agent角色，减少token消耗
       let agentDef;
@@ -150,11 +158,15 @@ export async function POST(req: Request) {
         `User: "${message.replace(/"/g, '\\"')}"`,
         `Astro Profile: ${astroProfile}`,
         "",
+        "**DAILY LINES (DO NOT REWRITE - USE THESE EXACTLY):**",
+        `Omen: "${dailyLines.omen.replace(/"/g, '\\"')}"`,
+        `Transit: "${dailyLines.transit.replace(/"/g, '\\"')}"`,
+        "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "**MANDATORY STRUCTURE:**",
         "{",
-        `  \"omen\": \"One short sentence (quoted from corpus, do not rewrite)\",`,
-        `  \"transit\": \"One short sentence (quoted from corpus, do not rewrite)\",`,
+        `  \"omen\": \"${dailyLines.omen.replace(/"/g, '\\"')}\",`,
+        `  \"transit\": \"${dailyLines.transit.replace(/"/g, '\\"')}\",`,
         `  \"interpretation\": \"2-3 sentences, <= 60 words\",`,
         `  \"next\": [\"Maximum 3 actions, <= 14 words each\"]`,
         `}`,

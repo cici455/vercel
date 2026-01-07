@@ -59,7 +59,7 @@ export const FateTree = () => {
       let current = messageMap.get(messageId);
       while (current?.parentId) {
         const parent = messageMap.get(current.parentId);
-        if (parent?.role !== 'user') {
+        if (parent && parent.role !== 'user') {
           return parent.id;
         }
         current = parent;

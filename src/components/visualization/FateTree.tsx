@@ -95,14 +95,16 @@ export const FateTree = () => {
         color = '#ec4899';
         borderColor = '#f472b6';
       }
-
       // Add node
+      const contentText = typeof message.content === "string" ? message.content : JSON.stringify(message.content);
+      const displayText = contentText.substring(0, 30) + (contentText.length > 30 ? "..." : "");
       newNodes.push({
         id: messageId,
         position: { x: nodeX, y: nodeY },
         data: { 
           label: message.role === 'user' ? 'You' : message.role.charAt(0).toUpperCase() + message.role.slice(1),
-          messageId: message.id
+          messageId: message.id,
+          content: displayText
         },
         style: {
           background: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.1)`,

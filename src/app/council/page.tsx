@@ -8,6 +8,25 @@ import { useRouter } from 'next/navigation';
 import { useLuminaStore } from '@/store/luminaStore';
 import { FateTree } from '@/components/visualization/FateTree';
 
+// Utility function to convert any value to string
+const toText = (v: unknown) => {
+  if (typeof v === "string") return v;
+  if (v == null) return "";
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+
+  // Common case: { content: "..." }
+  if (typeof (v as any).content === "string") return (v as any).content;
+
+  // Common case: { analysis: "...", advice: "..." }
+  const maybe = v as any;
+  if (typeof maybe.analysis === "string" || typeof maybe.advice === "string") {
+    return [maybe.analysis, maybe.advice].filter(Boolean).join("\n\n");
+  }
+
+  // Fallback
+  try { return JSON.stringify(v); } catch { return String(v); }
+};
+
 // Google Font for headers
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -90,7 +109,7 @@ export default function ChronoCouncilPage() {
 
       Object.entries(data.responses).forEach(([role, content]: any) => { 
         if (content !== null) {
-          addMessage(role as any, content as string, parentAssistantId); 
+          addMessage(role as any, toText(content), parentAssistantId); 
         }
       }); 
 
@@ -172,11 +191,12 @@ export default function ChronoCouncilPage() {
       }
       
       // Add only the current active agent's response
-      const text = data?.responses?.[activeAgent];
-      if (text) {
-        const aiMessageId = addMessage(activeAgent, text, userMessageId);
+      const aiRaw = data?.responses?.[activeAgent];
+      const aiText = toText(aiRaw);
+      if (aiText) {
+        const aiId = addMessage(activeAgent, aiText, userMessageId);
         // Set active message to the AI response
-        setActiveMessage(aiMessageId);
+        setActiveMessage(aiId);
       } else {
         addMessage(activeAgent, "No response", userMessageId);
       }

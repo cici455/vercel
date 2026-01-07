@@ -292,6 +292,22 @@ export async function POST(req: Request) {
     
     console.log(`[API] Cleaned response text: ${cleanText}`);
     
+    // Normalize response content to string
+    const normalize = (parsed: any) => {
+      if (typeof parsed === "string") return parsed;
+      if (typeof parsed?.content === "string") return parsed.content;
+
+      // If model returned {analysis, advice}
+      if (typeof parsed?.analysis === "string" || typeof parsed?.advice === "string") {
+        return [parsed.analysis, parsed.advice].filter(Boolean).join("\n\n");
+      }
+
+      // If content is an object
+      if (parsed?.content != null) return JSON.stringify(parsed.content);
+
+      return JSON.stringify(parsed);
+    };
+
     // 解析 JSON 响应 - 添加更健壮的错误处理
     let parsedResult;
     try {
@@ -303,9 +319,9 @@ export async function POST(req: Request) {
         turnLabel: parsedResult.turnLabel || "Title",
         responses: {
           // solo模式下，非activeAgent返回null
-          strategist: mode === 'solo' && activeAgent !== 'strategist' ? null : parsedResult.responses?.strategist,
-          oracle: mode === 'solo' && activeAgent !== 'oracle' ? null : parsedResult.responses?.oracle,
-          alchemist: mode === 'solo' && activeAgent !== 'alchemist' ? null : parsedResult.responses?.alchemist
+          strategist: mode === 'solo' && activeAgent !== 'strategist' ? null : normalize(parsedResult.responses?.strategist),
+          oracle: mode === 'solo' && activeAgent !== 'oracle' ? null : normalize(parsedResult.responses?.oracle),
+          alchemist: mode === 'solo' && activeAgent !== 'alchemist' ? null : normalize(parsedResult.responses?.alchemist)
         }
       };
       

@@ -10,7 +10,7 @@ import ReactFlow, {
   useEdgesState,
   MarkerType
 } from 'reactflow';
-import 'reactflow/dist/style.css';
+
 import { useLuminaStore } from '@/store/luminaStore';
 
 const initialNodes: Node[] = [

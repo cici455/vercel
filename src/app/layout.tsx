@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Cinzel, Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
+import 'reactflow/dist/style.css';
 import FilmGrain from '@/components/ui/FilmGrain';
 import Background from '@/components/Background';
 // import { DynamicBackground } from '@/components/DynamicBackground';

@@ -31,6 +31,15 @@ export interface Message {
   isGlitch?: boolean;
 }
 
+export interface ArchiveItem {
+  id: string;
+  date: number;
+  outcome: 'gold' | 'blue' | 'red';
+  summary: string;
+  nodes: Node[];
+  edges: Edge[];
+}
+
 interface LuminaState {
   phase: Phase;
   userData: UserData;

@@ -31,8 +31,8 @@ const initialNodes: Node[] = [
 
 export const FateTree = () => {
   const { messages, setActiveMessage } = useLuminaStore();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Generate nodes and edges from messages
   useEffect(() => {
@@ -163,7 +163,7 @@ export const FateTree = () => {
         fitView
         attributionPosition="bottom-right"
         className="bg-transparent"
-        defaultZoom={0.8}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       >
         <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.05 }} />
         <Controls className="bg-black/50 border border-white/10 text-white fill-white" />

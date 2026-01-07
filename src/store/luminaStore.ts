@@ -129,7 +129,7 @@ export const useLuminaStore = create<LuminaState>()(
 
       deleteMessage: (id) => set((state) => {
         // Recursively delete all children
-        const deleteRecursive = (messageId: string) => {
+        const deleteRecursive = (messageId: string): string[] => {
           const message = state.messages.find(msg => msg.id === messageId);
           if (!message) return [];
           

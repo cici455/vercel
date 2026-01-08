@@ -61,7 +61,18 @@ export function CouncilDebateModal({ open, onClose, seedMessageId, dayKey }: Cou
 
   // Get the seed message content
   const seedMessage = messages.find(msg => msg.id === seedMessageId);
-  const seedText = seedMessage?.structured?.core || seedMessage?.structured?.reading || seedMessage?.content || '';
+  const seedText =
+    (() => {
+      const s = seedMessage?.structured;
+      if (s?.decrees?.length) {
+        // 用三句断语当作辩论种子（最符合你的“武断占星师”）
+        return s.decrees.map((d) => d.text).join(" ");
+      }
+      if (typeof s?.angle === "string" && s.angle.trim()) return s.angle;
+      if (typeof s?.script === "string" && s.script.trim()) return s.script;
+      if (typeof s?.question === "string" && s.question.trim()) return s.question;
+      return seedMessage?.content ?? "";
+    })();
 
   // Build history from the seed message and previous messages
   const buildHistory = () => {

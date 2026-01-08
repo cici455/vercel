@@ -11,6 +11,19 @@ import { CouncilDebateModal } from '@/components/CouncilDebateModal';
 import { getSuggestions, predictionChips } from '@/lib/suggestions';
 import { Send, Terminal, AlertTriangle, RefreshCw, X, Users } from 'lucide-react';
 
+function isStructuredReply(v: any): v is StructuredReply {
+  return !!v
+    && typeof v === "object"
+    && typeof v.omen === "string"
+    && typeof v.transit === "string"
+    && Array.isArray(v.decrees)
+    && Array.isArray(v.why)
+    && typeof v.angle === "string"
+    && Array.isArray(v.move)
+    && typeof v.script === "string"
+    && typeof v.question === "string";
+}
+
 const AGENT_CONFIG: Record<AgentRole, { name: string; color: string; border: string; font: string }> = {
   strategist: { 
     name: 'STRATEGIST', 
@@ -133,7 +146,9 @@ export function DebateView() {
           payload.script,
           payload.question
         ].filter(Boolean).join("\n");
-        const aiId = addMessage(activeAgent, textFallback, userMessageId, payload);
+        const aiId = isStructuredReply(payload)
+          ? addMessage(activeAgent, textFallback, userMessageId, payload)
+          : addMessage(activeAgent, textFallback, userMessageId);
         setActiveMessage(aiId);
       } else {
         const aiId = addMessage(activeAgent, String(payload ?? "No response"), userMessageId);

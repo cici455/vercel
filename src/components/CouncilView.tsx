@@ -409,176 +409,63 @@ export function CouncilView() {
                               {message.role === 'alchemist' && (
                                 <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-400/5 to-transparent pointer-events-none" />
                               )}
-                              {/* Try to parse as structured content */}
-                              {(() => {
-                                try {
-                                  const structuredContent = JSON.parse(message.content);
-                                  if (structuredContent.omen || structuredContent.core) {
-                                    return (
-                                      <div className="space-y-3">
-                                        {/* Omen and Transit lines - small, mysterious */}
-                                        {structuredContent.omen && (
-                                          <div className={`
-                                            text-sm italic text-amber-400/80 
-                                            ${message.role === 'strategist' ? 'font-mono' : ''}
-                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
-                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
-                                          `}>
-                                            "{structuredContent.omen}"
-                                          </div>
-                                        )}
-                                        {structuredContent.transit && (
-                                          <div className={`
-                                            text-sm text-blue-400/60 
-                                            ${message.role === 'strategist' ? 'font-mono' : ''}
-                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
-                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
-                                          `}>
-                                            "{structuredContent.transit}"
-                                          </div>
-                                        )}
-                                        
-                                        {/* Core - title */}
-                                        {structuredContent.core && (
-                                          <h4 className={`
-                                            text-lg font-bold text-white
-                                            ${message.role === 'strategist' ? 'font-mono tracking-wide' : ''}
-                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
-                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
-                                          `}>
-                                            {structuredContent.core}
-                                          </h4>
-                                        )}
-                                        
-                                        {/* Reading - body text */}
-                                        {structuredContent.reading && (
-                                          <p className={`
-                                            text-sm leading-relaxed text-white/90
-                                            ${message.role === 'strategist' ? 'font-mono tracking-wide' : ''}
-                                            ${message.role === 'oracle' ? 'font-serif italic leading-relaxed' : ''}
-                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
-                                          `}>
-                                            {structuredContent.reading}
-                                          </p>
-                                        )}
-                                        
-                                        {/* Moves - list/chips */}
-                                        {structuredContent.moves && Array.isArray(structuredContent.moves) && structuredContent.moves.length > 0 && (
-                                          <div className="flex flex-wrap gap-2 mt-1">
-                                            {structuredContent.moves.map((move: string, index: number) => (
-                                              <span 
-                                                key={index} 
-                                                className="px-2 py-1 bg-starlight/20 text-starlight text-xs rounded-sm"
-                                              >
-                                                {move}
-                                              </span>
-                                            ))}
-                                          </div>
-                                        )}
-                                        
-                                        {/* Question - bottom line for continuing */}
-                                        {structuredContent.question && (
-                                          <p className={`
-                                            text-sm text-starlight mt-2 italic
-                                            ${message.role === 'strategist' ? 'font-mono tracking-wide' : ''}
-                                            ${message.role === 'oracle' ? 'font-serif italic' : ''}
-                                            ${message.role === 'alchemist' ? 'font-sans' : ''}
-                                          `}>
-                                            {structuredContent.question}
-                                          </p>
-                                        )}
-                                      </div>
-                                    );
-                                  }
-                                } catch (e) {
-                                  // Fallback to plain text
-                                }
-                                
-                                // Check if message has structured data
-                                if (message.structured) {
-                                  const s = message.structured;
-                                  return (
-                                    <div className="space-y-3">
-                                      {/* omen / transit */}
-                                      <div className="space-y-1">
-                                        {!!s.omen && <div className="text-amber-300/90 italic">"{s.omen}"</div>}
-                                        {!!s.transit && <div className="text-blue-200/70 italic">"{s.transit}"</div>}
-                                      </div>
+                              {/* Message content with structured data support */}
+                              {message.role !== "user" && message.structured ? (
+                                <div className="space-y-3">
+                                  <div className="space-y-1">
+                                    {!!message.structured.omen && <div className="text-amber-300/90 italic">"{message.structured.omen}"</div>}
+                                    {!!message.structured.transit && <div className="text-blue-200/70 italic">"{message.structured.transit}"</div>}
+                                  </div>
 
-                                      {/* decrees: 三句断语（pierce/cost/direction） */}
-                                      {!!s.decrees?.length && (
-                                        <div className="space-y-2">
-                                          {s.decrees.map((d) => (
-                                            <div key={d.id} className="flex items-start gap-2">
-                                              <span className="text-[10px] uppercase tracking-widest text-white/45 w-20">
-                                                {d.type === "pierce" ? "PIERCE" : d.type === "cost" ? "COST" : "DIRECTION"}
-                                              </span>
-                                              <div className="text-white/90 leading-relaxed">
-                                                {d.text}
-                                              </div>
-                                              <button 
-                                                onClick={() => addClipFromDecree(message.id, message.role, d)} 
-                                                className="text-white/50 hover:text-white"
-                                              >
-                                                ✂
-                                              </button>
-                                            </div>
-                                          ))}
+                                  {!!message.structured.decrees?.length && (
+                                    <div className="space-y-2">
+                                      {message.structured.decrees.map((d) => (
+                                        <div key={d.id} className="flex items-start gap-2">
+                                          <span className="text-[10px] uppercase tracking-widest text-white/45 w-20">
+                                            {d.type === "pierce" ? "PIERCE" : d.type === "cost" ? "COST" : "DIRECTION"}
+                                          </span>
+                                          <div className="text-white/90 leading-relaxed">{d.text}</div>
+                                          <button 
+                                            onClick={() => addClipFromDecree(message.id, message.role, d)} 
+                                            className="text-white/50 hover:text-white"
+                                          >
+                                            ✂
+                                          </button>
                                         </div>
-                                      )}
-
-                                      {/* why：可以小号显示两行翻译 */}
-                                      {!!s.why?.length && (
-                                        <div className="text-white/55 text-xs whitespace-pre-wrap">
-                                          {s.why.join("\n")}
-                                        </div>
-                                      )}
-
-                                      {/* angle：人话解释 */}
-                                      {!!s.angle && (
-                                        <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
-                                          {s.angle}
-                                        </div>
-                                      )}
-
-                                      {/* move：3条行动（做成 chips） */}
-                                      {!!s.move?.length && (
-                                        <div className="flex flex-wrap gap-2">
-                                          {s.move.map((m, i) => (
-                                            <span 
-                                              key={i} 
-                                              className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] text-white/80" 
-                                            >
-                                              {m}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      )}
-
-                                      {/* script：话术 */}
-                                      {!!s.script && (
-                                        <div className="text-white/70 text-sm italic">
-                                          {s.script}
-                                        </div>
-                                      )}
-
-                                      {/* question：推进问题 */}
-                                      {!!s.question && (
-                                        <div className="text-amber-200/90 text-sm italic">
-                                          {s.question}
-                                        </div>
-                                      )}
+                                      ))}
                                     </div>
-                                  );
-                                }
-                                
-                                // Plain text fallback
-                                return (
-                                  <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
-                                    {message.content}
-                                  </p>
-                                );
-                              })()}
+                                  )}
+
+                                  {!!message.structured.why?.length && (
+                                    <div className="text-white/55 text-xs whitespace-pre-wrap">{message.structured.why.join("\n")}</div>
+                                  )}
+
+                                  {!!message.structured.angle && (
+                                    <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{message.structured.angle}</div>
+                                  )}
+
+                                  {!!message.structured.move?.length && (
+                                    <div className="flex flex-wrap gap-2">
+                                      {message.structured.move.map((m, i) => (
+                                        <span
+                                          key={i}
+                                          className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] text-white/80"
+                                        >
+                                          {m}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {!!message.structured.script && <div className="text-white/70 text-sm italic">{message.structured.script}</div>}
+
+                                  {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
+                                </div>
+                              ) : (
+                                <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
+                                  {message.content}
+                                </p>
+                              )}
                             </div>
                             
                             {/* Summon Council button for assistant messages */}

@@ -247,18 +247,26 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Date</label>
-                  <input 
-                    type="date" 
-                    value={formData.date}
-                    onChange={(e) => {
-                      setFormData({...formData, date: e.target.value});
-                      setErrors({...errors, date: ""});
-                    }}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
-                    min="1900-01-01"
-                    max={new Date().toISOString().slice(0, 10)}
-                    required
-                  />
+                  {(() => {
+                    const currentYear = new Date().getFullYear();
+                    const minYear = currentYear - 120;
+                    const minDate = `${minYear}-01-01`;
+                    const maxDate = new Date().toISOString().slice(0, 10);
+                    return (
+                      <input 
+                        type="date" 
+                        value={formData.date}
+                        onChange={(e) => {
+                          setFormData({...formData, date: e.target.value});
+                          setErrors({...errors, date: ""});
+                        }}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/80 focus:outline-none focus:border-white/30 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+                        min={minDate}
+                        max={maxDate}
+                        required
+                      />
+                    );
+                  })()}
                   {errors.date && (
                     <p className="mt-1 text-xs text-red-400">{errors.date}</p>
                   )}
@@ -270,54 +278,37 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
                   <div className="flex items-center gap-2">
                     {/* 小时 HH */}
                     <input
-                      type="text"
+                      type="number"
                       inputMode="numeric"
+                      min={0}
+                      max={23}
+                      step={1}
                       value={hour}
                       onChange={(e) => {
-                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2); // 只保留数字，最多两位
-
-                        // 允许清空
-                        if (raw === '') {
-                          setHour('');
-                          setFormData({ ...formData, time: '' });
-                          setErrors({ ...errors, time: '' });
+                        const v = e.target.value;
+                        if (v === "") {
+                          setHour("");
+                          setFormData({ ...formData, time: "" });
+                          setErrors({ ...errors, time: "" });
                           return;
                         }
-
-                        // 第一位只能是 0/1/2
-                        if (raw.length === 1) {
-                          const n = Number(raw);
-                          if (n > 2) return; // 不接受 3–9 作为第一位
-                          setHour(raw);
-                          // 只填一位时，不更新 time
-                          setFormData({ ...formData, time: '' });
-                          return;
-                        }
-
-                        // 两位数时，必须 <= 23
-                        const n = Number(raw);
-                        if (n > 23) return;
-
-                        setHour(raw);
-
-                        // 如果分钟已经合法两位，则组合成 HH:MM（自动补零）
+                        const n = Number(v);
+                        if (!Number.isInteger(n) || n < 0 || n > 23) return;
+                        setHour(String(n).padStart(2, "0"));
+                        
+                        // 如果分钟已经合法两位，则组合成 HH:MM
                         if (minute.length >= 1) {
-                          const hh = raw.padStart(2, '0');
+                          const hh = String(n).padStart(2, '0');
                           const mm = minute.padStart(2, '0');
                           if (mm.length === 2) {
                             const newTime = `${hh}:${mm}`;
                             setFormData({ ...formData, time: newTime });
-                            setErrors({ ...errors, time: '' });
-                            return;
+                            setErrors({ ...errors, time: "" });
                           }
                         }
-
-                        // 否则先清空 time，等分钟填完再组合
-                        setFormData({ ...formData, time: '' });
                       }}
                       className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                       placeholder="HH"
-                      maxLength={2}
                       required
                     />
 
@@ -326,40 +317,35 @@ function ConsultationForm({ onComplete }: { onComplete: (data: any) => void }) {
 
                     {/* 分钟 MM */}
                     <input
-                      type="text"
+                      type="number"
                       inputMode="numeric"
+                      min={0}
+                      max={59}
+                      step={1}
                       value={minute}
                       onChange={(e) => {
-                        const raw = e.target.value.replace(/\D/g, '').slice(0, 2);
-
-                        // 允许清空
-                        if (raw === '') {
-                          setMinute('');
-                          setFormData({ ...formData, time: '' });
-                          setErrors({ ...errors, time: '' });
+                        const v = e.target.value;
+                        if (v === "") {
+                          setMinute("");
+                          setFormData({ ...formData, time: "" });
+                          setErrors({ ...errors, time: "" });
                           return;
                         }
-
-                        const n = Number(raw);
-                        if (n > 59) return; // 不允许超过 59
-
-                        setMinute(raw);
-
+                        const n = Number(v);
+                        if (!Number.isInteger(n) || n < 0 || n > 59) return;
+                        setMinute(String(n).padStart(2, "0"));
+                        
                         // 只要小时有一位以上，分钟两位，就组合 HH:MM
-                        if (hour.length >= 1 && raw.length === 2) {
+                        if (hour.length >= 1) {
                           const hh = hour.padStart(2, '0');
-                          const mm = raw.padStart(2, '0');
+                          const mm = String(n).padStart(2, '0');
                           const newTime = `${hh}:${mm}`;
                           setFormData({ ...formData, time: newTime });
-                          setErrors({ ...errors, time: '' });
-                          return;
+                          setErrors({ ...errors, time: "" });
                         }
-
-                        setFormData({ ...formData, time: '' });
                       }}
                       className="w-[60px] bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-white/80 text-center placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                       placeholder="MM"
-                      maxLength={2}
                       required
                     />
                   </div>

@@ -42,6 +42,15 @@ function isStructuredReply(v: any): v is StructuredReply {
     && typeof v.question === "string";
 }
 
+// More lenient guard for structured reply
+function looksLikeStructuredReply(v: any) {
+  return v && typeof v === "object"
+    && typeof v.omen === "string"
+    && typeof v.transit === "string"
+    && Array.isArray(v.decrees)
+    && typeof v.question === "string";
+}
+
 // Google Font for headers
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -195,7 +204,7 @@ export function CouncilView() {
       const aiText = toText(aiRaw);
       if (aiText) {
         let aiId;
-        if (isStructuredReply(aiRaw)) {
+        if (looksLikeStructuredReply(aiRaw)) {
           aiId = addMessage(activeAgent, aiText, userMessageId, aiRaw);
         } else {
           aiId = addMessage(activeAgent, aiText, userMessageId);
@@ -677,6 +686,15 @@ export function CouncilView() {
         </div>
       </div>
 
+    </div>
+
+    {/* Debug overlay for structured keys */}
+    <div className="fixed right-4 bottom-4 z-[9999] text-[10px] text-white/80 bg-black/60 border border-white/10 px-2 py-1 rounded">
+      structured keys: {(() => {
+        const lastAssistant = [...messages].reverse().find(m => m.role !== "user");
+        const keys = lastAssistant?.structured ? Object.keys(lastAssistant.structured) : [];
+        return keys.join(", ") || "NONE";
+      })()}
     </div>
   );
 }

@@ -110,7 +110,11 @@ export const FateTree = () => {
   }, [messages, setNodes, setEdges]);
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div className="w-full h-full overflow-hidden relative">
+      {/* Version watermark */}
+      <div className="absolute left-2 top-2 z-[9999] text-[10px] text-white/70">
+        FATE_TREE_V2
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}

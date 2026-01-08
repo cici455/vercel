@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDailyLines } from '@/lib/dailyLines';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import { generateTextPrimaryFallback } from '@/lib/llm/router';
 
 export async function POST(req: Request) {
   try {
@@ -29,16 +29,6 @@ export async function POST(req: Request) {
       console.error(`[API Council Error] Missing or invalid "message" string`);
       return NextResponse.json({ error: 'Missing "message" string' }, { status: 400 });
     }
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    // 检查 API 密钥是否存在
-    if (!apiKey) {
-      console.error("[API Council Error] Missing GEMINI_API_KEY environment variable");
-      return NextResponse.json(
-        { error: "Gemini API key not configured" },
-        { status: 500 }
-      );
-    }
 
     // 构建对话历史上下文
     const safeHistory = Array.isArray(history) ? history : [];
@@ -51,19 +41,6 @@ export async function POST(req: Request) {
             .map((m: any) => `${m.role.toUpperCase()}: ${String(m.content ?? "")}`)
             .join("\n")
         : "NONE";
-    
-    // --- 配置代理和Gemini API URL ---
-    // 从环境变量读取配置
-    const geminiApiBaseUrl = process.env.GEMINI_API_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
-    const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || '';
-    
-    console.log(`[API] Using Gemini API base URL: ${geminiApiBaseUrl}`);
-    if (proxyUrl) {
-      console.log(`[API] Using proxy: ${proxyUrl}`);
-    }
-    
-    // 构建完整的API URL
-    const url = `${geminiApiBaseUrl}/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
 
     
@@ -256,74 +233,46 @@ export async function POST(req: Request) {
       }
     };
 
-    console.log(`[API] Calling Gemini API at: ${url}`);
-    console.log(`[API] Prompt: ${JSON.stringify(prompt, null, 2)}`);
+    console.log(`[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...`);
     
-    // 根据环境变量配置构建fetch选项
-    const fetchOptions: RequestInit = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(prompt) // 只在fetch调用中序列化一次
-    };
-    
-    // 如果配置了代理，添加代理选项
-    if (proxyUrl) {
-      // 使用类型断言，因为agent是Node.js特定的扩展属性
-      (fetchOptions as any).agent = new HttpsProxyAgent(proxyUrl);
-    }
-    
-    const response = await fetch(url, fetchOptions);
-    
-    console.log(`[API] Gemini API response status: ${response.status}`);
-    
-    // Read raw response text first
-    const rawResponse = await response.text();
-    console.log(`[API] Gemini API raw response: ${rawResponse}`);
-    
-    if (!response.ok) {
-      console.error(`[API Council Error] Gemini API request failed: ${response.status} ${response.statusText}`);
-      return NextResponse.json(
-        { 
-          error: "Gemini API request failed", 
-          details: `${response.status} ${response.statusText}`,
-          errorText: rawResponse.slice(0, 500)
-        },
-        { status: response.status }
-      );
-    }
-    
-    let data: any;
+    // 调用主力+备用LLM路由器
+    let rawText: string;
     try {
-      data = JSON.parse(rawResponse);
-      console.log(`[API] Gemini API response data: ${JSON.stringify(data, null, 2)}`);
-    } catch (jsonError) {
-      console.error(`[API Council Error] Failed to parse Gemini API response as JSON: ${(jsonError as Error).message}`);
-      return NextResponse.json(
-        { 
-          error: "Failed to parse Gemini API response", 
-          details: (jsonError as Error).message,
-          rawResponse: rawResponse.slice(0, 500)
-        },
-        { status: 500 }
-      );
-    }
-    
-    // 提取原始文本响应
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!rawText) {
-      console.error(`[API Council Error] No text response found in API result`);
-      // Return a fallback response instead of error
-      return NextResponse.json({
-        turnLabel: "Response",
-        responses: {
-          strategist: "The stars are aligning, but the message is unclear. Please try again.",
-          oracle: "I sense a disturbance in the cosmic flow. Let's try a different approach.",
-          alchemist: "The elements need more time to coalesce. Let's refine our query."
-        }
-      });
+      rawText = await generateTextPrimaryFallback(systemPrompt, message);
+      console.log(`[API] LLM call successful.`);
+    } catch (llmError: any) {
+      console.error(`[API Council Error] LLM call failed: ${llmError.message}`);
+      console.error(`[API Council Error] LLM error details:`, llmError);
+      
+      // 返回结构化兜底响应，而不是错误JSON
+      if (mode === 'solo') {
+        // solo模式返回结构化兜底响应
+        const structured = {
+          omen: omenLine,
+          transit: transitLine,
+          core: "Channel is overloaded.",
+          reading: "现在模型拥堵，但你可以先把问题变具体，增加约束条件来获得更精准的回应。",
+          moves: ["缩小问题", "给约束", "再试一次"],
+          question: "你更想要\"快速方案\"还是\"深挖动机\"？"
+        };
+        
+        return NextResponse.json({
+          turnLabel: "Mission Briefing",
+          responses: {
+            [activeAgent]: structured
+          }
+        });
+      } else {
+        // council模式返回结构化兜底响应
+        return NextResponse.json({
+          turnLabel: "Response",
+          responses: {
+            strategist: "The stars are aligning, but the message is unclear. Please try again.",
+            oracle: "I sense a disturbance in the cosmic flow. Let's try a different approach.",
+            alchemist: "The elements need more time to coalesce. Let's refine our query."
+          }
+        });
+      }
     }
     
     console.log(`[API] Raw response text: ${rawText}`);
@@ -433,13 +382,14 @@ export async function POST(req: Request) {
     console.error(`[API Council Error] ${error.message}`);
     console.error(`[API Council Error Stack]`, error.stack);
     
-    // 返回详细的错误信息
-    return NextResponse.json(
-      { 
-        error: "Failed to process request", 
-        details: error.message 
-      },
-      { status: 500 }
-    );
+    // 返回结构化兜底响应，而不是错误JSON
+    return NextResponse.json({
+      turnLabel: "Response",
+      responses: {
+        strategist: "The stars are aligning, but the message is unclear. Please try again.",
+        oracle: "I sense a disturbance in the cosmic flow. Let's try a different approach.",
+        alchemist: "The elements need more time to coalesce. Let's refine our query."
+      }
+    });
   }
 }

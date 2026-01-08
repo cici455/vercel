@@ -61,3 +61,14 @@ export function getSuggestions(domain: Domain, lastUserText?: string): [string, 
     "What am I secretly trying to avoid feeling?"
   ];
 }
+
+export function predictionChips(lastUserText: string): [string, string, string] {
+  const t = (lastUserText ?? '').trim();
+  const base = t.slice(0, 60);
+
+  return [
+    `If I choose A, what happens in 30/90 days?${base ? ` (${base})` : ""}`.trim(),
+    `If I choose B, what regret appears first?${base ? ` (${base})` : ""}`.trim(),
+    "What hidden constraint am I missing?",
+  ];
+}

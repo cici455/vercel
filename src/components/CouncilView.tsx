@@ -686,14 +686,15 @@ export function CouncilView() {
         </div>
       </div>
 
-    </div>
-
-    {/* Debug overlay for structured keys */}
-    <div className="fixed right-4 bottom-4 z-[9999] text-[10px] text-white/80 bg-black/60 border border-white/10 px-2 py-1 rounded">
-      structured keys: {(() => {
+      {/* Debug overlay for structured keys */}
+      {(() => {
         const lastAssistant = [...messages].reverse().find(m => m.role !== "user");
         const keys = lastAssistant?.structured ? Object.keys(lastAssistant.structured) : [];
-        return keys.join(", ") || "NONE";
+        return (
+          <div className="fixed right-4 bottom-4 z-[9999] text-[10px] text-white/80 bg-black/60 border border-white/10 px-2 py-1 rounded">
+            structured keys: {keys.join(", ") || "NONE"}
+          </div>
+        );
       })()}
     </div>
   );

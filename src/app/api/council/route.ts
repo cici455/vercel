@@ -389,6 +389,9 @@ export async function POST(req: Request) {
           }
         };
         
+        console.log("[API] structured keys:", Object.keys(structured));
+        console.log("[API] decrees:", structured.decrees?.map(d => `${d.id}:${d.type}`));
+        
         return NextResponse.json(formattedResult);
       } else {
         // council模式保持原有逻辑

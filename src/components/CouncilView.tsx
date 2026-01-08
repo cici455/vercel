@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Send, Target, MoonStar, FlaskConical, ArrowLeft } from 'lucide-react';
 import { Cinzel } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { useLuminaStore } from '@/store/luminaStore';
+import { useLuminaStore, type StructuredReply } from '@/store/luminaStore';
 import { FateTree } from '@/components/visualization/FateTree';
 import { getSuggestions } from '@/lib/suggestions';
 
@@ -27,6 +27,20 @@ const toText = (v: unknown) => {
   // Fallback
   try { return JSON.stringify(v); } catch { return String(v); }
 };
+
+// Type guard for StructuredReply
+function isStructuredReply(v: any): v is StructuredReply {
+  return !!v
+    && typeof v === "object"
+    && typeof v.omen === "string"
+    && typeof v.transit === "string"
+    && Array.isArray(v.decrees)
+    && Array.isArray(v.why)
+    && typeof v.angle === "string"
+    && Array.isArray(v.move)
+    && typeof v.script === "string"
+    && typeof v.question === "string";
+}
 
 // Google Font for headers
 const cinzel = Cinzel({
@@ -180,7 +194,12 @@ export function CouncilView() {
       const aiRaw = data?.responses?.[activeAgent];
       const aiText = toText(aiRaw);
       if (aiText) {
-        const aiId = addMessage(activeAgent, aiText, userMessageId);
+        let aiId;
+        if (isStructuredReply(aiRaw)) {
+          aiId = addMessage(activeAgent, aiText, userMessageId, aiRaw);
+        } else {
+          aiId = addMessage(activeAgent, aiText, userMessageId);
+        }
         // Set active message to the AI response
         setActiveMessage(aiId);
       } else {
@@ -460,34 +479,28 @@ export function CouncilView() {
                                 
                                 // Check if message has structured data
                                 if (message.structured) {
-                                  const structured = message.structured;
+                                  const s = message.structured;
                                   return (
-                                    <div className="space-y-4">
-                                      {/* Omen and Transit */}
-                                      <div className="space-y-2">
-                                        {structured.omen && (
-                                          <div className="text-sm italic text-amber-400/80">
-                                            "{structured.omen}"
-                                          </div>
-                                        )}
-                                        {structured.transit && (
-                                          <div className="text-sm text-blue-400/60">
-                                            "{structured.transit}"
-                                          </div>
-                                        )}
+                                    <div className="space-y-3">
+                                      {/* omen / transit */}
+                                      <div className="space-y-1">
+                                        {!!s.omen && <div className="text-amber-300/90 italic">"{s.omen}"</div>}
+                                        {!!s.transit && <div className="text-blue-200/70 italic">"{s.transit}"</div>}
                                       </div>
-                                      
-                                      {/* Decrees */}
-                                      {structured.decrees && structured.decrees.length > 0 && (
+
+                                      {/* decrees: 三句断语（pierce/cost/direction） */}
+                                      {!!s.decrees?.length && (
                                         <div className="space-y-2">
-                                          {structured.decrees.map((decree) => (
-                                            <div key={decree.id} className="flex items-start gap-2">
-                                              <span className="text-[10px] text-white/50">{decree.type}</span>
-                                              <div className="text-white/90">
-                                                {decree.text}
+                                          {s.decrees.map((d) => (
+                                            <div key={d.id} className="flex items-start gap-2">
+                                              <span className="text-[10px] uppercase tracking-widest text-white/45 w-20">
+                                                {d.type === "pierce" ? "PIERCE" : d.type === "cost" ? "COST" : "DIRECTION"}
+                                              </span>
+                                              <div className="text-white/90 leading-relaxed">
+                                                {d.text}
                                               </div>
                                               <button 
-                                                onClick={() => addClipFromDecree(message.id, message.role, decree)} 
+                                                onClick={() => addClipFromDecree(message.id, message.role, d)} 
                                                 className="text-white/50 hover:text-white"
                                               >
                                                 ✂
@@ -496,60 +509,46 @@ export function CouncilView() {
                                           ))}
                                         </div>
                                       )}
-                                      
-                                      {/* Why */}
-                                      {structured.why && structured.why.length > 0 && (
-                                        <div className="text-sm text-white/70 space-y-1">
-                                          {structured.why.map((line, index) => (
-                                            <div key={index}>{line}</div>
-                                          ))}
+
+                                      {/* why：可以小号显示两行翻译 */}
+                                      {!!s.why?.length && (
+                                        <div className="text-white/55 text-xs whitespace-pre-wrap">
+                                          {s.why.join("\n")}
                                         </div>
                                       )}
-                                      
-                                      {/* Formulation and Assumption */}
-                                      {(structured.formulation || structured.assumption) && (
-                                        <div className="text-sm text-white/70 space-y-1">
-                                          {structured.assumption && (
-                                            <div>{structured.assumption}</div>
-                                          )}
-                                          {structured.formulation && (
-                                            <div>{structured.formulation}</div>
-                                          )}
+
+                                      {/* angle：人话解释 */}
+                                      {!!s.angle && (
+                                        <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
+                                          {s.angle}
                                         </div>
                                       )}
-                                      
-                                      {/* Angle */}
-                                      {structured.angle && (
-                                        <div className="text-sm text-white/90">
-                                          {structured.angle}
-                                        </div>
-                                      )}
-                                      
-                                      {/* Move */}
-                                      {structured.move && structured.move.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mt-1">
-                                          {structured.move.map((move, index) => (
+
+                                      {/* move：3条行动（做成 chips） */}
+                                      {!!s.move?.length && (
+                                        <div className="flex flex-wrap gap-2">
+                                          {s.move.map((m, i) => (
                                             <span 
-                                              key={index} 
-                                              className="px-2 py-1 bg-white/10 text-white/80 text-xs rounded-sm"
+                                              key={i} 
+                                              className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] text-white/80" 
                                             >
-                                              {move}
+                                              {m}
                                             </span>
                                           ))}
                                         </div>
                                       )}
-                                      
-                                      {/* Script */}
-                                      {structured.script && (
-                                        <div className="text-sm text-white/80 italic">
-                                          {structured.script}
+
+                                      {/* script：话术 */}
+                                      {!!s.script && (
+                                        <div className="text-white/70 text-sm italic">
+                                          {s.script}
                                         </div>
                                       )}
-                                      
-                                      {/* Question */}
-                                      {structured.question && (
-                                        <div className="text-sm text-white/80">
-                                          {structured.question}
+
+                                      {/* question：推进问题 */}
+                                      {!!s.question && (
+                                        <div className="text-amber-200/90 text-sm italic">
+                                          {s.question}
                                         </div>
                                       )}
                                     </div>

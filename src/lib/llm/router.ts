@@ -7,21 +7,30 @@ function isRetryableStatus(s: number) {
 }
 
 async function callProviderOnce(p: {
+  name: string;
   baseUrl: string;
   apiKey: string;
   model: string;
   messages: ChatMessage[];
   maxTokens: number;
 }) {
-  return await openAICompatChatCompletion({
-    baseUrl: p.baseUrl,
-    apiKey: p.apiKey,
-    model: p.model,
-    messages: p.messages,
-    temperature: 0.6,
-    maxTokens: p.maxTokens,
-    timeoutMs: 12000,
-  });
+  try {
+    return await openAICompatChatCompletion({
+      baseUrl: p.baseUrl,
+      apiKey: p.apiKey,
+      model: p.model,
+      messages: p.messages,
+      temperature: 0.6,
+      maxTokens: p.maxTokens,
+      timeoutMs: 12000,
+    });
+  } catch (e: any) {
+    // 关键：把 provider/model/baseUrl 和错误体头部打出来（不要打 key）
+    const status = e?.status ?? e?.statusCode ?? "NA";
+    const bodyHead = String(e?.bodyText ?? e?.message ?? "").slice(0, 220);
+    console.error(`[LLM][${p.name}] FAIL status=${status} model=${p.model} base=${p.baseUrl} body=${bodyHead}`);
+    throw e;
+  }
 }
 export async function generateTextPrimaryFallback(system: string, user: string, maxTokens = 380) {
   const messages: ChatMessage[] = [
@@ -41,7 +50,14 @@ export async function generateTextPrimaryFallback(system: string, user: string, 
   if (dashKey) {
     for (let i = 0; i < 2; i++) {
       try {
-        return await callProviderOnce({ baseUrl: dashBase, apiKey: dashKey, model: dashModel, messages, maxTokens });
+        return await callProviderOnce({ 
+          name: "dashscope",
+          baseUrl: dashBase, 
+          apiKey: dashKey, 
+          model: dashModel, 
+          messages, 
+          maxTokens 
+        });
       } catch (e: any) {
         if (e instanceof LLMHttpError && isRetryableStatus(e.status) && i === 0) {
           await sleep(350 + Math.floor(Math.random() * 250));
@@ -56,7 +72,14 @@ export async function generateTextPrimaryFallback(system: string, user: string, 
   if (deepKey) {
     for (let i = 0; i < 2; i++) {
       try {
-        return await callProviderOnce({ baseUrl: deepBase, apiKey: deepKey, model: deepModel, messages, maxTokens });
+        return await callProviderOnce({ 
+          name: "deepseek",
+          baseUrl: deepBase, 
+          apiKey: deepKey, 
+          model: deepModel, 
+          messages, 
+          maxTokens 
+        });
       } catch (e: any) {
         if (e instanceof LLMHttpError && isRetryableStatus(e.status) && i === 0) {
           await sleep(350 + Math.floor(Math.random() * 250));

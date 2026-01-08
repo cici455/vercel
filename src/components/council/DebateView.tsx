@@ -125,7 +125,13 @@ export function DebateView() {
       const payload = data?.responses?.[activeAgent];
 
       if (payload && typeof payload === "object") {
-        const textFallback = [payload.core, payload.reading].filter(Boolean).join("\n");
+        // 创建 textFallback，使用新的 structured 字段
+        const textFallback = [
+          payload.decrees?.find(d => d.type === "direction")?.text,
+          payload.angle,
+          payload.script,
+          payload.question
+        ].filter(Boolean).join("\n");
         const aiId = addMessage(activeAgent, textFallback, userMessageId, payload);
         setActiveMessage(aiId);
       } else {
@@ -311,23 +317,21 @@ export function DebateView() {
                       msg.role === 'oracle' ? "font-serif italic" :
                       "font-sans"
                     )}>
-                      {msg.structured.core}
+                      {msg.structured.decrees?.find(d => d.type === "direction")?.text ?? msg.structured.angle ?? ""}
                     </h4>
                     
                     {/* Reading - body text */}
-                    <p className={cn(
-                      "text-sm leading-relaxed text-white/90",
-                      msg.role === 'strategist' ? "font-mono tracking-wide" :
-                      msg.role === 'oracle' ? "font-serif italic" :
-                      "font-sans"
-                    )}>
-                      {msg.structured.reading}
-                    </p>
+                    <div className="whitespace-pre-wrap text-white/80 text-sm leading-relaxed">
+                      {msg.structured.why?.[0] ?? ""}
+                      {msg.structured.why?.[1] ? `\n${msg.structured.why[1]}` : ""}
+                      {msg.structured.formulation ? `\n${msg.structured.formulation}` : ""}
+                      {msg.structured.angle ? `\n\n${msg.structured.angle}` : ""}
+                    </div>
                     
                     {/* Moves - list/chips */}
-                    {Array.isArray(msg.structured.moves) && msg.structured.moves.length > 0 && (
+                    {Array.isArray(msg.structured.move) && msg.structured.move.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
-                        {msg.structured.moves.map((move: string, index: number) => (
+                        {msg.structured.move.map((move: string, index: number) => (
                           <span 
                             key={index} 
                             className="px-2 py-1 bg-starlight/20 text-starlight text-xs rounded-sm"

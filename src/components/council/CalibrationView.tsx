@@ -17,6 +17,11 @@ const DateInput = ({ value, onChange }: { value: string, onChange: (val: string)
     onChange(`${ny}-${nm}-${nd}`);
   };
 
+  // Calculate year range (120 years)
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 120;
+  const maxYear = currentYear;
+
   return (
     <div className="group text-left">
       <label className="text-[10px] uppercase tracking-widest text-gray-500 ml-1 group-focus-within:text-teal-400 transition-colors">
@@ -24,20 +29,56 @@ const DateInput = ({ value, onChange }: { value: string, onChange: (val: string)
       </label>
       <div className="flex gap-2 mt-1">
         <input 
-          type="number" placeholder="MM" min="1" max="12" 
-          value={m} onChange={(e) => update('m', e.target.value)}
+          type="number" 
+          inputMode="numeric"
+          placeholder="MM" 
+          min="1" 
+          max="12" 
+          step="1"
+          value={m} 
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") return update('m', "");
+            const n = Number(v);
+            if (!Number.isInteger(n) || n < 1 || n > 12) return;
+            update('m', String(n).padStart(2, "0"));
+          }}
           className="input-glass w-16 rounded p-3 text-center text-sm placeholder-gray-600" 
         />
         <span className="text-gray-500 py-3">/</span>
         <input 
-          type="number" placeholder="DD" min="1" max="31" 
-          value={d} onChange={(e) => update('d', e.target.value)}
+          type="number"
+          inputMode="numeric"
+          placeholder="DD" 
+          min="1" 
+          max="31"
+          step="1"
+          value={d} 
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") return update('d', "");
+            const n = Number(v);
+            if (!Number.isInteger(n) || n < 1 || n > 31) return;
+            update('d', String(n).padStart(2, "0"));
+          }}
           className="input-glass w-16 rounded p-3 text-center text-sm placeholder-gray-600" 
         />
         <span className="text-gray-500 py-3">/</span>
         <input 
-          type="number" placeholder="YYYY" min="1900" max="2025" 
-          value={y} onChange={(e) => update('y', e.target.value)}
+          type="number"
+          inputMode="numeric"
+          placeholder="YYYY" 
+          min={minYear} 
+          max={maxYear}
+          step="1"
+          value={y} 
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") return update('y', "");
+            const n = Number(v);
+            if (!Number.isInteger(n) || n < minYear || n > maxYear) return;
+            update('y', String(n));
+          }}
           className="input-glass flex-1 rounded p-3 text-center text-sm placeholder-gray-600" 
         />
       </div>

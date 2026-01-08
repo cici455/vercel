@@ -106,6 +106,10 @@ export async function POST(req: Request) {
       dayKey
     });
     
+    // 声明并初始化LLM所需的变量
+    let systemForLLM: string;
+    let userForLLM: string;
+    
     if (mode === 'solo') {
       // solo模式：只让模型扮演当前选中的agent角色，减少token消耗
       let agentDef;
@@ -121,18 +125,31 @@ export async function POST(req: Request) {
         agentDef = alchemistDef;
         taskInstruction = `Analyze the user's input based on their RISING sign (${astroData?.risingSign || 'Unknown'}). Provide a synthesized, action-first response.`;
       }
-            systemPrompt = [
+      
+      // 拆分为system和user两个部分
+      systemForLLM = [
         coreProtocol,
         "",
         agentDef,
         "",
+        "**HARD CONSTRAINTS:**",
+        "Output JSON ONLY. No markdown. No code fences.",
+        "Total <= 160 words.",
+        "core <= 18 words.",
+        "reading: 2-3 sentences <= 60 words.",
+        "moves: 1-3 items, each <= 12 words.",
+        "question: 1 sentence.",
+        "Never rewrite OMEN or TRANSIT. Copy exactly.",
+      ].join('\n');
+
+      userForLLM = [
         "**TASK:**",
         taskInstruction,
         "",
-        "**INPUT DATA:**",
         "**CONTEXT HISTORY (most recent last):**",
-        historyText,
+        historyText || "NONE",
         "",
+        "**INPUT:**",
         `User: "${message.replace(/"/g, '\\"')}"`,
         `Astro Profile: ${astroProfile}`,
         "",
@@ -142,38 +159,18 @@ export async function POST(req: Request) {
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "{",
-        `  \"omen\": \"${omenLine.replace(/"/g, '\\"')}\",`,
-        `  \"transit\": \"${transitLine.replace(/"/g, '\\"')}\",`,
-        `  \"core\": \"...\",`,
-        `  \"reading\": \"...\",`,
-        `  \"moves\": [\"...\", \"...\"],`,
-        `  \"question\": \"...\"`,
-        `}`,
-        "",
-        "**HARD CONSTRAINTS:**",
-        "总字数 <= 160 words",
-        "core <= 18 words",
-        "reading 2-3 句 <= 60 words",
-        "moves 1-3 条，每条 <= 12 words",
-        "question 1 句",
-        "omen/transit 必须逐字回传",
-        "No extra sections.",
-        "No preamble.",
-        "Keep each section concise and focused.",
-        "",
-        "**FINAL OUTPUT MUST BE JSON ONLY:**",
-        "{",
-        `  \"omen\": \"${omenLine.replace(/"/g, '\\"')}\",`,
-        `  \"transit\": \"${transitLine.replace(/"/g, '\\"')}\",`,
-        `  \"core\": \"...\",`,
-        `  \"reading\": \"...\",`,
-        `  \"moves\": [\"...\", \"...\"],`,
-        `  \"question\": \"...\"`,
-        `}`
+        `  "omen": "${omenLine.replace(/"/g, '\\"')}",`,
+        `  "transit": "${transitLine.replace(/"/g, '\\"')}",`,
+        `  "core": "<18 words>",`,
+        `  "reading": "<2-3 sentences>",`,
+        `  "moves": ["<action 1>", "<action 2>", "<action 3>"],`,
+        `  "question": "<1 sentence>"`,
+        "}"
       ].join('\n');
     } else {
       // council模式：让模型为所有三个agent生成独特的回复，模拟内心辩论
-      systemPrompt = [
+      // 拆分为system和user两个部分
+      systemForLLM = [
         coreProtocol,
         "",
         strategistDef,
@@ -182,63 +179,53 @@ export async function POST(req: Request) {
         "",
         alchemistDef,
         "",
+        "**HARD CONSTRAINTS:**",
+        "Output JSON ONLY. No markdown. No code fences.",
+        "Total <= 250 words.",
+        "Each response <= 80 words.",
+        "No extra sections.",
+        "No preamble.",
+        "Keep each response concise and focused.",
+      ].join('\n');
+
+      userForLLM = [
         "**TASK:**",
         "Simulate a debate within the user's psyche.",
         "1. **Strategist:** Scold the user for being emotional/irrational. Propose a safe path.",
         "2. **Oracle:** Interrupt the Strategist. Reveal the hidden emotional need or trauma behind the user's query.",
         "3. **Alchemist:** Acknowledge both sides. Propose a 'Third Way' - a creative action plan that satisfies the Sun's need for safety AND the Moon's need for expression.",
         "",
-        "**INPUT DATA:**",
         "**CONTEXT HISTORY (most recent last):**",
-        historyText,
+        historyText || "NONE",
         "",
+        "**INPUT:**",
         `User: "${message.replace(/"/g, '\\"')}"`,
         `Astro Profile: ${astroProfile}`,
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "**MANDATORY STRUCTURE:**",
-        "Each response must be concise and focused.",
         "{",
-        `  \"turnLabel\": \"A mystical yet cybernetic title for this session\",`,
-        `  \"responses\": {`,
-        `    \"strategist\": \"Focus on logic/risk. Maximum 80 words.\",`,
-        `    \"oracle\": \"Focus on feelings/shadow. Maximum 80 words.\",`,
-        `    \"alchemist\": \"Focus on synthesis/action. Maximum 80 words.\"`,
+        `  "turnLabel": "A mystical yet cybernetic title for this session",`,
+        `  "responses": {`,
+        `    "strategist": "Focus on logic/risk. Maximum 80 words.",`,
+        `    "oracle": "Focus on feelings/shadow. Maximum 80 words.",`,
+        `    "alchemist": "Focus on synthesis/action. Maximum 80 words."`,
         `  }`,
-        `}`,
-        "",
-        "**HARD CONSTRAINTS:**",
-        "Do NOT exceed 250 words total.",
-        "No extra sections.",
-        "No preamble.",
-        "Keep each response concise and focused.",
-        "",
-        "**FINAL OUTPUT MUST BE JSON ONLY:**"
+        "}"
       ].join('\n');
     }
     
-    console.log(`[API] System Prompt: ${systemPrompt}`);
-    
-    // 构建prompt对象，不需要提前序列化
-    const prompt = {
-      contents: [{
-        parts: [{ 
-          text: systemPrompt
-        }]
-      }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: mode === 'solo' ? 320 : 2000, // 限制solo模式的token数
-        responseMimeType: "application/json"
-      }
-    };
+    console.log(`[API] LLM prompt built. mode=${mode} agent=${activeAgent}`);
 
-    console.log(`[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...`);
-    
+    console.log(`[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...`);    
     // 调用主力+备用LLM路由器
     let rawText: string;
     try {
-      rawText = await generateTextPrimaryFallback(systemPrompt, message);
+      if (mode === 'solo') {
+        rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 420);
+      } else {
+        rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 600);
+      }
       console.log(`[API] LLM call successful.`);
     } catch (llmError: any) {
       console.error(`[API Council Error] LLM call failed: ${llmError.message}`);

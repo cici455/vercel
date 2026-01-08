@@ -11,6 +11,7 @@ async function callProviderOnce(p: {
   apiKey: string;
   model: string;
   messages: ChatMessage[];
+  maxTokens: number;
 }) {
   return await openAICompatChatCompletion({
     baseUrl: p.baseUrl,
@@ -18,12 +19,11 @@ async function callProviderOnce(p: {
     model: p.model,
     messages: p.messages,
     temperature: 0.6,
-    maxTokens: 380,
+    maxTokens: p.maxTokens,
     timeoutMs: 12000,
   });
 }
-
-export async function generateTextPrimaryFallback(system: string, user: string) {
+export async function generateTextPrimaryFallback(system: string, user: string, maxTokens = 380) {
   const messages: ChatMessage[] = [
     { role: "system", content: system },
     { role: "user", content: user },
@@ -41,7 +41,7 @@ export async function generateTextPrimaryFallback(system: string, user: string) 
   if (dashKey) {
     for (let i = 0; i < 2; i++) {
       try {
-        return await callProviderOnce({ baseUrl: dashBase, apiKey: dashKey, model: dashModel, messages });
+        return await callProviderOnce({ baseUrl: dashBase, apiKey: dashKey, model: dashModel, messages, maxTokens });
       } catch (e: any) {
         if (e instanceof LLMHttpError && isRetryableStatus(e.status) && i === 0) {
           await sleep(350 + Math.floor(Math.random() * 250));
@@ -56,7 +56,7 @@ export async function generateTextPrimaryFallback(system: string, user: string) 
   if (deepKey) {
     for (let i = 0; i < 2; i++) {
       try {
-        return await callProviderOnce({ baseUrl: deepBase, apiKey: deepKey, model: deepModel, messages });
+        return await callProviderOnce({ baseUrl: deepBase, apiKey: deepKey, model: deepModel, messages, maxTokens });
       } catch (e: any) {
         if (e instanceof LLMHttpError && isRetryableStatus(e.status) && i === 0) {
           await sleep(350 + Math.floor(Math.random() * 250));
@@ -66,6 +66,5 @@ export async function generateTextPrimaryFallback(system: string, user: string) 
       }
     }
   }
-
   throw new Error("No provider configured: DASHSCOPE_API_KEY and DEEPSEEK_API_KEY are both missing.");
 }

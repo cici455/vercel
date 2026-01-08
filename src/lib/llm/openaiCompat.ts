@@ -29,7 +29,11 @@ export async function openAICompatChatCompletion(params: {
   maxTokens?: number;
   timeoutMs?: number;
 }): Promise<string> {
-  const url = `${params.baseUrl.replace(/\/$/, "")}/v1/chat/completions`;
+  const base = params.baseUrl
+    .replace(/\/$/, "")
+    .replace(/\/v1$/i, ""); // 关键：防止 env 写了 .../v1
+
+  const url = `${base}/v1/chat/completions`;
 
   const res = await fetchWithTimeout(
     url,

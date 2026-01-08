@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLuminaStore, AgentRole } from '@/store/luminaStore';
+import { useLuminaStore, AgentRole, type StructuredReply, type Decree } from '@/store/luminaStore';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -122,12 +122,13 @@ export function DebateView() {
         })
       });
       const data = await res.json();
-      const payload = data?.responses?.[activeAgent];
+      const payload = data?.responses?.[activeAgent] as Partial<StructuredReply> | undefined;
 
       if (payload && typeof payload === "object") {
         // 创建 textFallback，使用新的 structured 字段
+        const direction = payload?.decrees?.find((d: Decree) => d.type === "direction")?.text;
         const textFallback = [
-          payload.decrees?.find(d => d.type === "direction")?.text,
+          direction,
           payload.angle,
           payload.script,
           payload.question

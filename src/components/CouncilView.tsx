@@ -72,6 +72,7 @@ export function CouncilView() {
     messages, 
     activeMessageId, 
     addMessage, 
+    updateMessage,
     setActiveMessage,
     daily,
     domain,

@@ -6,6 +6,8 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { X, RefreshCw, ArrowDownCircle } from 'lucide-react';
 import { useLuminaStore, AgentRole } from '@/store/luminaStore';
 
+type Speaker = 'strategist' | 'oracle' | 'alchemist';
+
 interface CouncilDebateModalProps {
   open: boolean;
   onClose: () => void;
@@ -14,7 +16,7 @@ interface CouncilDebateModalProps {
 }
 
 interface DebateMessage {
-  speaker: AgentRole;
+  speaker: Speaker;
   text: string;
 }
 
@@ -29,7 +31,7 @@ interface DebateResponse {
   state: DebateState;
 }
 
-const AGENT_CONFIG: Record<AgentRole, { name: string; color: string; border: string; font: string }> = {
+const AGENT_CONFIG: Record<Speaker, { name: string; color: string; border: string; font: string }> = {
   strategist: { 
     name: 'STRATEGIST', 
     color: 'text-amber-400', 

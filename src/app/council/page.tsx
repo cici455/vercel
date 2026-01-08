@@ -507,7 +507,7 @@ export default function ChronoCouncilPage() {
                 </div>
               )}
               {/* Suggestion Chips */}
-              <div className="mb-3 flex flex-wrap gap-2 relative z-50">
+              <div className="mb-3 flex flex-wrap gap-2">
                 {(() => {
                   const lastUser = [...messages].reverse().find(m => m.role === 'user');
                   const [s1, s2, s3] = getSuggestions(domain, lastUser?.content);

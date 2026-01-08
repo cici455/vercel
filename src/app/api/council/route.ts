@@ -127,18 +127,48 @@ export async function POST(req: Request) {
       }
       
       // 拆分为system和user两个部分
+      const DECREE_RULES = [
+        "### DECREE RULES (MANDATORY)",
+        "- Output exactly 3 decrees in a fixed structure.",
+        "- Each decree MUST have a role:",
+        '  d1 type="pierce": the line that stings (truthful, not insulting).',
+        '  d2 type="cost": name the trade-off / price (what you lose if you choose X).',
+        '  d3 type="direction": one clear direction (what to do next).',
+        "- Each decree text <= 14 words (or <= 18 Chinese characters).",
+        "- Decrees must be specific to the user's message; no generic slogans.",
+        "- Be decisive. No hedging like 'maybe/it depends'.",
+        "- Do NOT predict external events as guaranteed facts (illness/death/legal outcomes).",
+      ].join("\n");
+
+      const ANTI_GENERIC = [
+        "### ANTI-GENERIC RULES (MANDATORY)",
+        "- You MUST reference at least 1 user phrase in angle (quote or paraphrase).",
+        "- If user input is short, make ONE assumption, label it as Assumption:, then proceed.",
+        "- move items must include a time window + deliverable (script/checklist/table).",
+        "- why must contain exactly 2 lines:",
+        '  "Omen→ In plain terms: ..."',
+        '  "Transit→ In plain terms: ..."',
+        "- Everything except omen/transit must be plain, professional, and actionable.",
+      ].join("\n");
+
       systemForLLM = [
         coreProtocol,
         "",
         agentDef,
         "",
+        DECREE_RULES,
+        "",
+        ANTI_GENERIC,
+        "",
         "**HARD CONSTRAINTS:**",
         "Output JSON ONLY. No markdown. No code fences.",
         "Total <= 160 words.",
-        "core <= 18 words.",
-        "reading: 2-3 sentences <= 60 words.",
-        "moves: 1-3 items, each <= 12 words.",
-        "question: 1 sentence.",
+        "Each decree text <= 14 words (or <= 18 Chinese characters).",
+        "why: 2 lines, each <= 30 words.",
+        "angle: 2-3 sentences <= 60 words.",
+        "move: 3 items, each <= 12 words.",
+        "script: 1-2 sentences <= 30 words.",
+        "question: 1 sentence <= 18 words.",
         "Never rewrite OMEN or TRANSIT. Copy exactly.",
       ].join('\n');
 
@@ -161,10 +191,18 @@ export async function POST(req: Request) {
         "{",
         `  "omen": "${omenLine.replace(/"/g, '\\"')}",`,
         `  "transit": "${transitLine.replace(/"/g, '\\"')}",`,
-        `  "core": "<18 words>",`,
-        `  "reading": "<2-3 sentences>",`,
-        `  "moves": ["<action 1>", "<action 2>", "<action 3>"],`,
-        `  "question": "<1 sentence>"`,
+        `  "decrees": [`,
+        `    {"id":"d1","type":"pierce","text":"..."},`,
+        `    {"id":"d2","type":"cost","text":"..."},`,
+        `    {"id":"d3","type":"direction","text":"..."} `,
+        `  ],`,
+        `  "why": ["Omen→ In plain terms: ...", "Transit→ In plain terms: ..."],`,
+        `  "formulation": "Conflict→ ...",`,
+        `  "assumption": "Assumption: ...",`,
+        `  "angle": "...",`,
+        `  "move": ["...", "...", "..."],`,
+        `  "script": "...",`,
+        `  "question": "..."`,
         "}"
       ].join('\n');
     } else {
@@ -222,9 +260,9 @@ export async function POST(req: Request) {
     let rawText: string;
     try {
       if (mode === 'solo') {
-        rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 420);
+        rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 520);
       } else {
-        rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 600);
+        rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 650);
       }
       console.log(`[API] LLM call successful.`);
     } catch (llmError: any) {
@@ -237,10 +275,21 @@ export async function POST(req: Request) {
         const structured = {
           omen: omenLine,
           transit: transitLine,
-          core: "Channel is overloaded.",
-          reading: "现在模型拥堵，但你可以先把问题变具体，增加约束条件来获得更精准的回应。",
-          moves: ["缩小问题", "给约束", "再试一次"],
-          question: "你更想要\"快速方案\"还是\"深挖动机\"？"
+          decrees: [
+            { id: "d1", type: "pierce", text: "你在逃避说清楚。" },
+            { id: "d2", type: "cost", text: "拖延会让代价更大。" },
+            { id: "d3", type: "direction", text: "先设边界，再做决定。" }
+          ],
+          why: [
+            "Omen→ In plain terms: show up and face the real constraint.",
+            "Transit→ In plain terms: be precise, not fast."
+          ],
+          formulation: "",
+          assumption: "",
+          angle: "系统暂时无法处理请求，请稍后再试。",
+          move: ["稍后重试", "简化问题", "检查网络连接"],
+          script: "请稍后再试，系统正在恢复中。",
+          question: "你需要更简单直接的回答吗？"
         };
         
         return NextResponse.json({
@@ -298,13 +347,37 @@ export async function POST(req: Request) {
         // 归一化数组
         const normalizeArray = (v: any) => Array.isArray(v) ? v.map(String).slice(0, 3) : [];
         
+        // 解析和校验decrees
+        const decreesRaw = Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [];
+        const pickDecree = (id: "d1"|"d2"|"d3", type: any, fallback: string) => {
+          const found = decreesRaw.find((d: any) => d?.id === id) || {};
+          return {
+            id,
+            type: (type === "pierce" || type === "cost" || type === "direction") ? type : (id==="d1"?"pierce":id==="d2"?"cost":"direction"),
+            text: (typeof found.text === "string" && found.text.trim()) ? found.text.trim().slice(0, 40) : fallback
+          };
+        };
+
+        const decrees = [
+          pickDecree("d1", parsedResult?.decrees?.[0]?.type, "你在逃避说清楚。"),
+          pickDecree("d2", parsedResult?.decrees?.[1]?.type, "拖延会让代价更大。"),
+          pickDecree("d3", parsedResult?.decrees?.[2]?.type, "先设边界，再做决定。"),
+        ];
+        
         // 构建结构化响应
         const structured = {
           omen: omenLine,
           transit: transitLine,
-          core: typeof parsedResult?.core === "string" ? parsedResult.core : "",
-          reading: typeof parsedResult?.reading === "string" ? parsedResult.reading : "",
-          moves: normalizeArray(parsedResult?.moves),
+          decrees,
+          why: Array.isArray(parsedResult?.why) ? parsedResult.why.map(String).slice(0,2) : [
+            "Omen→ In plain terms: show up and face the real constraint.",
+            "Transit→ In plain terms: be precise, not fast."
+          ],
+          formulation: typeof parsedResult?.formulation === "string" ? parsedResult.formulation : "",
+          assumption: typeof parsedResult?.assumption === "string" ? parsedResult.assumption : "",
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "",
+          move: Array.isArray(parsedResult?.move) ? parsedResult.move.map(String).slice(0,3) : [],
+          script: typeof parsedResult?.script === "string" ? parsedResult.script : "",
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "",
         };
         
@@ -340,10 +413,21 @@ export async function POST(req: Request) {
         const structured = {
           omen: omenLine,
           transit: transitLine,
-          core: "Channel is overloaded.",
-          reading: "现在模型拥堵，但你可以先把问题变具体，增加约束条件来获得更精准的回应。",
-          moves: ["缩小问题", "给约束", "再试一次"],
-          question: "你更想要\"快速方案\"还是\"深挖动机\"？"
+          decrees: [
+            { id: "d1", type: "pierce", text: "你在逃避说清楚。" },
+            { id: "d2", type: "cost", text: "拖延会让代价更大。" },
+            { id: "d3", type: "direction", text: "先设边界，再做决定。" }
+          ],
+          why: [
+            "Omen→ In plain terms: show up and face the real constraint.",
+            "Transit→ In plain terms: be precise, not fast."
+          ],
+          formulation: "",
+          assumption: "",
+          angle: "系统暂时无法处理请求，请稍后再试。",
+          move: ["稍后重试", "简化问题", "检查网络连接"],
+          script: "请稍后再试，系统正在恢复中。",
+          question: "你需要更简单直接的回答吗？"
         };
         
         return NextResponse.json({

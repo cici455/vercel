@@ -6,13 +6,42 @@ export type Phase = 'intro' | 'calibration' | 'observatory' | 'solo' | 'debate' 
 
 export type AgentRole = 'strategist' | 'oracle' | 'alchemist' | 'council';
 
+export type DecreeType = "pierce" | "cost" | "direction";
+
+export type Decree = {
+  id: "d1" | "d2" | "d3";
+  type: DecreeType;
+  text: string;
+};
+
 export type StructuredReply = {
   omen: string;
   transit: string;
-  core: string;
-  reading: string;
-  moves: string[];
-  question: string;
+
+  decrees: Decree[];
+
+  why: string[];          // 2 lines: omen/transit 翻译
+  formulation?: string;   // Conflict→ ...
+  assumption?: string;    // Assumption: ...
+
+  angle: string;          // 2-3句解释（人话）
+  move: string[];         // 3条动作
+  script: string;         // 1-2句
+  question: string;       // 1句
+};
+
+export type ClipReaction = "not_true" | "too_harsh" | "scared" | "angry" | "unclear";
+
+export type ClipItem = {
+  id: string;
+  messageId: string;              // 来自哪条回答
+  agent: AgentRole;               // strategist/oracle/alchemist
+  decreeId: "d1" | "d2" | "d3";
+  decreeType: DecreeType;
+  text: string;
+  reaction?: ClipReaction;
+  note?: string;
+  createdAt: number;
 };
 
 export interface Message {
@@ -63,6 +92,7 @@ interface LuminaState {
   daily: DailyLines | null;
   credits: number;
   domain: "career" | "love" | "money" | "self" | "random";
+  clips: ClipItem[];
   
   // Actions
   setPhase: (phase: Phase) => void;
@@ -82,6 +112,9 @@ interface LuminaState {
   spendCredits: (n: number) => boolean;
   addCredits: (n: number) => void;
   setDomain: (d: "career" | "love" | "money" | "self" | "random") => void;
+  addClip: (clip: ClipItem) => void;
+  updateClip: (id: string, updates: Partial<ClipItem>) => void;
+  removeClip: (id: string) => void;
 }
 
 const initialUserData: UserData = {
@@ -105,9 +138,10 @@ export const useLuminaStore = create<LuminaState>()(
       activeMessageId: null,
       voidEnergy: 0,
   archives: [],
-  daily: null,
-  credits: 100,
-  domain: 'random' as 'career' | 'love' | 'money' | 'self' | 'random',
+      daily: null,
+      credits: 100,
+      domain: 'random' as 'career' | 'love' | 'money' | 'self' | 'random',
+      clips: [],
 
       setPhase: (phase) => set({ phase }),
       
@@ -147,6 +181,20 @@ export const useLuminaStore = create<LuminaState>()(
         
         return id;
       },
+
+      addClip: (clip) => set((state) => ({
+        clips: [...state.clips, clip]
+      })),
+
+      updateClip: (id, updates) => set((state) => ({
+        clips: state.clips.map((clip) => 
+          clip.id === id ? { ...clip, ...updates } : clip
+        ),
+      })),
+
+      removeClip: (id) => set((state) => ({
+        clips: state.clips.filter(clip => clip.id !== id)
+      })),
 
       updateMessage: (id, updates) => set((state) => ({
         messages: state.messages.map((msg) => 
@@ -224,6 +272,7 @@ export const useLuminaStore = create<LuminaState>()(
         activeMessageId: null,
         voidEnergy: 0,
         daily: null,
+        clips: []
       }),
       
       setDaily: (daily) => set({ daily }),

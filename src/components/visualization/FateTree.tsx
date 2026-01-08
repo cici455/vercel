@@ -3,52 +3,20 @@
 import React, { useCallback, useEffect } from 'react';
 import ReactFlow, { 
   Background, 
-  Controls, 
   Node, 
   Edge,
   useNodesState,
   useEdgesState,
-  MarkerType,
-  NodeProps,
-  NodeTypes
+  NodeTypes,
+  EdgeTypes
 } from 'reactflow';
-import { Target, MoonStar, FlaskConical, Users } from 'lucide-react';
 
 import { useLuminaStore } from '@/store/luminaStore';
-
-type FateNodeData = {
-  role: "strategist" | "oracle" | "alchemist" | "council";
-};
-
-function FateNode({ data, selected }: NodeProps<FateNodeData>) {
-  const Icon =
-    data.role === "strategist" ? Target :
-    data.role === "oracle" ? MoonStar :
-    data.role === "council" ? Users :
-    FlaskConical;
-
-  const glow =
-    data.role === "strategist" ? "shadow-[0_0_18px_rgba(245,158,11,0.25)] border-amber-400/30 text-amber-300" :
-    data.role === "oracle" ? "shadow-[0_0_18px_rgba(59,130,246,0.22)] border-blue-300/30 text-blue-200" :
-    data.role === "council" ? "shadow-[0_0_18px_rgba(16,185,129,0.22)] border-green-300/30 text-green-200" :
-    "shadow-[0_0_18px_rgba(236,72,153,0.22)] border-fuchsia-300/30 text-fuchsia-200";
-
-  return (
-    <div
-      className={[
-        "rounded-2xl px-4 py-3 bg-black/55 backdrop-blur-md border",
-        glow,
-        selected ? "ring-2 ring-white/30" : ""
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-2">
-        <Icon size={18} />
-      </div>
-    </div>
-  );
-}
+import FateNode from './FateNode';
+import GlowEdge from './GlowEdge';
 
 const nodeTypes: NodeTypes = { fate: FateNode };
+const edgeTypes: EdgeTypes = { glow: GlowEdge };
 
 export const FateTree = () => {
   const { messages, setActiveMessage } = useLuminaStore();
@@ -60,103 +28,91 @@ export const FateTree = () => {
     if (messages.length === 0) return;
 
     // Create a map for quick lookup
-    const messageMap = new Map(messages.map(msg => [msg.id, msg]));
+    const byId = new Map(messages.map(msg => [msg.id, msg]));
     
     // Filter out user messages, only keep assistant messages
-    const assistantMessages = messages.filter(msg => msg.role !== 'user');
+    const visible = messages.filter(
+      (m) =>
+        m.role === "strategist" || 
+        m.role === "oracle" || 
+        m.role === "alchemist" || 
+        m.role === "council"
+    );
     
-    // Create nodes with proper layout
-    const newNodes: Node[] = [];
-    const newEdges: Edge[] = [];
+    // Check if role is visible
+    const isVisibleRole = (role: any) => 
+      role === "strategist" || 
+      role === "oracle" || 
+      role === "alchemist" || 
+      role === "council";
     
-    // Calculate depth for each node
-    const calculateDepth = (messageId: string): number => {
-      let depth = 0;
-      let current = messageMap.get(messageId);
-      while (current?.parentId) {
-        depth++;
-        current = messageMap.get(current.parentId);
-      }
-      return depth;
-    };
-    
-    // Get all nodes at each depth
-    const depthMap = new Map<number, string[]>();
-    assistantMessages.forEach(msg => {
-      const depth = calculateDepth(msg.id);
-      if (!depthMap.has(depth)) {
-        depthMap.set(depth, []);
-      }
-      depthMap.get(depth)?.push(msg.id);
-    });
-    
-    // Function to find the nearest assistant parent
-    const findAssistantParent = (messageId: string): string | null => {
-      let current = messageMap.get(messageId);
-      while (current?.parentId) {
-        const parent = messageMap.get(current.parentId);
-        if (parent && parent.role !== 'user') {
-          return parent.id;
-        }
-        current = parent;
+    // Function to find the nearest visible parent
+    function findVisibleParentId(id: string): string | null {
+      let cur = byId.get(id);
+      while (cur?.parentId) {
+        const p = byId.get(cur.parentId);
+        if (!p) return null;
+        if (isVisibleRole(p.role)) return p.id;
+        cur = p;
       }
       return null;
-    };
+    }
     
-    // Create nodes
-    assistantMessages.forEach(msg => {
-      const depth = calculateDepth(msg.id);
-      const siblings = depthMap.get(depth) || [];
-      const siblingIndex = siblings.indexOf(msg.id);
-      
-      // Calculate position using depth-based layout
-      const x = 100 + siblingIndex * 140;
-      const y = depth * 120;
-      
-      // Create node with fate type and minimal data
-      newNodes.push({
-        id: msg.id,
-        type: 'fate',
-        position: { x, y },
-        data: { 
-          role: msg.role
-        }
-      });
+    // Function to calculate depth of a node
+    function depthOf(id: string) {
+      let d = 0;
+      let cur = byId.get(id);
+      while (cur?.parentId) {
+        const p = byId.get(cur.parentId);
+        if (!p) break;
+        if (isVisibleRole(p.role)) d += 1;
+        cur = p;
+      }
+      return d;
+    }
+    
+    // Create nodes with minimal data
+    const newNodes: Node[] = visible.map((m) => ({
+      id: m.id,
+      type: "fate",
+      position: { x: 0, y: 0 }, // Will be updated with layout
+      data: { role: m.role },
+    }));
+    
+    // Group nodes by depth
+    const groups = new Map<number, string[]>();
+    for (const n of newNodes) {
+      const d = depthOf(n.id);
+      const arr = groups.get(d) ?? [];
+      arr.push(n.id);
+      groups.set(d, arr);
+    }
+    
+    // Position nodes in tree layout
+    const positioned = newNodes.map((n) => {
+      const d = depthOf(n.id);
+      const ids = groups.get(d)!;
+      const i = ids.indexOf(n.id);
+      const x = (i - (ids.length - 1) / 2) * 160; // Center nodes horizontally
+      const y = d * 130; // Space nodes vertically
+      return { ...n, position: { x, y } };
     });
     
-    // Create edges - skip user nodes
-    assistantMessages.forEach(msg => {
-      const assistantParentId = findAssistantParent(msg.id);
-      if (assistantParentId) {
-        // Determine edge color based on child role
-        let edgeColor = '#f59e0b';
-        if (msg.role === 'strategist') {
-          edgeColor = '#f59e0b';
-        } else if (msg.role === 'oracle') {
-          edgeColor = '#8b5cf6';
-        } else if (msg.role === 'alchemist') {
-          edgeColor = '#ec4899';
-        } else if (msg.role === 'council') {
-          edgeColor = '#10b981';
-        }
-        
+    // Create edges connecting to visible parents
+    const newEdges: Edge[] = [];
+    for (const m of visible) {
+      const p = findVisibleParentId(m.id);
+      if (p) {
         newEdges.push({
-          id: `edge-${assistantParentId}-${msg.id}`,
-          source: assistantParentId,
-          target: msg.id,
-          animated: true,
-          style: { stroke: edgeColor, strokeWidth: 1.5 },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: edgeColor,
-            width: 10,
-            height: 10
-          },
+          id: `edge-${p}-${m.id}`,
+          source: p,
+          target: m.id,
+          type: "glow",
         });
       }
-    });
+    }
     
-    setNodes(newNodes);
+    setNodes(positioned);
     setEdges(newEdges);
   }, [messages, setActiveMessage]);
 
@@ -178,6 +134,7 @@ export const FateTree = () => {
         panOnDrag={true}
         zoomOnScroll={true}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
       >
         <Background color="#ffffff" gap={20} size={1} style={{ opacity: 0.05 }} />
       </ReactFlow>

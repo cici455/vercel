@@ -47,7 +47,8 @@ export function CouncilView() {
     setActiveMessage,
     daily,
     domain,
-    setDomain
+    setDomain,
+    addClip
   } = useLuminaStore();
   const [input, setInput] = useState('');
   const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
@@ -63,6 +64,20 @@ export function CouncilView() {
     window.addEventListener("pointerdown", onDown);
     return () => window.removeEventListener("pointerdown", onDown);
   }, []);
+
+  // Add clip from decree
+  const addClipFromDecree = (messageId: string, agent: string, decree: any) => {
+    const clip = {
+      id: `clip-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      messageId,
+      agent: agent as any,
+      decreeId: decree.id,
+      decreeType: decree.type,
+      text: decree.text,
+      createdAt: Date.now()
+    };
+    addClip(clip);
+  };
 
   // Find nearest user message content
   const findNearestUserText = (startId: string) => { 
@@ -442,6 +457,105 @@ export function CouncilView() {
                                 } catch (e) {
                                   // Fallback to plain text
                                 }
+                                
+                                // Check if message has structured data
+                                if (message.structured) {
+                                  const structured = message.structured;
+                                  return (
+                                    <div className="space-y-4">
+                                      {/* Omen and Transit */}
+                                      <div className="space-y-2">
+                                        {structured.omen && (
+                                          <div className="text-sm italic text-amber-400/80">
+                                            "{structured.omen}"
+                                          </div>
+                                        )}
+                                        {structured.transit && (
+                                          <div className="text-sm text-blue-400/60">
+                                            "{structured.transit}"
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Decrees */}
+                                      {structured.decrees && structured.decrees.length > 0 && (
+                                        <div className="space-y-2">
+                                          {structured.decrees.map((decree) => (
+                                            <div key={decree.id} className="flex items-start gap-2">
+                                              <span className="text-[10px] text-white/50">{decree.type}</span>
+                                              <div className="text-white/90">
+                                                {decree.text}
+                                              </div>
+                                              <button 
+                                                onClick={() => addClipFromDecree(message.id, message.role, decree)} 
+                                                className="text-white/50 hover:text-white"
+                                              >
+                                                ✂
+                                              </button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Why */}
+                                      {structured.why && structured.why.length > 0 && (
+                                        <div className="text-sm text-white/70 space-y-1">
+                                          {structured.why.map((line, index) => (
+                                            <div key={index}>{line}</div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Formulation and Assumption */}
+                                      {(structured.formulation || structured.assumption) && (
+                                        <div className="text-sm text-white/70 space-y-1">
+                                          {structured.assumption && (
+                                            <div>{structured.assumption}</div>
+                                          )}
+                                          {structured.formulation && (
+                                            <div>{structured.formulation}</div>
+                                          )}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Angle */}
+                                      {structured.angle && (
+                                        <div className="text-sm text-white/90">
+                                          {structured.angle}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Move */}
+                                      {structured.move && structured.move.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                          {structured.move.map((move, index) => (
+                                            <span 
+                                              key={index} 
+                                              className="px-2 py-1 bg-white/10 text-white/80 text-xs rounded-sm"
+                                            >
+                                              {move}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Script */}
+                                      {structured.script && (
+                                        <div className="text-sm text-white/80 italic">
+                                          {structured.script}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Question */}
+                                      {structured.question && (
+                                        <div className="text-sm text-white/80">
+                                          {structured.question}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                
                                 // Plain text fallback
                                 return (
                                   <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>

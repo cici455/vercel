@@ -44,10 +44,15 @@ function isStructuredReply(v: any): v is StructuredReply {
 
 // More lenient guard for structured reply
 function looksLikeStructuredReply(v: any) {
-  return v && typeof v === "object"
+  return !!v
+    && typeof v === "object"
     && typeof v.omen === "string"
     && typeof v.transit === "string"
     && Array.isArray(v.decrees)
+    && Array.isArray(v.why)
+    && typeof v.angle === "string"
+    && Array.isArray(v.move)
+    && typeof v.script === "string"
     && typeof v.question === "string";
 }
 
@@ -150,16 +155,20 @@ export function CouncilView() {
     
     if (!messageContent.trim()) return;
     
-    // Add user message to chat
+    // 1) Add user message to chat
     const userMessageId = addMessage('user', messageContent, activeMessageId || undefined);
     setInput('');
     setLastUserMessage(messageContent);
+    
+    // 2) Add assistant placeholder (this is the message that will appear in the tree)
+    const aiId = addMessage(activeAgent, "…", userMessageId);
+    setActiveMessage(aiId);
     
     // Build history for API
     const history = buildHistory(activeMessageId);
     
     try {
-      // Call council API with solo mode
+      // 3) Call council API with solo mode
       const response = await fetch('/api/council', {
         method: 'POST',
         headers: {
@@ -181,38 +190,37 @@ export function CouncilView() {
 
       if (!response.ok) {
         const errText = await response.text();
-        addMessage('alchemist', `Request failed: ${errText}`, userMessageId);
+        updateMessage(aiId, { content: `Request failed: ${errText}` });
         return;
       }
 
       const data = await response.json();
       
       if (!data?.responses) {
-        addMessage('alchemist', `No responses returned`, userMessageId);
+        updateMessage(aiId, { content: `No responses returned` });
         return;
       }
       
       // Check if API returned an error
       if (data.error) {
-        // Add error message to chat
-        addMessage('alchemist', `Error: ${data.error}`, userMessageId);
+        updateMessage(aiId, { content: `Error: ${data.error}` });
         return; // Exit early
       }
       
-      // Add only the current active agent's response
-      const aiRaw = data?.responses?.[activeAgent];
-      const aiText = toText(aiRaw);
-      if (aiText) {
-        let aiId;
-        if (looksLikeStructuredReply(aiRaw)) {
-          aiId = addMessage(activeAgent, aiText, userMessageId, aiRaw);
-        } else {
-          aiId = addMessage(activeAgent, aiText, userMessageId);
-        }
-        // Set active message to the AI response
-        setActiveMessage(aiId);
+      // 4) Store structured data (key part)
+      const payload = data?.responses?.[activeAgent];
+      
+      if (looksLikeStructuredReply(payload)) {
+        // content is just fallback text for older UI
+        const direction = payload.decrees?.find((d: any) => d.type === "direction")?.text;
+        const textFallback = [direction, payload.angle, payload.script, payload.question]
+          .filter(Boolean)
+          .join("\n");
+
+        updateMessage(aiId, { content: textFallback || "OK", structured: payload });
       } else {
-        addMessage(activeAgent, "No response", userMessageId);
+        // payload is string or format is incorrect
+        updateMessage(aiId, { content: typeof payload === "string" ? payload : "No response" });
       }
       
       // Activate summon button after AI replies

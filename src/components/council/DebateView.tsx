@@ -30,6 +30,12 @@ const AGENT_CONFIG: Record<AgentRole, { name: string; color: string; border: str
     border: 'border-emerald-500/40',
     font: 'font-mono'
   },
+  council: { 
+    name: 'COUNCIL', 
+    color: 'text-white/70', 
+    border: 'border-white/10', 
+    font: 'font-sans' 
+  },
 };
 
 export function DebateView() {

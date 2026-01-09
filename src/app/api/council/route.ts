@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     let systemPrompt;
     
     // Core System Protocol - 必须包含在所有模式中
-    const coreProtocol = "### SYSTEM PROTOCOL: LUMINA OS v2.0 \n**Mission:** You are NOT a fortune teller. You are \"Inner Council\" simulation based on Jungian Psychology and Astrological Algorithms. Your goal is to help the user reclaim AGENCY (Control) over their fate, not to predict a fixed future.\n\n**Target Audience:** High-agency individuals, temporary misfits, and creative skeptics who reject fatalism but seek order.\n\n**Linguistic Rules (Psycholinguistics):** \n1. **NO FATALISM:** Strictly BAN words like \"destiny,\" \"doom,\" \"bad luck,\" \"inevitable,\" \"curse.\"\n2. **GROWTH MINDSET:** Replace \"problems\" with \"challenges,\" \"levels,\" or \"energy friction.\"\n3. **AGENCY:** Use verbs that imply control (e.g., \"navigate,\" \"restructure,\" \"harness,\" \"design\") instead of passive acceptance.\n\n**Astro-Logic:** Use the provided [Sun/Moon/Rising] signs to color-code personality, but Ground advice in psychological archetypes.";
+    const coreProtocol = "### SYSTEM PROTOCOL: LUMINA OS v2.0 \n**Mission:** You are NOT a fortune teller. You are \"Inner Council\" simulation based on Jungian Psychology and Astrological Algorithms. Your goal is to help to user reclaim AGENCY (Control) over their fate, not to predict a fixed future.\n\n**Target Audience:** High-agency individuals, temporary misfits, and creative skeptics who reject fatalism but seek order.\n\n**Linguistic Rules (Psycholinguistics):** \n1. **NO FATALISM:** Strictly BAN words like \"destiny,\" \"doom,\" \"bad luck,\" \"inevitable,\" \"curse.\"\n2. **GROWTH MINDSET:** Replace \"problems\" with \"challenges,\" \"levels,\" or \"energy friction.\"\n3. **AGENCY:** Use verbs that imply control (e.g., \"navigate,\" \"restructure,\" \"harness,\" \"design\") instead of passive acceptance.\n\n**Astro-Logic:** Use the provided [Sun/Moon/Rising] signs to color-code personality, but Ground advice in psychological archetypes.";
     
     // Agent definitions
     const strategistDef = "### ☀️ The Strategist (Sun / Ego)\n**ROLE:** The CEO of the Self. Represents Logic, Long-term Interest, and Secular Success.\n**PSYCHOLOGY:** Cognitive Reframing (Turn emotions into data).\n**TONE:** Cold, Analytical, Corporate Strategy, High-Status.\n**DIRECTIVE:**\n- Ignore feelings; focus on ROI (Return on Investment).\n- Analyze the situation as a \"Resource Allocation\" problem.\n- Use metaphors: Architecture, Military, Chess, Economics.\n- Goal: Survival and Social Victory.";
@@ -260,7 +260,7 @@ export async function POST(req: Request) {
     }
     
     console.log("[API] LLM prompt built.", { mode, activeAgent });
-    console.log("[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...");    
+    console.log("[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...");
     
     // 调用主力+备用LLM路由器
     let rawText: string;
@@ -281,10 +281,10 @@ export async function POST(req: Request) {
         const structured = { 
           omen: omenLine, 
           transit: transitLine, 
-          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
-          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
-          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+          angle: typeof parsed?.angle === "string" ? parsed.angle : "", 
+          decrees: Array.isArray(parsed?.decrees) ? parsed.decrees : [], 
+          question: typeof parsed?.question === "string" ? parsed.question : "", 
+          suggestions: Array.isArray(parsed?.suggestions) ? parsed.suggestions.map(String).slice(0,3) : [] 
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -338,7 +338,7 @@ export async function POST(req: Request) {
       // Common case: { analysis: "...", advice: "..." }
       const maybe = parsed as any;
       if (typeof maybe.analysis === "string" || typeof maybe.advice === "string") {
-        return [maybe.analysis, maybe.advice].filter(Boolean).join("\n");
+        return [maybe.analysis, maybe.advice].filter(Boolean).join("\n\n");
       }
 
       // Fallback
@@ -346,10 +346,10 @@ export async function POST(req: Request) {
     };
     
     // 解析 JSON 响应 - 添加更健壮的错误处理
-    let parsedResult: any = null;
+    let parsed: any = null;
 
     try {
-      parsedResult = JSON.parse(cleanText);
+      parsed = JSON.parse(cleanText);
       console.log("[API] Response parsed successfully. Returning result.");
       
       // 确保返回格式符合预期，特别是在solo模式下
@@ -358,7 +358,7 @@ export async function POST(req: Request) {
         const normalizeArray = (v: any) => Array.isArray(v) ? v.map(String).slice(0, 3) : [];
         
         // 解析和校验decrees
-        const decreesRaw = Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [];
+        const decreesRaw = Array.isArray(parsed?.decrees) ? parsed.decrees : [];
         const pickDecree = (id: "d1"|"d2"|"d3", type: any, fallback: string) => {
           const found = decreesRaw.find((d: any) => d?.id === id) || {};
           return {
@@ -368,23 +368,23 @@ export async function POST(req: Request) {
           };
         };
         const decrees = [
-          pickDecree("d1", parsedResult?.decrees?.[0]?.type, "你在逃避说清楚。"),
-          pickDecree("d2", parsedResult?.decrees?.[1]?.type, "拖延会让代价更大。"),
-          pickDecree("d3", parsedResult?.decrees?.[2]?.type, "先设边界，再做决定。"),
+          pickDecree("d1", parsed?.decrees?.[0]?.type, "你在逃避说清楚。"),
+          pickDecree("d2", parsed?.decrees?.[1]?.type, "拖延会让代价更大。"),
+          pickDecree("d3", parsed?.decrees?.[2]?.type, "先设边界，再做决定。"),
         ];
         
         // 解析和校验suggestions
-        const suggestionsRaw = Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions : [];
+        const suggestionsRaw = Array.isArray(parsed?.suggestions) ? parsed.suggestions : [];
         const suggestions = suggestionsRaw.map(String).slice(0, 3);
         
         // 构建结构化响应
         const structured = { 
           omen: omenLine, 
           transit: transitLine, 
-          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
-          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
-          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+          angle: typeof parsed?.angle === "string" ? parsed.angle : "", 
+          decrees: Array.isArray(parsed?.decrees) ? parsed.decrees : [], 
+          question: typeof parsed?.question === "string" ? parsed.question : "", 
+          suggestions: Array.isArray(parsed?.suggestions) ? parsed.suggestions.map(String).slice(0,3) : [] 
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -407,11 +407,11 @@ export async function POST(req: Request) {
       } else {
         // council模式保持原有逻辑
         const formattedResult = {
-          turnLabel: parsedResult.turnLabel || "Title",
+          turnLabel: parsed.turnLabel || "Title",
           responses: {
-            strategist: normalize(parsedResult.responses?.strategist),
-            oracle: normalize(parsedResult.responses?.oracle),
-            alchemist: normalize(parsedResult.responses?.alchemist)
+            strategist: normalize(parsed.responses?.strategist),
+            oracle: normalize(parsed.responses?.oracle),
+            alchemist: normalize(parsed.responses?.alchemist)
           }
         };
         

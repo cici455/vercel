@@ -281,10 +281,10 @@ export async function POST(req: Request) {
         const structured = { 
           omen: omenLine, 
           transit: transitLine, 
-          angle: typeof parsed?.angle === "string" ? parsed.angle : "", 
-          decrees: Array.isArray(parsed?.decrees) ? parsed.decrees : [], 
-          question: typeof parsed?.question === "string" ? parsed.question : "", 
-          suggestions: Array.isArray(parsed?.suggestions) ? parsed.suggestions.map(String).slice(0,3) : [] 
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
+          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 

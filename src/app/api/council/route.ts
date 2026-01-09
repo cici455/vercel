@@ -346,7 +346,8 @@ export async function POST(req: Request) {
     };
     
     // 解析 JSON 响应 - 添加更健壮的错误处理
-    let parsedResult;
+    let parsedResult: any = null;
+
     try {
       parsedResult = JSON.parse(cleanText);
       console.log("[API] Response parsed successfully. Returning result.");

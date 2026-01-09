@@ -49,10 +49,6 @@ function looksLikeStructuredReply(v: any) {
     && typeof v.omen === "string"
     && typeof v.transit === "string"
     && Array.isArray(v.decrees)
-    && Array.isArray(v.why)
-    && typeof v.angle === "string"
-    && Array.isArray(v.move)
-    && typeof v.script === "string"
     && typeof v.question === "string";
 }
 
@@ -117,7 +113,7 @@ export function CouncilView() {
       cur = cur.parentId ? map.get(cur.parentId) : undefined; 
     } 
     return ""; 
-  }; 
+  };
 
   // Get debate seed from anchor message
   const getDebateSeed = (anchorMessageId: string) => {
@@ -131,10 +127,9 @@ export function CouncilView() {
         return structuredContent.interpretation.split('.')[0].slice(0, 200);
       }
     } catch (e) {
-      // Fallback to plain text
+      // Fallback to content
       return anchorMessage.content.slice(0, 200);
     }
-    return anchorMessage.content.slice(0, 200);
   };
 
   // Build history from activeMessageId
@@ -239,338 +234,276 @@ export function CouncilView() {
       <div className="fixed left-4 bottom-4 z-[9999] text-xs text-white/80 bg-black/40 px-2 py-1 rounded">
         COUNCIL_VIEW_ACTIVE
       </div>
-        <div className="flex h-full">
-          {/* Left Panel: CouncilChamber (75%) */}
-          <div className="w-[75%] h-full flex flex-col relative z-10">
-            {/* Header */}
-            <header className="p-6 flex justify-between items-center backdrop-blur-[20px] bg-[#080808]/50 border-b border-white/[0.05]">
-              <div className="flex items-center gap-6">
-                {/* Back Button */}
-                <button 
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2 
-                            rounded-full border border-white/15 bg-black/40 px-3 py-2 
-                            text-white/80 hover:text-white hover:border-white/25 hover:bg-black/55 
-                            backdrop-blur-md"
-                  aria-label="Back"
-                >
-                  <span className="text-lg">←</span>
-                  <span className="text-sm tracking-widest">BACK</span>
-                </button>
-                
-                <div className="flex flex-col items-start gap-1">
-                  <h1 className={`text-sm tracking-widest uppercase text-[#888888] font-serif`}>
-                    RITUAL IN PROGRESS
-                  </h1>
-                </div>
-              </div>
-              
-              {/* Agent Icons (Clickable Buttons with Popover Info) */}
-              <div className="flex gap-4">
-                  {/* Strategist Button */}
-                  <button 
-                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                    onClick={() => {
-                      setActiveAgent('strategist');
-                      setOpenInfo(openInfo === "strategist" ? null : "strategist");
-                    }}
-                  >
-                    <Target size={16} className={activeAgent === 'strategist' ? "text-[#D4AF37]" : "text-white/70 group-hover:text-white"} />
-                    <span className="text-[10px] uppercase tracking-wider font-serif">STRATEGIST</span>
-                    
-                    {openInfo === "strategist" && (
-                      <div 
-                        className="absolute left-0 top-full mt-2 w-72 
-                                   rounded-2xl border border-white/15 bg-black/70 p-4 
-                                   text-white/80 shadow-xl backdrop-blur-md"
-                        onPointerDown={(e) => e.stopPropagation()}
-                      >
-                        <div className="text-xs tracking-widest text-[#D6B25E]">SUN · RATIONAL</div>
-                        <div className="mt-2 text-sm leading-relaxed">
-                          Focuses on long-term outcomes, trade-offs, and winning conditions.
-                        </div>
-                      </div>
-                    )}
-                  </button>
-                  
-                  {/* Oracle Button */}
-                  <button 
-                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/10 border-[#A0ECD6]/30 text-[#A0ECD6]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                    onClick={() => {
-                      setActiveAgent('oracle');
-                      setOpenInfo(openInfo === "oracle" ? null : "oracle");
-                    }}
-                  >
-                    <MoonStar size={16} className={activeAgent === 'oracle' ? "text-[#A0ECD6]" : "text-white/70 group-hover:text-white"} />
-                    <span className="text-[10px] uppercase tracking-wider font-serif">ORACLE</span>
-                    
-                    {openInfo === "oracle" && (
-                      <div 
-                        className="absolute left-0 top-full mt-2 w-72 
-                                   rounded-2xl border border-white/15 bg-black/70 p-4 
-                                   text-white/80 shadow-xl backdrop-blur-md"
-                        onPointerDown={(e) => e.stopPropagation()}
-                      >
-                        <div className="text-xs tracking-widest text-[#A0ECD6]">MOON · INTUITIVE</div>
-                        <div className="mt-2 text-sm leading-relaxed">
-                          Taps into intuition, emotional intelligence, and hidden patterns.
-                        </div>
-                      </div>
-                    )}
-                  </button>
-                  
-                  {/* Alchemist Button */}
-                  <button 
-                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/10 border-[#9D4EDD]/30 text-[#9D4EDD]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                    onClick={() => {
-                      setActiveAgent('alchemist');
-                      setOpenInfo(openInfo === "alchemist" ? null : "alchemist");
-                    }}
-                  >
-                    <FlaskConical size={16} className={activeAgent === 'alchemist' ? "text-[#9D4EDD]" : "text-white/70 group-hover:text-white"} />
-                    <span className="text-[10px] uppercase tracking-wider font-serif">ALCHEMIST</span>
-                    
-                    {openInfo === "alchemist" && (
-                      <div 
-                        className="absolute left-0 top-full mt-2 w-72 
-                                   rounded-2xl border border-white/15 bg-black/70 p-4 
-                                   text-white/80 shadow-xl backdrop-blur-md"
-                        onPointerDown={(e) => e.stopPropagation()}
-                      >
-                        <div className="text-xs tracking-widest text-[#9D4EDD]">FIRE · ACTION</div>
-                        <div className="mt-2 text-sm leading-relaxed">
-                          Turns chaos into concrete protocols and transforms ideas into action.
-                        </div>
-                      </div>
-                    )}
-                  </button>
-              </div>
-            </header>
-
-          {/* Message List */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 [&::-webkit-scrollbar]:hidden scrollbar-hide">
-            {messages.length === 0 ? (
-              <div className="text-center text-white/50 text-sm py-20">
-                Ask what you're facing right now...
-              </div>
-            ) : (
-              <>
-                {/* Render messages in a tree structure */}
-                {(() => {
-                  // Find root messages (no parent)
-                  const rootMessages = messages.filter(msg => !msg.parentId);
-                  
-                  // Recursive render function
-                  const renderMessage = (messageId: string, level = 0) => {
-                    const message = messages.find(msg => msg.id === messageId);
-                    if (!message) return null;
-                    
-                    // Format timestamp
-                    const timestamp = new Date(message.timestamp).toLocaleTimeString([], { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    });
-                    
-                    return (
-                      <div key={message.id} className="space-y-4">
-                        <motion.div
-                          id={`message-${message.id}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                          style={{ marginLeft: level * 20 }}
-                        >
-                          <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                            {/* Role indicator */}
-                            {message.role !== 'user' && (
-                              <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
-                                {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
-                                {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
-                                {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
-                                <span className="opacity-50">| {timestamp}</span>
-                              </div>
-                            )}
-
-                            {/* Role-specific styles */}
-                            <div className={`
-                              ${message.role === 'strategist' ? 'border-amber-500/20 bg-black/35 font-mono tracking-wide' : ''}
-                              ${message.role === 'oracle' ? 'border-blue-400/20 bg-black/25 font-serif italic leading-relaxed' : ''}
-                              ${message.role === 'alchemist' ? 'border-fuchsia-400/20 bg-black/30 font-sans' : ''}
-                              ${message.role === 'user' ? 'text-[#E0E0E0]' : 'text-[#CCCCCC]'}
-                              text-base leading-[1.6] font-light p-5 rounded-lg relative overflow-hidden
-                            `}>
-                              {/* Role-specific background effects */}
-                              {message.role === 'strategist' && (
-                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-                              )}
-                              {message.role === 'oracle' && (
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none" />
-                              )}
-                              {message.role === 'alchemist' && (
-                                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-400/5 to-transparent pointer-events-none" />
-                              )}
-                              {/* Message content with structured data support */}
-                              {message.role !== "user" && message.structured ? (
-                                <div className="space-y-3">
-                                  <div className="space-y-1">
-                                    {!!message.structured.omen && <div className="text-amber-300/90 italic">"{message.structured.omen}"</div>}
-                                    {!!message.structured.transit && <div className="text-blue-200/70 italic">"{message.structured.transit}"</div>}
-                                  </div>
-
-                                  {!!message.structured.decrees?.length && (
-                                    <div className="space-y-2">
-                                      {message.structured.decrees.map((d) => (
-                                        <div key={d.id} className="flex items-start gap-2">
-                                          <span className="text-[10px] uppercase tracking-widest text-white/45 w-20">
-                                            {d.type === "pierce" ? "PIERCE" : d.type === "cost" ? "COST" : "DIRECTION"}
-                                          </span>
-                                          <div className="text-white/90 leading-relaxed">{d.text}</div>
-                                          <button 
-                                            onClick={() => addClipFromDecree(message.id, message.role, d)} 
-                                            className="text-white/50 hover:text-white"
-                                          >
-                                            ✂
-                                          </button>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-
-                                  {!!message.structured.why?.length && (
-                                    <div className="text-white/55 text-xs whitespace-pre-wrap">{message.structured.why.join("\n")}</div>
-                                  )}
-
-                                  {!!message.structured.angle && (
-                                    <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{message.structured.angle}</div>
-                                  )}
-
-                                  {!!message.structured.move?.length && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {message.structured.move.map((m, i) => (
-                                        <span
-                                          key={i}
-                                          className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] text-white/80"
-                                        >
-                                          {m}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-
-                                  {!!message.structured.script && <div className="text-white/70 text-sm italic">{message.structured.script}</div>}
-
-                                  {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
-                                </div>
-                              ) : (
-                                <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
-                                  {message.content}
-                                </p>
-                              )}
-                            </div>
-                            
-                            {/* Summon Council button for assistant messages */}
-                            {message.role !== "user" && ( 
-                              <button 
-                                onClick={() => {
-                                  const councilId = addMessage('council', 'Council convened.', message.id);
-                                  setActiveMessage(councilId);
-                                }} 
-                                className="mt-3 text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white" 
-                              > 
-                                SUMMON COUNCIL 
-                              </button> 
-                            )}
-                          </div>
-                        </motion.div>
-                        
-                        {/* Render children */}
-                        {message.childrenIds.map(childId => renderMessage(childId, level + 1))}
-                      </div>
-                    );
-                  };
-                  
-                  // Render root messages
-                  return rootMessages.map(msg => renderMessage(msg.id));
-                })()}
-              </>
-            )}
+      <div className="flex h-full">
+        {/* Left Panel: CouncilChamber (75%) */}
+        <div className="w-[75%] h-full flex flex-col border-r border-white/[0.05] bg-[#0A0A0A]/50 backdrop-blur-md">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.05]">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/')}
+                className="text-white/60 hover:text-white transition-colors"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h1 className="text-lg font-serif text-white/90 tracking-wide">Council Chamber</h1>
+            </div>
+            <div className="text-[10px] text-white/40 uppercase tracking-widest">
+              {messages.length} Messages
+            </div>
           </div>
 
-          {/* Input Area - Floating Bar */}
-          <div className="p-8 relative z-20">
-            <div className="max-w-4xl mx-auto">
-              {/* Council Unlocked Message */}
-              {councilUnlocked && (
-                <div className="text-center mb-4 text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">
-                  Council is awake. Choose who speaks next.
-                </div>
-              )}
-              {/* Suggestion Chips */}
-              <div className="mb-3 flex flex-wrap gap-2">
-                {(() => {
-                  const lastUser = [...messages].reverse().find(m => m.role === 'user');
-                  const [s1, s2, s3] = getSuggestions(domain, lastUser?.content);
-                  return [s1, s2, s3].map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setInput(t)}
-                      className="rounded-full border border-white/15 bg-black/45 px-3 py-1.5 
-                               text-[11px] tracking-wide text-white/85 
-                               hover:text-white hover:border-white/25 hover:bg-black/60 
-                               backdrop-blur-md"
-                    >
-                      {t}
-                    </button>
-                  ));
-                })()}
-              </div>
+          {/* Messages Container */}
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {messages.map((message, index) => {
+              const level = getDepth(message.id);
               
-              <div className="relative group">
-                {/* Glow effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#D4AF37]/20 via-[#A0ECD6]/20 to-[#9D4EDD]/20 rounded-full opacity-0 group-focus-within:opacity-100 transition duration-500 blur-md"></div>
-                
-                <div className="relative flex items-center bg-[#111111]/80 backdrop-blur-xl border border-white/[0.08] rounded-full p-2 shadow-2xl transition-all duration-300 group-focus-within:border-white/[0.15] group-focus-within:bg-[#151515]/90">
-                    <input
-                      type="text"
-                      placeholder="Type your query..."
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                      className="flex-1 bg-transparent border-none text-[#E0E0E0] placeholder-[#555555] px-6 py-3 focus:outline-none text-sm font-light tracking-wide"
-                    />
-                    
-                    <button 
-                      onClick={() => handleSend()}
-                      className="p-3 bg-white/[0.05] hover:bg-white/[0.1] rounded-full text-[#E0E0E0] transition-colors mr-1"
-                    >
-                      <Send size={16} />
-                    </button>
-                </div>
-              </div>
-              
-              <div className="flex justify-center mt-4 gap-4">
-                  {/* Summon Council Button */}
-                  {!councilUnlocked ? (
-                      <button 
-                        onClick={() => {
-                          const parent = activeMessageId || (messages.findLast?.(m => m.role !== 'user')?.id ?? null);
-                          const councilId = addMessage('council', 'Council convened.', parent || undefined);
-                          setActiveMessage(councilId);
-                        }}
-                        disabled={!isSummonActive}
-                        className={`text-[10px] uppercase tracking-[0.2em] transition-all duration-300 ${isSummonActive 
-                          ? 'text-[#E0E0E0] hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]' 
-                          : 'text-[#444444] cursor-not-allowed'}`}
-                      >
-                        Summon Council
-                      </button>
-                    ) : (
-                      <div className="text-center text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">
-                        Council is awake
+              return (
+                <motion.div
+                  id={`message-${message.id}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  style={{ marginLeft: level * 20 }}
+                >
+                  <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    {/* Role indicator */}
+                    {message.role !== 'user' && (
+                      <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
+                        {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
+                        {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
+                        {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
+                        <span className="opacity-50">| {new Date(message.timestamp).toLocaleTimeString()}</span>
                       </div>
                     )}
+
+                    {/* Role-specific styles */}
+                    <div className={`
+                      ${message.role === 'strategist' ? 'border-amber-500/20 bg-black/35 font-mono tracking-wide' : ''}
+                      ${message.role === 'oracle' ? 'border-blue-400/20 bg-black/25 font-serif italic leading-relaxed' : ''}
+                      ${message.role === 'alchemist' ? 'border-fuchsia-400/20 bg-black/30 font-sans' : ''}
+                      ${message.role === 'user' ? 'text-[#E0E0E0]' : 'text-[#CCCCCC]'}
+                      text-base leading-[1.6] font-light p-5 rounded-lg relative overflow-hidden
+                    `}>
+                      {/* Role-specific background effects */}
+                      {message.role === 'strategist' && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+                      )}
+                      {message.role === 'oracle' && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none" />
+                      )}
+                      {message.role === 'alchemist' && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-400/5 to-transparent pointer-events-none" />
+                      )}
+                      {/* Message content with structured data support */}
+                      {message.role !== "user" && message.structured ? (
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            {!!message.structured.omen && <div className="text-amber-300/90 italic">"{message.structured.omen}"</div>}
+                            {!!message.structured.transit && <div className="text-blue-200/70 italic">"{message.structured.transit}"</div>}
+                          </div>
+
+                          {!!message.structured.decrees?.length && (
+                            <div className="space-y-2">
+                              {message.structured.decrees.map((d) => (
+                                <div key={d.id} className="flex items-start gap-2">
+                                  <span className="text-[10px] uppercase tracking-widest text-white/45 w-20">
+                                    {d.type === "pierce" ? "PIERCE" : d.type === "cost" ? "COST" : "DIRECTION"}
+                                  </span>
+                                  <div className="text-white/90 leading-relaxed">{d.text}</div>
+                                  <button 
+                                    onClick={() => addClipFromDecree(message.id, message.role, d)} 
+                                    className="text-white/50 hover:text-white"
+                                  >
+                                    ✂
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {!!message.structured.why?.length && (
+                            <div className="text-white/55 text-xs whitespace-pre-wrap">{message.structured.why.join("\n")}</div>
+                          )}
+
+                          {!!message.structured.angle && (
+                            <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{message.structured.angle}</div>
+                          )}
+
+                          {!!message.structured.move?.length && (
+                            <div className="flex flex-wrap gap-2">
+                              {message.structured.move.map((m, i) => (
+                                <span
+                                  key={i}
+                                  className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] text-white/80"
+                                >
+                                  {m}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {!!message.structured.script && <div className="text-white/70 text-sm italic">{message.structured.script}</div>}
+
+                          {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
+                        </div>
+                      ) : (
+                        <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>
+                          {message.content}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Summon Council button for assistant messages */}
+                    {message.role !== "user" && (
+                      <button
+                        onClick={() => {
+                          if (isSummonActive) {
+                            router.push('/council');
+                          } else {
+                            setIsSummonActive(true);
+                            setTimeout(() => {
+                              setCouncilUnlocked(true);
+                            }, 2000);
+                          }
+                        }}
+                        className={`mt-3 px-4 py-2 rounded-lg text-xs uppercase tracking-widest transition-all ${
+                          isSummonActive
+                            ? 'bg-gradient-to-r from-amber-500/20 to-fuchsia-500/20 border-amber-500/30 text-white/90'
+                            : 'bg-white/[0.02] border-white/[0.05] text-white/50 hover:bg-white/[0.05]'
+                        }`}
+                      >
+                        {isSummonActive ? (
+                          <>
+                            Summon Council
+                          </>
+                        ) : (
+                          <div className="text-center text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">
+                            Council is awake
+                          </div>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t border-white/[0.05] p-6">
+            {/* Agent Icons (Clickable Buttons with Popover Info) */}
+            <div className="flex gap-4">
+                {/* Strategist Button */}
+                <button 
+                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
+                  onClick={() => {
+                    setActiveAgent('strategist');
+                    setOpenInfo(openInfo === "strategist" ? null : "strategist");
+                  }}
+                >
+                  <Target size={16} className={activeAgent === 'strategist' ? "text-[#D4AF37]" : "text-white/70 group-hover:text-white"} />
+                  <span className="text-[10px] uppercase tracking-wider font-serif">STRATEGIST</span>
+                  
+                  {openInfo === "strategist" && (
+                    <div 
+                      className="absolute bottom-full mb-2 left-0 w-64 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg p-4 shadow-2xl z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-sm font-bold text-[#D4AF37] mb-2">The Strategist</h3>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Analyzes patterns and provides strategic guidance. Focuses on clarity and actionable steps.
+                      </p>
+                    </div>
+                  )}
+                </button>
+                
+                {/* Oracle Button */}
+                <button 
+                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/10 border-[#A0ECD6]/30 text-[#A0ECD6]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
+                  onClick={() => {
+                    setActiveAgent('oracle');
+                    setOpenInfo(openInfo === "oracle" ? null : "oracle");
+                  }}
+                >
+                  <MoonStar size={16} className={activeAgent === 'oracle' ? "text-[#A0ECD6]" : "text-white/70 group-hover:text-white"} />
+                  <span className="text-[10px] uppercase tracking-wider font-serif">ORACLE</span>
+                  
+                  {openInfo === "oracle" && (
+                    <div 
+                      className="absolute bottom-full mb-2 left-0 w-64 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg p-4 shadow-2xl z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-sm font-bold text-[#A0ECD6] mb-2">The Oracle</h3>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Connects with cosmic energies and provides intuitive insights. Focuses on meaning and timing.
+                      </p>
+                    </div>
+                  )}
+                </button>
+                
+                {/* Alchemist Button */}
+                <button 
+                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/10 border-[#9D4EDD]/30 text-[#9D4EDD]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
+                  onClick={() => {
+                    setActiveAgent('alchemist');
+                    setOpenInfo(openInfo === "alchemist" ? null : "alchemist");
+                  }}
+                >
+                  <FlaskConical size={16} className={activeAgent === 'alchemist' ? "text-[#9D4EDD]" : "text-white/70 group-hover:text-white"} />
+                  <span className="text-[10px] uppercase tracking-wider font-serif">ALCHEMIST</span>
+                  
+                  {openInfo === "alchemist" && (
+                    <div 
+                      className="absolute bottom-full mb-2 left-0 w-64 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg p-4 shadow-2xl z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-sm font-bold text-[#9D4EDD] mb-2">The Alchemist</h3>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Transforms challenges into opportunities. Focuses on growth and transformation.
+                      </p>
+                    </div>
+                  )}
+                </button>
+            </div>
+
+            {/* Input field */}
+            <div className="relative mt-4">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    handleSend();
+                  }
+                }}
+                placeholder="Ask the Council..."
+                className="w-full bg-white/[0.02] border border-white/[0.05] rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] transition-colors"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="absolute right-2 top-1/2 p-2 text-white/50 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+
+            {/* Suggestion Chips */}
+            <div className="mt-4">
+              <div className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Suggestions</div>
+              <div className="flex flex-wrap gap-2">
+                {getSuggestions(domain).map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setInput(suggestion)}
+                    className="px-3 py-1.5 bg-white/[0.02] border border-white/[0.05] rounded-full text-[11px] text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -594,4 +527,16 @@ export function CouncilView() {
       })()}
     </div>
   );
+}
+
+// Helper function to calculate message depth for indentation
+function getDepth(messageId: string, messages: any[] = []): number {
+  const map = new Map(messages.map(m => [m.id, m]));
+  let depth = 0;
+  let current = map.get(messageId);
+  while (current?.parentId) {
+    depth++;
+    current = map.get(current.parentId);
+  }
+  return depth;
 }

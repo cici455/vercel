@@ -115,60 +115,6 @@ export async function POST(req: Request) {
         taskInstruction = "Analyze the user's input based on their RISING sign.";
       }
       
-      // 拆分为system和user两个部分
-      const DECREE_RULES = [
-        "### DECREE RULES (MANDATORY)",
-        "- Output exactly 3 decrees:",
-        '  d1 type="pierce" = blunt truth (stings, not insulting).',
-        '  d2 type="cost" = clear consequence / price you pay.',
-        '  d3 type="direction" = command (what to do next).',
-        "- Each decree must be a complete plain sentence. No metaphors. No slogans.",
-        "- No hedging: maybe, might, could, depends.",
-        "- Each decree <= 14 words (English) or <= 18 Chinese characters.",
-        "- Decrees must be specific to user's message (not generic)."
-      ].join("\n");
-
-      const PREDICTION_CLARITY = [
-        "### PREDICTION CLARITY (MANDATORY)",
-        'If user asks "what happens if I do nothing":',
-        "- In angle, include exactly these 3 labeled lines:",
-        "  Inner: <what they will feel>",
-        "  Behavior: <what they will do/avoid>",
-        "  Reality: <what changes in their situation>",
-        "- Be decisive about patterns and trade-offs.",
-        "- Do NOT claim guaranteed external events (illness/death/legal outcomes)."
-      ].join("\n");
-
-      const NO_FOG = [
-        "### NO-FOG RULE",
-        "- Only omen/transit may sound mystical.",
-        "- Everything else must be direct, concrete, and easy to understand."
-      ].join("\n");
-
-      const ANTI_GENERIC = [
-        "### ANTI-GENERIC RULES (MANDATORY)",
-        "- You MUST reference at least 1 user phrase in angle (quote or paraphrase).",
-        "- If user input is short, make ONE assumption, label it as Assumption:, then proceed.",
-        "- move items must include a time window + deliverable (script/checklist/table).",
-        "- why must contain exactly 2 lines:",
-        '  "Omen→ In plain terms: ...",',
-        '  "Transit→ In plain terms: ...",',
-        "- Everything except omen/transit must be plain, professional, and actionable.",
-        "- Avoid generic phrases like 'take action', 'stay positive', 'be patient'.",
-        "- Use specific, concrete language tailored to the user's situation.",
-      ].join("\n");
-
-      // Suggestions generation rules
-      const SUGGESTION_RULES = [
-        "### SUGGESTION RULES (MANDATORY)",
-        "- suggestions MUST be exactly 3 questions the user might ask next.",
-        "- Each suggestion must be <= 60 characters (or <= 20 Chinese characters).",
-        "- Suggestions must be relevant to the current domain (${body?.domain || 'random'}).",
-        "- Suggestions must NOT duplicate existing chips.",
-        "- Suggestions must be actionable and specific.",
-        '- Format: Return as JSON array: "suggestions": ["question1", "question2", "question3"].',
-      ].join("\n");
-
       const STYLE_RULES = [
         "### ROLE STYLE (MANDATORY)",
         "- Speak as energy itself. Do NOT say 'I am Strategist/Oracle/Alchemist'.",
@@ -332,25 +278,30 @@ export async function POST(req: Request) {
       // 返回结构化兜底响应，而不是错误JSON
       if (mode === 'solo') {
         // solo模式返回结构化兜底响应
-        const structured = {
-          omen: omenLine,
-          transit: transitLine,
-          decrees: [
-            { id: "d1", type: "pierce", text: "You are avoiding the truth." },
-            { id: "d2", type: "cost", text: "Delay increases the cost." },
-            { id: "d3", type: "direction", text: "Set boundaries first, then decide." }
-          ],
-          why: [
-            "Omen→ In plain terms: show up and face the real constraint.",
-            "Transit→ In plain terms: be precise, not fast."
-          ],
-          formulation: "",
-          assumption: "",
-          angle: "System temporarily unavailable, please try again later.",
-          move: ["Try again later", "Simplify the question", "Check network connection"],
-          script: "Please try again later, the system is recovering.",
-          question: "Do you need a simpler answer?"
-        };
+        const structured = { 
+          omen: omenLine, 
+          transit: transitLine, 
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
+          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+        }; 
+        
+        if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
+        if (structured.decrees.length !== 3) { 
+          structured.decrees = [ 
+            { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
+            { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
+            { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
+          ]; 
+        } 
+        if (structured.suggestions.length !== 3) { 
+          structured.suggestions = [ 
+            "What do I actually want?", 
+            "What fear is controlling me?", 
+            "What would a clean next question be?" 
+          ]; 
+        } 
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
@@ -387,7 +338,7 @@ export async function POST(req: Request) {
       // Common case: { analysis: "...", advice: "..." }
       const maybe = parsed as any;
       if (typeof maybe.analysis === "string" || typeof maybe.advice === "string") {
-        return [maybe.analysis, maybe.advice].filter(Boolean).join("\n\n");
+        return [maybe.analysis, maybe.advice].filter(Boolean).join("\n");
       }
 
       // Fallback
@@ -439,7 +390,7 @@ export async function POST(req: Request) {
         if (structured.decrees.length !== 3) { 
           structured.decrees = [ 
             { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
-            { id: "d2", type: "cost", text: "Delay increases the emotional cost." }, 
+            { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
             { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
           ]; 
         } 
@@ -449,7 +400,7 @@ export async function POST(req: Request) {
             "What fear is controlling me?", 
             "What would a clean next question be?" 
           ]; 
-        }
+        } 
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
@@ -477,9 +428,9 @@ export async function POST(req: Request) {
           transit: transitLine, 
           angle: "System temporarily unavailable, please try again later.", 
           decrees: [ 
-            { id: "d1", type: "pierce", text: "You are avoiding the truth." }, 
-            { id: "d2", type: "cost", text: "Delay increases the cost." }, 
-            { id: "d3", type: "direction", text: "Set boundaries first, then decide." } 
+            { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
+            { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
+            { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
           ], 
           question: "Do you need a simpler answer?", 
           suggestions: ["Try again later", "Simplify the question", "Check network connection"] 

@@ -17,18 +17,23 @@ export type Decree = {
 export type StructuredReply = {
   omen: string;
   transit: string;
+  
+  decrees: {
+    id: "d1" | "d2" | "d3";
+    type: "pierce" | "cost" | "direction";
+    text: string;
+  }[];
 
-  decrees: Decree[];
+  angle: string;
+  question: string;
+  suggestions: string[];
 
-  why: string[];          // 2 lines: omen/transit 翻译
-  formulation?: string;   // Conflict→ ...
-  assumption?: string;    // Assumption: ...
-
-  angle: string;          // 2-3句解释（人话）
-  move: string[];         // 3条动作
-  script: string;         // 1-2句
-  question: string;       // 1句
-  suggestions?: string[];  // 3个建议问题
+  // 下面字段可选（不展示，但保留旧代码不炸）
+  why?: string[];
+  formulation?: string;
+  assumption?: string;
+  move?: string[];
+  script?: string;
 };
 
 export type ClipReaction = "not_true" | "too_harsh" | "scared" | "angry" | "unclear";
@@ -88,6 +93,7 @@ interface LuminaState {
   nodes: Node[];
   edges: Edge[];
   activeMessageId: string | null;
+  branchFromMessageId: string | null;
   voidEnergy: number;
   archives: ArchiveItem[];
   daily: DailyLines | null;
@@ -102,6 +108,7 @@ interface LuminaState {
   updateMessage: (id: string, updates: Partial<Message>) => void;
   deleteMessage: (id: string) => void;
   setActiveMessage: (id: string | null) => void;
+  setBranchFromMessageId: (id: string | null) => void;
   addVoidEnergy: (amount: number) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
@@ -135,6 +142,7 @@ export const useLuminaStore = create<LuminaState>()(
       nodes: [],
       edges: [],
       activeMessageId: null,
+      branchFromMessageId: null,
       voidEnergy: 0,
       archives: [],
       daily: null,
@@ -226,6 +234,8 @@ export const useLuminaStore = create<LuminaState>()(
       }),
 
       setActiveMessage: (id) => set({ activeMessageId: id }),
+      
+      setBranchFromMessageId: (id) => set({ branchFromMessageId: id }),
 
       addVoidEnergy: (amount) => set((state) => ({
         voidEnergy: state.voidEnergy + amount,

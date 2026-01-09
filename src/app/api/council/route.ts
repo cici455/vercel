@@ -26,6 +26,32 @@ export async function POST(req: Request) {
     
     const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [], dayKey } = body ?? {};
     
+    const SIGN_LENS: Record<string, { drive: string; shadow: string; need: string }> = {
+      Leo: { drive: "authority, pride, visibility", shadow: "control, ego-wounds", need: "respect and self-direction" },
+      Virgo: { drive: "precision, competence, improvement", shadow: "perfection loop, anxiety", need: "certainty and usefulness" },
+      Libra: { drive: "harmony, fairness, aesthetics", shadow: "indecision, people-pleasing", need: "clean boundaries without guilt" },
+      Unknown: { drive: "unknown drive", shadow: "unknown shadow", need: "clarity first" },
+    };
+
+    const getLensLine = (agent: string, astro: any) => {
+      const sun = String(astro?.sunSign ?? "Unknown");
+      const moon = String(astro?.moonSign ?? "Unknown");
+      const rising = String(astro?.risingSign ?? "Unknown");
+
+      if (agent === "strategist") {
+        const L = SIGN_LENS[sun] ?? SIGN_LENS.Unknown;
+        return "ONLY Sun(" + sun + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Moon/Rising.";
+      }
+      if (agent === "oracle") {
+        const L = SIGN_LENS[moon] ?? SIGN_LENS.Unknown;
+        return "ONLY Moon(" + moon + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Rising.";
+      }
+      const L = SIGN_LENS[rising] ?? SIGN_LENS.Unknown;
+      return "ONLY Rising(" + rising + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Moon.";
+    };
+
+    const lensLine = getLensLine(activeAgent, astroData);
+    
     // Validate message parameter
     if (typeof message !== "string" || !message.trim()) {
       console.error("[API Council Error] Missing or invalid \"message\" string");
@@ -80,13 +106,13 @@ export async function POST(req: Request) {
       
       if (activeAgent === 'strategist') {
         agentDef = strategistDef;
-        taskInstruction = "Analyze the user's input based on their SUN sign (" + String(astroData?.sunSign || "Unknown") + "). Provide a strategic, logic-first response.";
+        taskInstruction = "Analyze the user's input based on their SUN sign.";
       } else if (activeAgent === 'oracle') {
         agentDef = oracleDef;
-        taskInstruction = "Analyze the user's input based on their MOON sign (" + String(astroData?.moonSign || "Unknown") + "). Provide an intuitive, emotion-first response.";
+        taskInstruction = "Analyze the user's input based on their MOON sign.";
       } else { // alchemist
         agentDef = alchemistDef;
-        taskInstruction = "Analyze the user's input based on their RISING sign (" + String(astroData?.risingSign || "Unknown") + "). Provide a synthesized, action-first response.";
+        taskInstruction = "Analyze the user's input based on their RISING sign.";
       }
       
       // 拆分为system和user两个部分
@@ -143,19 +169,62 @@ export async function POST(req: Request) {
         '- Format: Return as JSON array: "suggestions": ["question1", "question2", "question3"].',
       ].join("\n");
 
+      const STYLE_RULES = [
+        "### ROLE STYLE (MANDATORY)",
+        "- Speak as energy itself. Do NOT say 'I am Strategist/Oracle/Alchemist'.",
+        "- No therapist disclaimers. No hedging: maybe/might/could/depends.",
+        "- Plain, decisive, readable language.",
+        "- Do NOT output labels like Omen-> Transit-> Conflict-> Assumption-> or PIERCE/COST/DIRECTION."
+      ].join("\n");
+
+      const ORDER_RULES = [
+        "### ORDER (MANDATORY)",
+        "- First: angle (astrological explanation).",
+        "- Then: decrees (3 verdict lines)."
+      ].join("\n");
+
+      const ASTRO_RULES = [
+        "### ASTRO EXPLANATION (MANDATORY)",
+        "- You MUST use NATAL LENS as facts.",
+        "- You MUST interpret TRANSIT as timing/weather in plain terms.",
+        "- angle must be 3–5 sentences:",
+        "  1–2 sentences: natal mechanism (ONLY allowed placement).",
+        "  1 sentence: transit timing meaning (plain).",
+        "  1 sentence: connect directly to the user's question."
+      ].join("\n");
+
+      const DECREE_RULES = [
+        "### DECREES (MANDATORY)",
+        "- Return exactly 3 decrees, id d1/d2/d3 with type pierce/cost/direction.",
+        "- Each decree is a complete plain sentence, <= 14 words.",
+        "- direction must be INNER direction (admit/stop/accept), not an action plan."
+      ].join("\n");
+
+      const SUGGEST_RULES = [
+        "### SUGGESTIONS (MANDATORY)",
+        "- Provide exactly 3 suggestions as next user questions.",
+        "- Each <= 60 characters.",
+        "- Must be specific to user's question and your angle.",
+        "- Must NOT repeat user's original question."
+      ].join("\n");
+
       systemForLLM = [
         coreProtocol,
         "",
         agentDef,
         "",
+        lensLine,
+        "",
+        STYLE_RULES,
+        "",
+        ORDER_RULES,
+        "",
+        ASTRO_RULES,
+        "",
         DECREE_RULES,
         "",
-        PREDICTION_CLARITY,
+        SUGGEST_RULES,
         "",
-        NO_FOG,
-        "",
-        ANTI_GENERIC,
-        SUGGESTION_RULES,
         "**HARD CONSTRAINTS:**",
         "Output JSON ONLY. No markdown. No code fences.",
         "Total <= 160 words.",
@@ -178,27 +247,24 @@ export async function POST(req: Request) {
         "",
         "**INPUT:**",
         "User: " + q(message),
-        "Astro Profile: " + String(astroProfile ?? ""),
+        "NATAL LENS (facts): " + lensLine,
+        "OMEN: " + q(omenLine),
+        "TRANSIT: " + q(transitLine),
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "{",
         '  "omen": ' + q(omenLine) + ",",
         '  "transit": ' + q(transitLine) + ",",
+        '  "angle": "..." ,',
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"..."},',
         '    {"id":"d2","type":"cost","text":"..."},',
-        '    {"id":"d3","type":"direction","text":"..."} ',
-        '  ],',
-        '  "why": ["Omen→ In plain terms: ...", "Transit→ In plain terms: ..."],',
-        '  "formulation": "Conflict→ ...",',
-        '  "assumption": "Assumption: ...",',
-        '  "angle": "...",',
-        '  "move": ["...", "...", "..."],',
-        '  "script": "...",',
+        '    {"id":"d3","type":"direction","text":"..."}',
+        "  ],",
         '  "question": "...",',
         '  "suggestions": ["...", "...", "..."]',
         "}"
-      ].join('\n');
+      ].join("\n");
     } else {
       // council模式：让模型为所有三个agent生成独特的回复，模拟内心辩论
       // 拆分为system和user两个部分
@@ -270,9 +336,9 @@ export async function POST(req: Request) {
           omen: omenLine,
           transit: transitLine,
           decrees: [
-            { id: "d1", type: "pierce", text: "你在逃避说清楚。" },
-            { id: "d2", type: "cost", text: "拖延会让代价更大。" },
-            { id: "d3", type: "direction", text: "先设边界，再做决定。" }
+            { id: "d1", type: "pierce", text: "You are avoiding the truth." },
+            { id: "d2", type: "cost", text: "Delay increases the cost." },
+            { id: "d3", type: "direction", text: "Set boundaries first, then decide." }
           ],
           why: [
             "Omen→ In plain terms: show up and face the real constraint.",
@@ -280,18 +346,13 @@ export async function POST(req: Request) {
           ],
           formulation: "",
           assumption: "",
-          angle: "系统暂时无法处理请求，请稍后再试。",
-          move: ["稍后重试", "简化问题", "检查网络连接"],
-          script: "请稍后再试，系统正在恢复中。",
-          question: "你需要更简单直接的回答吗？"
+          angle: "System temporarily unavailable, please try again later.",
+          move: ["Try again later", "Simplify the question", "Check network connection"],
+          script: "Please try again later, the system is recovering.",
+          question: "Do you need a simpler answer?"
         };
         
-        return NextResponse.json({
-          turnLabel: "Mission Briefing",
-          responses: {
-            [activeAgent]: structured
-          }
-        });
+        return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
         // council模式返回结构化兜底响应
         return NextResponse.json({
@@ -365,36 +426,32 @@ export async function POST(req: Request) {
         const suggestions = suggestionsRaw.map(String).slice(0, 3);
         
         // 构建结构化响应
-        const structured = {
-          omen: omenLine,
-          transit: transitLine,
-          decrees,
-          why: Array.isArray(parsedResult?.why) ? parsedResult.why.map(String).slice(0, 2) : [
-            "Omen→ In plain terms: show up and face the real constraint.",
-            "Transit→ In plain terms: be precise, not fast."
-          ],
-          formulation: typeof parsedResult?.formulation === "string" ? parsedResult.formulation : "",
-          assumption: typeof parsedResult?.assumption === "string" ? parsedResult.assumption : "",
-          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "",
-          move: Array.isArray(parsedResult?.move) ? parsedResult.move.map(String).slice(0, 3) : [],
-          script: typeof parsedResult?.script === "string" ? parsedResult.script : "",
-          question: typeof parsedResult?.question === "string" ? parsedResult.question : "",
-          suggestions
-        };
+        const structured = { 
+          omen: omenLine, 
+          transit: transitLine, 
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
+          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+        }; 
         
-        // 构建最终结果
-        const formattedResult = {
-          turnLabel: "Mission Briefing",
-          responses: {
-            [activeAgent]: structured
-          }
-        };
+        if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
+        if (structured.decrees.length !== 3) { 
+          structured.decrees = [ 
+            { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
+            { id: "d2", type: "cost", text: "Delay increases the emotional cost." }, 
+            { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
+          ]; 
+        } 
+        if (structured.suggestions.length !== 3) { 
+          structured.suggestions = [ 
+            "What do I actually want?", 
+            "What fear is controlling me?", 
+            "What would a clean next question be?" 
+          ]; 
+        }
         
-        console.log("[API] structured keys:", Object.keys(structured));
-        console.log("[API] decrees:", structured.decrees?.map(d => d.id + ":" + d.type));
-        console.log("[API] suggestions:", structured.suggestions);
-        
-        return NextResponse.json(formattedResult);
+        return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
         // council模式保持原有逻辑
         const formattedResult = {
@@ -415,33 +472,20 @@ export async function POST(req: Request) {
       // 作为备选方案，返回一个符合格式的默认响应
       if (mode === 'solo') {
         // solo模式返回结构化默认响应
-        const structured = {
-          omen: omenLine,
-          transit: transitLine,
-          decrees: [
-            { id: "d1", type: "pierce", text: "你在逃避说清楚。" },
-            { id: "d2", type: "cost", text: "拖延会让代价更大。" },
-            { id: "d3", type: "direction", text: "先设边界，再做决定。" }
-          ],
-          why: [
-            "Omen→ In plain terms: show up and face the real constraint.",
-            "Transit→ In plain terms: be precise, not fast."
-          ],
-          formulation: "",
-          assumption: "",
-          angle: "系统暂时无法处理请求，请稍后再试。",
-          move: ["稍后重试", "简化问题", "检查网络连接"],
-          script: "请稍后再试，系统正在恢复中。",
-          question: "你需要更简单直接的回答吗？",
-          suggestions: ["稍后重试", "简化问题", "检查网络连接"]
+        const structured = { 
+          omen: omenLine, 
+          transit: transitLine, 
+          angle: "System temporarily unavailable, please try again later.", 
+          decrees: [ 
+            { id: "d1", type: "pierce", text: "You are avoiding the truth." }, 
+            { id: "d2", type: "cost", text: "Delay increases the cost." }, 
+            { id: "d3", type: "direction", text: "Set boundaries first, then decide." } 
+          ], 
+          question: "Do you need a simpler answer?", 
+          suggestions: ["Try again later", "Simplify the question", "Check network connection"] 
         };
         
-        return NextResponse.json({
-          turnLabel: "Mission Briefing",
-          responses: {
-            [activeAgent]: structured
-          }
-        });
+        return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
         // council模式返回默认响应
         return NextResponse.json({

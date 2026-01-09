@@ -21,7 +21,7 @@ const nodeTypes: NodeTypes = { fate: FateNode };
 const edgeTypes: EdgeTypes = { glow: GlowEdge };
 
 export const FateTree = () => {
-  const { messages, activeMessageId, setActiveMessage } = useLuminaStore();
+  const { messages, activeMessageId, setActiveMessage, setBranchFromMessageId } = useLuminaStore();
 
   // 注意：泛型写 Node / Edge，不要写 Node[] / Edge[]
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -107,6 +107,7 @@ export const FateTree = () => {
 
     setNodes(positioned);
     setEdges(newEdges);
+    console.log("[FateTree] nodes", positioned.length, "edges", newEdges.length);
   }, [messages, setNodes, setEdges]);
 
   return (
@@ -122,7 +123,13 @@ export const FateTree = () => {
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onNodeClick={(_, node) => setActiveMessage(node.id)}
+        onNodeClick={(_, node) => {
+          const byId = new Map(messages.map(m => [m.id, m]));
+          const msg = byId.get(node.id);
+          setActiveMessage(node.id);
+          // 下一句从"这条回答之前"（通常是 user message）开始分叉
+          setBranchFromMessageId(msg?.parentId ?? null);
+        }}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}

@@ -67,9 +67,11 @@ export function CouncilView() {
   const { 
     messages, 
     activeMessageId, 
+    branchFromMessageId,
     addMessage, 
     updateMessage,
     setActiveMessage,
+    setBranchFromMessageId,
     daily,
     domain,
     setDomain,
@@ -154,8 +156,10 @@ export function CouncilView() {
     
     if (!messageContent.trim()) return;
     
-    // 1) Add user message to chat
-    const userMessageId = addMessage('user', messageContent, activeMessageId || undefined);
+    // Use branchFromMessageId if available, otherwise use activeMessageId
+    const parent = branchFromMessageId ?? activeMessageId;
+    const userMessageId = addMessage("user", messageContent, parent || undefined);
+    setBranchFromMessageId(null);
     setInput('');
     setLastUserMessage(messageContent);
     
@@ -219,9 +223,7 @@ export function CouncilView() {
         updateMessage(aiId, { content: textFallback || "OK", structured: payload });
         
         // Update chips from suggestions
-        if (payload.suggestions?.length) {
-          setChips(payload.suggestions.slice(0, 3));
-        }
+        setChips(Array.isArray(payload.suggestions) ? payload.suggestions.slice(0,3) : []);
       } else {
         // payload is string or format is incorrect
         updateMessage(aiId, { content: typeof payload === "string" ? payload : "No response" });
@@ -238,10 +240,6 @@ export function CouncilView() {
 
   return (
     <div className={`h-screen w-full bg-transparent text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
-      {/* Watermark to confirm this is the active component */}
-      <div className="fixed left-4 bottom-4 z-[9999] text-xs text-white/80 bg-black/40 px-2 py-1 rounded">
-        COUNCIL_VIEW_ACTIVE
-      </div>
       <div className="flex h-full">
         {/* Left Panel: CouncilChamber (75%) */}
         <div className="w-[75%] h-full flex flex-col border-r border-white/[0.05] bg-[#0A0A0A]/50 backdrop-blur-md">
@@ -312,13 +310,14 @@ export function CouncilView() {
                             {!!message.structured.transit && <div className="text-blue-200/70 italic">"{message.structured.transit}"</div>}
                           </div>
 
+                          {!!message.structured.angle && (
+                            <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{message.structured.angle}</div>
+                          )}
+
                           {!!message.structured.decrees?.length && (
                             <div className="space-y-2">
                               {message.structured.decrees.map((d) => (
                                 <div key={d.id} className="flex items-start gap-2">
-                                  <span className="text-[10px] uppercase tracking-widest text-white/45 w-20">
-                                    {d.type === "pierce" ? "PIERCE" : d.type === "cost" ? "COST" : "DIRECTION"}
-                                  </span>
                                   <div className="text-white/90 leading-relaxed">{d.text}</div>
                                   <button 
                                     onClick={() => addClipFromDecree(message.id, message.role, d)} 
@@ -330,29 +329,6 @@ export function CouncilView() {
                               ))}
                             </div>
                           )}
-
-                          {!!message.structured.why?.length && (
-                            <div className="text-white/55 text-xs whitespace-pre-wrap">{message.structured.why.join("\n")}</div>
-                          )}
-
-                          {!!message.structured.angle && (
-                            <div className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{message.structured.angle}</div>
-                          )}
-
-                          {!!message.structured.move?.length && (
-                            <div className="flex flex-wrap gap-2">
-                              {message.structured.move.map((m, i) => (
-                                <span
-                                  key={i}
-                                  className="rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[11px] text-white/80"
-                                >
-                                  {m}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {!!message.structured.script && <div className="text-white/70 text-sm italic">{message.structured.script}</div>}
 
                           {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
                         </div>
@@ -367,7 +343,10 @@ export function CouncilView() {
                     {message.role !== "user" && (
                       <button
                         onClick={() => {
-                          setSeedMessageId(message.id);
+                          // Use current activeMessageId as seed, fallback to last non-user message
+                          const lastNonUser = [...messages].reverse().find(m => m.role !== "user");
+                          const seed = activeMessageId ?? lastNonUser?.id ?? null;
+                          setSeedMessageId(seed);
                           setDebateOpen(true);
                         }}
                         className={`mt-3 px-4 py-2 rounded-lg text-xs uppercase tracking-widest transition-all ${
@@ -507,24 +486,12 @@ export function CouncilView() {
         </div>
       </div>
 
-      {/* Debug overlay for structured keys */}
-      {(() => {
-        const lastAssistant = [...messages].reverse().find(m => m.role !== "user");
-        const keys = lastAssistant?.structured ? Object.keys(lastAssistant.structured) : [];
-        return (
-          <div className="fixed right-4 bottom-4 z-[9999] text-[10px] text-white/80 bg-black/60 border border-white/10 px-2 py-1 rounded">
-            structured keys: {keys.join(", ") || "NONE"}
-          </div>
-        );
-      })()}
-
       {/* Council Debate Modal */}
       {seedMessageId && (
         <CouncilDebateModal
           open={debateOpen}
           onClose={() => setDebateOpen(false)}
           seedMessageId={seedMessageId}
-          dayKey={daily?.dayKey || null}
         />
       )}
     </div>

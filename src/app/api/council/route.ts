@@ -263,7 +263,7 @@ export async function POST(req: Request) {
     console.log("[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...");
     
     // 调用主力+备用LLM路由器
-    let rawText: string;
+    let rawText = "";
     try {
       if (mode === 'solo') {
         rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 520);

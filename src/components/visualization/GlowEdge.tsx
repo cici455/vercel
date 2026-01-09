@@ -10,9 +10,9 @@ export default function GlowEdge(props: EdgeProps) {
       <svg style={{ position: "absolute", width: 0, height: 0 }}>
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="rgba(214,178,94,0.08)" />
-            <stop offset="50%" stopColor="rgba(214,178,94,0.38)" />
-            <stop offset="100%" stopColor="rgba(214,178,94,0.10)" />
+            <stop offset="0%" stopColor="rgba(214,178,94,0.25)" />
+            <stop offset="50%" stopColor="rgba(214,178,94,0.65)" />
+            <stop offset="100%" stopColor="rgba(214,178,94,0.30)" />
           </linearGradient>
           <filter id={fid} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2.4" />

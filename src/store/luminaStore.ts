@@ -28,6 +28,7 @@ export type StructuredReply = {
   move: string[];         // 3条动作
   script: string;         // 1-2句
   question: string;       // 1句
+  suggestions?: string[];  // 3个建议问题
 };
 
 export type ClipReaction = "not_true" | "too_harsh" | "scared" | "angry" | "unclear";
@@ -97,9 +98,7 @@ interface LuminaState {
   // Actions
   setPhase: (phase: Phase) => void;
   setUserData: (data: Partial<UserData>) => void;
-
   addMessage: (role: AgentRole | 'user', content: string, parentId?: string, structured?: StructuredReply) => string;
-
   updateMessage: (id: string, updates: Partial<Message>) => void;
   deleteMessage: (id: string) => void;
   setActiveMessage: (id: string | null) => void;
@@ -137,12 +136,12 @@ export const useLuminaStore = create<LuminaState>()(
       edges: [],
       activeMessageId: null,
       voidEnergy: 0,
-  archives: [],
+      archives: [],
       daily: null,
       credits: 100,
       domain: 'random' as 'career' | 'love' | 'money' | 'self' | 'random',
       clips: [],
-
+      
       setPhase: (phase) => set({ phase }),
       
       setUserData: (data) => set((state) => ({ 
@@ -274,7 +273,7 @@ export const useLuminaStore = create<LuminaState>()(
         daily: null,
         clips: []
       }),
-      
+
       setDaily: (daily) => set({ daily }),
       
       spendCredits: (n) => {
@@ -283,8 +282,9 @@ export const useLuminaStore = create<LuminaState>()(
         set({ credits: cur - n });
         return true;
       },
-      
+
       addCredits: (n) => set((state) => ({ credits: state.credits + n })),
+
       setDomain: (d: 'career' | 'love' | 'money' | 'self' | 'random') => set({ domain: d }),
     }),
     {

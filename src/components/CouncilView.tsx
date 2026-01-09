@@ -7,7 +7,7 @@ import { Cinzel } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { useLuminaStore, type StructuredReply } from '@/store/luminaStore';
 import { FateTree } from '@/components/visualization/FateTree';
-import { getSuggestions } from '@/lib/suggestions';
+import { CouncilDebateModal } from '@/components/CouncilDebateModal';
 
 // Utility function to convert any value to string
 const toText = (v: unknown) => {
@@ -82,6 +82,9 @@ export function CouncilView() {
   const [openInfo, setOpenInfo] = useState<Archetype | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [councilUnlocked, setCouncilUnlocked] = useState(false);
+  const [chips, setChips] = useState<string[]>([]);
+  const [debateOpen, setDebateOpen] = useState(false);
+  const [seedMessageId, setSeedMessageId] = useState<string | null>(null);
   
   // Click outside to close info popover
   useEffect(() => {
@@ -214,6 +217,11 @@ export function CouncilView() {
           .join("\n");
 
         updateMessage(aiId, { content: textFallback || "OK", structured: payload });
+        
+        // Update chips from suggestions
+        if (payload.suggestions?.length) {
+          setChips(payload.suggestions.slice(0, 3));
+        }
       } else {
         // payload is string or format is incorrect
         updateMessage(aiId, { content: typeof payload === "string" ? payload : "No response" });
@@ -359,14 +367,8 @@ export function CouncilView() {
                     {message.role !== "user" && (
                       <button
                         onClick={() => {
-                          if (isSummonActive) {
-                            router.push('/council');
-                          } else {
-                            setIsSummonActive(true);
-                            setTimeout(() => {
-                              setCouncilUnlocked(true);
-                            }, 2000);
-                          }
+                          setSeedMessageId(message.id);
+                          setDebateOpen(true);
                         }}
                         className={`mt-3 px-4 py-2 rounded-lg text-xs uppercase tracking-widest transition-all ${
                           isSummonActive
@@ -374,15 +376,7 @@ export function CouncilView() {
                             : 'bg-white/[0.02] border-white/[0.05] text-white/50 hover:bg-white/[0.05]'
                         }`}
                       >
-                        {isSummonActive ? (
-                          <>
-                            Summon Council
-                          </>
-                        ) : (
-                          <div className="text-center text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">
-                            Council is awake
-                          </div>
-                        )}
+                        SUMMON COUNCIL
                       </button>
                     )}
                   </div>
@@ -393,6 +387,20 @@ export function CouncilView() {
 
           {/* Input Area */}
           <div className="border-t border-white/[0.05] p-6">
+            {/* Suggestion Chips from structured.suggestions */}
+            <div className="mb-3 flex flex-wrap gap-2">
+              {chips.slice(0, 3).map((chip, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setInput(chip)}
+                  className="px-3 py-1.5 bg-white/[0.02] border border-white/[0.05] rounded-full text-[11px] text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+
             {/* Agent Icons (Clickable Buttons with Popover Info) */}
             <div className="flex gap-4">
                 {/* Strategist Button */}
@@ -490,22 +498,6 @@ export function CouncilView() {
                 <Send size={18} />
               </button>
             </div>
-
-            {/* Suggestion Chips */}
-            <div className="mt-4">
-              <div className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Suggestions</div>
-              <div className="flex flex-wrap gap-2">
-                {getSuggestions(domain).map((suggestion, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setInput(suggestion)}
-                    className="px-3 py-1.5 bg-white/[0.02] border border-white/[0.05] rounded-full text-[11px] text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -525,6 +517,16 @@ export function CouncilView() {
           </div>
         );
       })()}
+
+      {/* Council Debate Modal */}
+      {seedMessageId && (
+        <CouncilDebateModal
+          open={debateOpen}
+          onClose={() => setDebateOpen(false)}
+          seedMessageId={seedMessageId}
+          dayKey={daily?.dayKey || null}
+        />
+      )}
     </div>
   );
 }

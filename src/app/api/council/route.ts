@@ -346,10 +346,10 @@ export async function POST(req: Request) {
     };
     
     // 解析 JSON 响应 - 添加更健壮的错误处理
-    let parsed: any = null;
+    let parsedResult: any = null;
 
     try {
-      parsed = JSON.parse(cleanText);
+      parsedResult = JSON.parse(cleanText);
       console.log("[API] Response parsed successfully. Returning result.");
       
       // 确保返回格式符合预期，特别是在solo模式下
@@ -358,7 +358,7 @@ export async function POST(req: Request) {
         const normalizeArray = (v: any) => Array.isArray(v) ? v.map(String).slice(0, 3) : [];
         
         // 解析和校验decrees
-        const decreesRaw = Array.isArray(parsed?.decrees) ? parsed.decrees : [];
+        const decreesRaw = Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [];
         const pickDecree = (id: "d1"|"d2"|"d3", type: any, fallback: string) => {
           const found = decreesRaw.find((d: any) => d?.id === id) || {};
           return {
@@ -368,23 +368,23 @@ export async function POST(req: Request) {
           };
         };
         const decrees = [
-          pickDecree("d1", parsed?.decrees?.[0]?.type, "你在逃避说清楚。"),
-          pickDecree("d2", parsed?.decrees?.[1]?.type, "拖延会让代价更大。"),
-          pickDecree("d3", parsed?.decrees?.[2]?.type, "先设边界，再做决定。"),
+          pickDecree("d1", parsedResult?.decrees?.[0]?.type, "你在逃避说清楚。"),
+          pickDecree("d2", parsedResult?.decrees?.[1]?.type, "拖延会让代价更大。"),
+          pickDecree("d3", parsedResult?.decrees?.[2]?.type, "先设边界，再做决定。"),
         ];
         
         // 解析和校验suggestions
-        const suggestionsRaw = Array.isArray(parsed?.suggestions) ? parsed.suggestions : [];
+        const suggestionsRaw = Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions : [];
         const suggestions = suggestionsRaw.map(String).slice(0, 3);
         
         // 构建结构化响应
         const structured = { 
           omen: omenLine, 
           transit: transitLine, 
-          angle: typeof parsed?.angle === "string" ? parsed.angle : "", 
-          decrees: Array.isArray(parsed?.decrees) ? parsed.decrees : [], 
-          question: typeof parsed?.question === "string" ? parsed.question : "", 
-          suggestions: Array.isArray(parsed?.suggestions) ? parsed.suggestions.map(String).slice(0,3) : [] 
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
+          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 

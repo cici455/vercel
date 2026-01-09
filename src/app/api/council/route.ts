@@ -278,6 +278,14 @@ export async function POST(req: Request) {
       // 返回结构化兜底响应，而不是错误JSON
       if (mode === 'solo') {
         // solo模式返回结构化兜底响应
+        let parsedResult: any = null;
+        
+        try {
+          parsedResult = JSON.parse(rawText);
+        } catch {
+          parsedResult = null;
+        }
+        
         const structured = { 
           omen: omenLine, 
           transit: transitLine, 

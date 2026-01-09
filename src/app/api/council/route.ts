@@ -175,7 +175,7 @@ export async function POST(req: Request) {
         "- Suggestions must be relevant to the current domain (${body?.domain || 'random'}).",
         "- Suggestions must NOT duplicate existing chips.",
         "- Suggestions must be actionable and specific.",
-        "- Format: Return as JSON array: suggestions: ["question1", "question2", "question3"].",
+        '- Format: Return as JSON array: "suggestions": ["question1", "question2", "question3"].',
       ].join("\n");
 
       systemForLLM = [

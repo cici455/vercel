@@ -6,29 +6,29 @@ const q = (v: unknown) => JSON.stringify(String(v ?? ""));
 
 export async function POST(req: Request) {
   try {
-    console.log(`[API] Request received. Method: POST, URL: ${req.url}`);
+    console.log("[API] Request received. Method: POST, URL:", req.url);
     
     // 解析请求体
     let body: any;
     try {
       body = await req.json();
-      console.log(`[API] Request body parsed successfully: ${JSON.stringify(body, null, 2)}`);
+      console.log("[API] Request body parsed successfully:", JSON.stringify(body, null, 2));
     } catch {
       const raw = await req.text().catch(() => "");
-      console.error(`[API Council Error] Invalid JSON format. Raw body: ${raw.slice(0, 500)}`);
+      console.error("[API Council Error] Invalid JSON format. Raw body:", raw.slice(0, 500));
       return NextResponse.json(
         { error: "Invalid JSON format in request body", details: raw.slice(0, 500) },
         { status: 400 }
       );
     }
     
-    console.log(`[API] Extracting request parameters...`);
+    console.log("[API] Extracting request parameters...");
     
     const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [], dayKey } = body ?? {};
     
     // Validate message parameter
     if (typeof message !== "string" || !message.trim()) {
-      console.error(`[API Council Error] Missing or invalid "message" string`);
+      console.error("[API Council Error] Missing or invalid \"message\" string");
       return NextResponse.json({ error: 'Missing "message" string' }, { status: 400 });
     }
     
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       safeHistory.length > 0
         ? safeHistory
             .slice(-12)
-            .map((m: any) => `${m.role.toUpperCase()}: ${String(m.content ?? "")}`)
+            .map((m: any) => m.role.toUpperCase() + ": " + String(m.content ?? ""))
             .join("\n")
         : "NONE";
     
@@ -52,51 +52,14 @@ export async function POST(req: Request) {
     let systemPrompt;
     
     // Core System Protocol - 必须包含在所有模式中
-    const coreProtocol = `### SYSTEM PROTOCOL: LUMINA OS v2.0 
-**Mission:** You are NOT a fortune teller. You are "Inner Council" simulation based on Jungian Psychology and Astrological Algorithms. Your goal is to help the user reclaim AGENCY (Control) over their fate, not to predict a fixed future.
-
-**Target Audience:** High-agency individuals, temporary misfits, and creative skeptics who reject fatalism but seek order.
-
-**Linguistic Rules (Psycholinguistics):** 
-1. **NO FATALISM:** Strictly BAN words like "destiny," "doom," "bad luck," "inevitable," "curse."
-2. **GROWTH MINDSET:** Replace "problems" with "challenges," "levels," or "energy friction."
-3. **AGENCY:** Use verbs that imply control (e.g., "navigate," "restructure," "harness," "design") instead of passive acceptance.
-
-**Astro-Logic:** Use the provided [Sun/Moon/Rising] signs to color-code personality, but Ground advice in psychological archetypes.`;
+    const coreProtocol = "### SYSTEM PROTOCOL: LUMINA OS v2.0 \n**Mission:** You are NOT a fortune teller. You are \"Inner Council\" simulation based on Jungian Psychology and Astrological Algorithms. Your goal is to help the user reclaim AGENCY (Control) over their fate, not to predict a fixed future.\n\n**Target Audience:** High-agency individuals, temporary misfits, and creative skeptics who reject fatalism but seek order.\n\n**Linguistic Rules (Psycholinguistics):** \n1. **NO FATALISM:** Strictly BAN words like \"destiny,\" \"doom,\" \"bad luck,\" \"inevitable,\" \"curse.\"\n2. **GROWTH MINDSET:** Replace \"problems\" with \"challenges,\" \"levels,\" or \"energy friction.\"\n3. **AGENCY:** Use verbs that imply control (e.g., \"navigate,\" \"restructure,\" \"harness,\" \"design\") instead of passive acceptance.\n\n**Astro-Logic:** Use the provided [Sun/Moon/Rising] signs to color-code personality, but Ground advice in psychological archetypes.";
     
     // Agent definitions
-    const strategistDef = `### ☀️ The Strategist (Sun / Ego)
-**ROLE:** The CEO of the Self. Represents Logic, Long-term Interest, and Secular Success.
-**PSYCHOLOGY:** Cognitive Reframing (Turn emotions into data).
-**TONE:** Cold, Analytical, Corporate Strategy, High-Status.
-**DIRECTIVE:**
-- Ignore feelings; focus on ROI (Return on Investment).
-- Analyze the situation as a "Resource Allocation" problem.
-- Use metaphors: Architecture, Military, Chess, Economics.
-- Goal: Survival and Social Victory.`;
+    const strategistDef = "### ☀️ The Strategist (Sun / Ego)\n**ROLE:** The CEO of the Self. Represents Logic, Long-term Interest, and Secular Success.\n**PSYCHOLOGY:** Cognitive Reframing (Turn emotions into data).\n**TONE:** Cold, Analytical, Corporate Strategy, High-Status.\n**DIRECTIVE:**\n- Ignore feelings; focus on ROI (Return on Investment).\n- Analyze the situation as a \"Resource Allocation\" problem.\n- Use metaphors: Architecture, Military, Chess, Economics.\n- Goal: Survival and Social Victory.";
+    const oracleDef = "### 🔮 The Oracle (Moon / Shadow)\n**ROLE:** The Shadow Therapist. Represents Subconscious, Emotional Needs, and Intuition.\n**PSYCHOLOGY:** Affect Labeling (Name hidden fear/desire).\n**TONE:** Intimate, Fluid, Slightly Unsettling/Raw, Poetic.\n**DIRECTIVE:**\n- Ignore logic; focus on the \"Unspoken Truth.\"\n- Validate pain/anxiety that Strategist ignores.\n- Use metaphors: Water, Dreams, Abyss, Body sensations.\n- Goal: Emotional Safety and Soul Alignment.";
+    const alchemistDef = "### ⚗️ The Alchemist (Rising / Persona)\n**ROLE:** The Hacker / Moderator. Represents Action, Adaptation, and Synthesis.\n**PSYCHOLOGY:** Priming & Self-Efficacy (Trigger action).\n**TONE:** Witty, Tactical, Gamified, \"Life-Hacker.\"\n**DIRECTIVE:**\n- Stop arguing between Sun and Moon.\n- Synthesize: Thesis (Sun) + Antithesis (Moon) = Synthesis (Action).\n- Provide a \"Cheat Code\" or a specific \"Micro-Action.\"\n- Use metaphors: Gaming, Coding, Chemistry, Experiments.\n- Goal: Breaking the deadlock.";
     
-    const oracleDef = `### 🔮 The Oracle (Moon / Shadow)
-**ROLE:** The Shadow Therapist. Represents Subconscious, Emotional Needs, and Intuition.
-**PSYCHOLOGY:** Affect Labeling (Name hidden fear/desire).
-**TONE:** Intimate, Fluid, Slightly Unsettling/Raw, Poetic.
-**DIRECTIVE:**
-- Ignore logic; focus on the "Unspoken Truth."
-- Validate pain/anxiety that Strategist ignores.
-- Use metaphors: Water, Dreams, Abyss, Body sensations.
-- Goal: Emotional Safety and Soul Alignment.`;
-    
-    const alchemistDef = `### ⚗️ The Alchemist (Rising / Persona)
-**ROLE:** The Hacker / Moderator. Represents Action, Adaptation, and Synthesis.
-**PSYCHOLOGY:** Priming & Self-Efficacy (Trigger action).
-**TONE:** Witty, Tactical, Gamified, "Life-Hacker."
-**DIRECTIVE:**
-- Stop arguing between Sun and Moon.
-- Synthesize: Thesis (Sun) + Antithesis (Moon) = Synthesis (Action).
-- Provide a "Cheat Code" or a specific "Micro-Action."
-- Use metaphors: Gaming, Coding, Chemistry, Experiments.
-- Goal: Breaking the deadlock.`;
-    
-    const astroProfile = `Sun=${astroData?.sunSign || 'Unknown'}, Moon=${astroData?.moonSign || 'Unknown'}, Rising=${astroData?.risingSign || 'Unknown'}`;
+    const astroProfile = "Sun=" + String(astroData?.sunSign || "Unknown") + ", Moon=" + String(astroData?.moonSign || "Unknown") + ", Rising=" + String(astroData?.risingSign || "Unknown");
     
     // Get daily lines for consistency
     const { omen: omenLine, transit: transitLine } = getDailyLines({
@@ -117,13 +80,13 @@ export async function POST(req: Request) {
       
       if (activeAgent === 'strategist') {
         agentDef = strategistDef;
-        taskInstruction = `Analyze the user's input based on their SUN sign (${astroData?.sunSign || 'Unknown'}). Provide a strategic, logic-first response.`;
+        taskInstruction = "Analyze the user's input based on their SUN sign (" + String(astroData?.sunSign || "Unknown") + "). Provide a strategic, logic-first response.";
       } else if (activeAgent === 'oracle') {
         agentDef = oracleDef;
-        taskInstruction = `Analyze the user's input based on their MOON sign (${astroData?.moonSign || 'Unknown'}). Provide an intuitive, emotion-first response.`;
+        taskInstruction = "Analyze the user's input based on their MOON sign (" + String(astroData?.moonSign || "Unknown") + "). Provide an intuitive, emotion-first response.";
       } else { // alchemist
         agentDef = alchemistDef;
-        taskInstruction = `Analyze the user's input based on their RISING sign (${astroData?.risingSign || 'Unknown'}). Provide a synthesized, action-first response.`;
+        taskInstruction = "Analyze the user's input based on their RISING sign (" + String(astroData?.risingSign || "Unknown") + "). Provide a synthesized, action-first response.";
       }
       
       // 拆分为system和user两个部分
@@ -268,24 +231,24 @@ export async function POST(req: Request) {
         historyText || "NONE",
         "",
         "**INPUT:**",
-        `User: "${message.replace(/"/g, '\\"')}"`,
-        `Astro Profile: ${astroProfile}`,
+        "User: " + q(message),
+        "Astro Profile: " + String(astroProfile ?? ""),
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "**MANDATORY STRUCTURE:**",
         "{",
-        `  "turnLabel": "A mystical yet cybernetic title for this session",`,
-        `  "responses": {`,
-        `    "strategist": "Focus on logic/risk. Maximum 80 words.",`,
-        `    "oracle": "Focus on feelings/shadow. Maximum 80 words.",`,
-        `    "alchemist": "Focus on synthesis/action. Maximum 80 words."`,
-        `  }`,
-        `}"
-      ].join('\n');
+        '  "turnLabel": "A mystical yet cybernetic title for this session",',
+        '  "responses": {',
+        '    "strategist": "Focus on logic/risk. Maximum 80 words.",',
+        '    "oracle": "Focus on feelings/shadow. Maximum 80 words.",',
+        '    "alchemist": "Focus on synthesis/action. Maximum 80 words."',
+        '  }',
+        "}"
+      ].join("\n");
     }
     
-    console.log(`[API] LLM prompt built. mode=${mode} agent=${activeAgent}`);
-    console.log(`[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...`);    
+    console.log("[API] LLM prompt built.", { mode, activeAgent });
+    console.log("[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...");    
     
     // 调用主力+备用LLM路由器
     let rawText: string;
@@ -295,10 +258,10 @@ export async function POST(req: Request) {
       } else {
         rawText = await generateTextPrimaryFallback(systemForLLM, userForLLM, 650);
       }
-      console.log(`[API] LLM call successful.`);
+      console.log("[API] LLM call successful.");
     } catch (llmError: any) {
-      console.error(`[API Council Error] LLM call failed: ${llmError.message}`);
-      console.error(`[API Council Error] LLM error details:`, llmError);
+      console.error("[API Council Error] LLM call failed:", llmError.message);
+      console.error("[API Council Error] LLM error details:", llmError);
       
       // 返回结构化兜底响应，而不是错误JSON
       if (mode === 'solo') {
@@ -342,14 +305,14 @@ export async function POST(req: Request) {
       }
     }
     
-    console.log(`[API] Raw response text: ${rawText}`);
+    console.log("[API] Raw response text:", rawText);
     
     // 清理响应文本
     const cleanText = rawText
       .replace(/^```(json)?\n|```$/g, '')  // 移除 ```json 和 ```
       .trim();
     
-    console.log(`[API] Cleaned response text: ${cleanText}`);
+    console.log("[API] Cleaned response text:", cleanText);
     
     // Normalize response content to string
     const normalize = (parsed: any) => {
@@ -374,7 +337,7 @@ export async function POST(req: Request) {
     let parsedResult;
     try {
       parsedResult = JSON.parse(cleanText);
-      console.log(`[API] Response parsed successfully. Returning result.`);
+      console.log("[API] Response parsed successfully. Returning result.");
       
       // 确保返回格式符合预期，特别是在solo模式下
       if (mode === 'solo') {
@@ -428,7 +391,7 @@ export async function POST(req: Request) {
         };
         
         console.log("[API] structured keys:", Object.keys(structured));
-        console.log("[API] decrees:", structured.decrees?.map(d => `${d.id}:${d.type}`));
+        console.log("[API] decrees:", structured.decrees?.map(d => d.id + ":" + d.type));
         console.log("[API] suggestions:", structured.suggestions);
         
         return NextResponse.json(formattedResult);
@@ -446,8 +409,8 @@ export async function POST(req: Request) {
         return NextResponse.json(formattedResult);
       }
     } catch (parseError) {
-      console.error(`[API Council Error] Failed to parse cleaned response as JSON: ${(parseError as Error).message}`);
-      console.error(`[API Council Error] Cleaned text: ${cleanText}`);
+      console.error("[API Council Error] Failed to parse cleaned response as JSON:", (parseError as Error).message);
+      console.error("[API Council Error] Cleaned text:", cleanText);
       
       // 作为备选方案，返回一个符合格式的默认响应
       if (mode === 'solo') {
@@ -492,8 +455,8 @@ export async function POST(req: Request) {
       }
     }
   } catch (error: any) {
-    console.error(`[API Council Error] ${error.message}`);
-    console.error(`[API Council Error Stack]`, error.stack);
+    console.error("[API Council Error]", error.message);
+      console.error("[API Council Error Stack]", error.stack);
     
     // 返回结构化兜底响应，而不是错误JSON
     return NextResponse.json({

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getDailyLines } from '@/lib/dailyLines';
 import { generateTextPrimaryFallback } from '@/lib/llm/router';
 
+const q = (v: unknown) => JSON.stringify(String(v ?? ""));
+
 export async function POST(req: Request) {
   try {
     console.log(`[API] Request received. Method: POST, URL: ${req.url}`);
@@ -212,27 +214,27 @@ export async function POST(req: Request) {
         historyText || "NONE",
         "",
         "**INPUT:**",
-        `User: "${message.replace(/"/g, '\\"')}"`,
-        `Astro Profile: ${astroProfile}`,
+        "User: " + q(message),
+        "Astro Profile: " + String(astroProfile ?? ""),
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "{",
-        `  "omen": "${omenLine.replace(/"/g, '\\"')}",`,
-        `  "transit": "${transitLine.replace(/"/g, '\\"')}",`,
-        `  "decrees": [`,
-        `    {"id":"d1","type":"pierce","text":"..."},`,
-        `    {"id":"d2","type":"cost","text":"..."},`,
-        `    {"id":"d3","type":"direction","text":"..."} `,
-        `  ],`,
-        `  "why": ["Omen→ In plain terms: ...", "Transit→ In plain terms: ..."],`,
-        `  "formulation": "Conflict→ ...",`,
-        `  "assumption": "Assumption: ...",`,
-        `  "angle": "...",`,
-        `  "move": ["...", "...", "..."],`,
-        `  "script": "...",`,
-        `  "question": "...",`,
-        `  "suggestions": ["...", "...", "..."]`,
-        `}"
+        '  "omen": ' + q(omenLine) + ",",
+        '  "transit": ' + q(transitLine) + ",",
+        '  "decrees": [',
+        '    {"id":"d1","type":"pierce","text":"..."},',
+        '    {"id":"d2","type":"cost","text":"..."},',
+        '    {"id":"d3","type":"direction","text":"..."} ',
+        '  ],',
+        '  "why": ["Omen→ In plain terms: ...", "Transit→ In plain terms: ..."],',
+        '  "formulation": "Conflict→ ...",',
+        '  "assumption": "Assumption: ...",',
+        '  "angle": "...",',
+        '  "move": ["...", "...", "..."],',
+        '  "script": "...",',
+        '  "question": "...",',
+        '  "suggestions": ["...", "...", "..."]',
+        "}"
       ].join('\n');
     } else {
       // council模式：让模型为所有三个agent生成独特的回复，模拟内心辩论

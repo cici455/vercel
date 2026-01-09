@@ -407,11 +407,11 @@ export async function POST(req: Request) {
       } else {
         // council模式保持原有逻辑
         const formattedResult = {
-          turnLabel: parsed.turnLabel || "Title",
+          turnLabel: parsedResult.turnLabel || "Title",
           responses: {
-            strategist: normalize(parsed.responses?.strategist),
-            oracle: normalize(parsed.responses?.oracle),
-            alchemist: normalize(parsed.responses?.alchemist)
+            strategist: normalize(parsedResult.responses?.strategist),
+            oracle: normalize(parsedResult.responses?.oracle),
+            alchemist: normalize(parsedResult.responses?.alchemist)
           }
         };
         

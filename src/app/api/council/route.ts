@@ -158,12 +158,13 @@ export async function POST(req: Request) {
         "### DESTINY BRANCHES (MANDATORY)",
         "- Provide exactly 2–3 branches as options for the next step.",
         "- Each branch must be a JSON object with:",
-        "  - label: short (<= 18 chars), e.g. 'Reflect deeper', 'Take action'",
-        "  - description: 1 sentence, explain what this branch means psychologically",
-        "  - variable: key psychological variable/choice this branch represents",
-        "- Branches must be mutually exclusive and cover main dilemmas in the user's question.",
+        "  - label: short (<= 18 chars), e.g. 'Set a boundary', 'Have a talk'",
+        "  - description: 1 sentence, explain what this branch means psychologically and what user will actually do/decide",
+        "  - variable: key psychological variable/choice this branch represents (e.g. 'self-respect', 'decisiveness', 'seeking support')",
+        "- Branches must be mutually exclusive and cover the main dilemmas in the user's question and your angle.",
         "- Branches must be specific to the user's question and your angle, not generic.",
-        "- Do NOT output markdown or code block, only pure JSON."
+        "- Do NOT output markdown or code block, only pure JSON.",
+        "- Do NOT use placeholders like 'Option A/B/C' or 'Reflect deeper'."
       ].join("\n");
 
       systemForLLM = [
@@ -299,9 +300,9 @@ export async function POST(req: Request) {
         '  "question": "...",',
         '  "suggestions": ["...", "...", "..."],',
         '  "branches": [',
-        '    { "label": "Reflect deeper", "description": "Pause and clarify your true motive.", "variable": "self-reflection" },',
-        '    { "label": "Take immediate action", "description": "Act now to break inertia.", "variable": "decisiveness" },',
-        '    { "label": "Seek external help", "description": "Ask for advice or support.", "variable": "support" }',
+        '    { "label": "Set a boundary", "description": "Clearly state your non-negotiable to your partner.", "variable": "self-respect" },',
+        '    { "label": "Have a talk", "description": "Initiate a direct conversation about your needs.", "variable": "communication" },',
+        '    { "label": "Delay decision", "description": "Give yourself one week to observe your feelings.", "variable": "patience" }',
         "  ]",
         "}"
       ].join("\n");
@@ -405,9 +406,9 @@ export async function POST(req: Request) {
         }
         if (!structured.branches.length) {
           structured.branches = [
-            { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
-            { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
-            { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+            { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
+            { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
+            { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
           ];
         } 
         
@@ -502,9 +503,9 @@ export async function POST(req: Request) {
         // 如果没有 branches，提供默认分支
         if (!structured.branches.length) {
            structured.branches = [
-             { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
-             { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
-             { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+             { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
+             { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
+             { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
            ];
         } 
         
@@ -570,9 +571,9 @@ export async function POST(req: Request) {
           }
           if (!structured.branches.length) {
             structured.branches = [
-              { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
-              { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
-              { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+              { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
+              { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
+              { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
             ];
           }
           
@@ -593,9 +594,9 @@ export async function POST(req: Request) {
           question: "Do you need a simpler answer?", 
           suggestions: ["Try again later", "Simplify the question", "Check network connection"],
           branches: [
-            { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
-            { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
-            { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+            { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
+            { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
+            { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
           ]
         };
         

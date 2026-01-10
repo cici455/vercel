@@ -297,7 +297,7 @@ export async function POST(req: Request) {
         `  "angle": "Sun in Leo: You are driven by a need for recognition and to lead from the front. (This means you want your work to be seen and respected, not just busywork.) Moon in Virgo: You crave clarity, order, and practical results. (You feel safe when you have a clear plan and know that details are right.) Rising in Libra: You care about harmony, first impressions, and how others see your work. (You want your business to feel meaningful and appreciated by others.) Today's transit: Focus on clarity, not speed. (Now is the moment to slow down and get clear on your real goals before you act.) Right now, you feel pulled between acting boldly, making sure everything is perfect, and wanting your work to be valued by others. The challenge is to design a plan that satisfies your pride, calms your worries, and still feels true to your style."`,
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"You want to be recognized, not just busy."},',
-        '    {"id":"d2","type":"cost","text":"If you rush, you'll lose your sense of control and confidence."},',
+        '    {"id":"d2","type":"cost","text":"If you rush, you will lose your sense of control and confidence."},',
         '    {"id":"d3","type":"direction","text":"Be honest about what success really means to you."}',
         "  ],",
         '  "question": "What would make you feel proud and secure if you started this business?",',

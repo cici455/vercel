@@ -12,6 +12,7 @@ interface CouncilDebateModalProps {
   open: boolean;
   onClose: () => void;
   seedMessageId: string;
+  dayKey?: string | null;
 }
 
 const AGENT_CONFIG: Record<Speaker, { name: string; color: string; border: string; font: string }> = {
@@ -35,7 +36,7 @@ const AGENT_CONFIG: Record<Speaker, { name: string; color: string; border: strin
   },
 };
 
-export function CouncilDebateModal({ open, onClose, seedMessageId }: CouncilDebateModalProps) {
+export function CouncilDebateModal({ open, onClose, seedMessageId, dayKey }: CouncilDebateModalProps) {
   const { messages, addMessage, setActiveMessage } = useLuminaStore();
   const [debateMsgs, setDebateMsgs] = useState<DebateMsg[]>([]);
   const [loading, setLoading] = useState(false);
@@ -69,6 +70,7 @@ export function CouncilDebateModal({ open, onClose, seedMessageId }: CouncilDeba
             message: seedText, 
             astroData: { sunSign: "Leo", moonSign: "Virgo", risingSign: "Libra" }, 
             history: localHistory, 
+            dayKey, 
           }), 
         }); 
  

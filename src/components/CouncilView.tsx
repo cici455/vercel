@@ -272,31 +272,21 @@ export function CouncilView() {
                   <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
                     {/* Role indicator */}
                     {message.role !== 'user' && (
-                      <div className="flex items-center gap-2 mb-2 text-[10px] text-[#666666] uppercase tracking-wider font-serif">
-                        {message.role === 'strategist' && <span className="text-[#D4AF37]">The Strategist</span>}
-                        {message.role === 'oracle' && <span className="text-[#A0ECD6]">The Oracle</span>}
-                        {message.role === 'alchemist' && <span className="text-[#9D4EDD]">The Alchemist</span>}
+                      <div className="flex items-center gap-2 mb-2 text-[10px] text-[#D4AF37] uppercase tracking-wider font-serif">
+                        THE AXIS
                         <span className="opacity-50">| {new Date(message.timestamp).toLocaleTimeString()}</span>
                       </div>
                     )}
 
                     {/* Role-specific styles */}
                     <div className={`
-                      ${message.role === 'strategist' ? 'border-amber-500/20 bg-black/35 font-mono tracking-wide' : ''}
-                      ${message.role === 'oracle' ? 'border-blue-400/20 bg-black/25 font-serif italic leading-relaxed' : ''}
-                      ${message.role === 'alchemist' ? 'border-fuchsia-400/20 bg-black/30 font-sans' : ''}
+                      ${message.role !== 'user' ? 'border-amber-500/20 bg-black/35 font-mono tracking-wide' : ''}
                       ${message.role === 'user' ? 'text-[#E0E0E0]' : 'text-[#CCCCCC]'}
                       text-base leading-[1.6] font-light p-5 rounded-lg relative overflow-hidden
                     `}>
                       {/* Role-specific background effects */}
-                      {message.role === 'strategist' && (
+                      {message.role !== 'user' && (
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-                      )}
-                      {message.role === 'oracle' && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none" />
-                      )}
-                      {message.role === 'alchemist' && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-400/5 to-transparent pointer-events-none" />
                       )}
                       {/* Message content with structured data support */}
                       {message.role !== "user" && message.structured ? (

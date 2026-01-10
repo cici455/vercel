@@ -278,6 +278,8 @@ export async function POST(req: Request) {
         "**TASK:**",
         taskInstruction,
         "",
+        "- If user input matches one of your previous branches, treat it as user's chosen path and continue narrative for that branch.",
+        "",
         "**CONTEXT HISTORY (most recent last):**",
         historyText || "NONE",
         "",
@@ -531,7 +533,7 @@ export async function POST(req: Request) {
       let parsedResult: any = null;
       try {
         // 尝试修正最后一个逗号/缺失右括号
-        let fixed = cleanText
+        const fixed = cleanText
           .replace(/,\s*}/g, "}") // 去掉对象末尾多余逗号
           .replace(/,\s*]/g, "]") // 去掉数组末尾多余逗号
           .replace(/}\s*$/g, "}") // 确保对象以 } 结尾

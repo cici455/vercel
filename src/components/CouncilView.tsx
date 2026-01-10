@@ -220,6 +220,7 @@ export function CouncilView() {
       // Add error message to chat if the fetch itself failed
       addMessage('strategist', "The stars are silent right now... Please try again later.", userMessageId);
     }
+    setInput('');
   };
 
   const handleSend = () => {
@@ -326,7 +327,7 @@ export function CouncilView() {
                                 <button
                                   key={b.label}
                                   className="block w-full text-left rounded-lg border border-white/10 bg-black/30 px-4 py-3 mb-2 hover:bg-white/10 transition"
-                                  onClick={() => submitMessage(`I choose ${b.label}: ${b.description}`)}
+                                  onClick={() => submitMessage(b.label)}
                                 >
                                   <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
                                   <div className="text-white/60 text-xs">{b.description}</div>

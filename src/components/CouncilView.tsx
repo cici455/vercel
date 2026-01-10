@@ -311,18 +311,15 @@ export function CouncilView() {
 
                           {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
 
-                          {/* Branches / Options */}
-                          {message.structured.branches?.length && (
+                          {/* Branches / Options - Only show for active message */}
+                          {activeMessageId === message.id && (message.structured.branches?.length ?? 0) > 0 && (
                             <div className="mt-6">
                               <div className="text-xs text-white/40 mb-2">DESTINY BRANCHES</div>
-                              {message.structured.branches.map((b, i) => (
+                              {message.structured.branches?.map((b, i) => (
                                 <button
                                   key={b.label}
                                   className="block w-full text-left rounded-lg border border-white/10 bg-black/30 px-4 py-3 mb-2 hover:bg-white/10 transition"
-                                  onClick={() => {
-                                    const parent = branchFromMessageId ?? activeMessageId;
-                                    submitMessage(b.label, parent);
-                                  }}
+                                  onClick={() => submitMessage(b.label)}
                                 >
                                   <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
                                   <div className="text-white/60 text-xs">{b.description}</div>

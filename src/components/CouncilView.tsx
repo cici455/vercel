@@ -136,7 +136,7 @@ export function CouncilView() {
   };
 
   // Handle message send
-  const submitMessage = async (text: string, parentId?: string) => {
+  const submitMessage = async (text: string, parentId?: string | null) => {
     if (!text.trim()) return;
 
     // Use provided parentId if available, otherwise use branchFromMessageId ?? activeMessageId

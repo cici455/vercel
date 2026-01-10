@@ -405,6 +405,33 @@ export async function POST(req: Request) {
     console.log("[API] LLM prompt built.", { mode, activeAgent });
     console.log("[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...");
     
+    // Helper function to normalize branches to 2-3 items
+    const normalizeBranches = (branches: any[]) => {
+      let normalized = Array.isArray(branches) ? branches.filter(b => b && b.label && b.description && b.variable) : [];
+
+      // Deduplicate by label
+      normalized = normalized.filter((b, i, arr) => arr.findIndex(x => x.label === b.label) === i);
+
+      // Default branches to fill up to 2-3
+      const defaultBranches = [
+        { label: "Define your vision", description: "Write down what 'success' means to you—money, respect, freedom, or something else.", variable: "clarity" },
+        { label: "Seek support", description: "Talk to someone you trust about your idea and listen to their honest feedback.", variable: "validation" },
+        { label: "Test your idea", description: "Try a small experiment to see if your idea works before making a big commitment.", variable: "experiment" }
+      ];
+
+      // Fill up to minimum 2 branches
+      while (normalized.length < 2) {
+        normalized.push(defaultBranches[normalized.length]);
+      }
+
+      // Limit to maximum 3 branches
+      if (normalized.length > 3) {
+        normalized = normalized.slice(0, 3);
+      }
+
+      return normalized;
+    };
+
     // 调用主力+备用LLM路由器
     let rawText = "";
     try {
@@ -434,7 +461,7 @@ export async function POST(req: Request) {
           decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [],
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "",
           suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [],
-          branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0,3) : []
+          branches: normalizeBranches(Array.isArray(parsedResult?.branches) ? parsedResult.branches : [])
         };
 
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth.";
@@ -452,14 +479,8 @@ export async function POST(req: Request) {
             "What would a clean next question be?"
           ];
         }
-        if (!structured.branches.length) {
-          structured.branches = [
-            { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
-            { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
-            { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
-          ];
-        } 
-        
+        structured.branches = normalizeBranches(structured.branches);
+
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
         // council模式返回结构化兜底响应
@@ -536,7 +557,7 @@ export async function POST(req: Request) {
           decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
           suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0, 3) : [],
-          branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0, 3) : []
+          branches: normalizeBranches(Array.isArray(parsedResult?.branches) ? parsedResult.branches : [])
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -548,14 +569,7 @@ export async function POST(req: Request) {
           ]; 
         } 
         
-        // 如果没有 branches，提供默认分支
-        if (!structured.branches.length) {
-           structured.branches = [
-             { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
-             { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
-             { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
-           ];
-        } 
+        structured.branches = normalizeBranches(structured.branches);
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
@@ -617,13 +631,7 @@ export async function POST(req: Request) {
               "What would a clean next question be?" 
             ]; 
           }
-          if (!structured.branches.length) {
-            structured.branches = [
-              { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
-              { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
-              { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
-            ];
-          }
+          structured.branches = normalizeBranches(structured.branches);
           
           return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
         }

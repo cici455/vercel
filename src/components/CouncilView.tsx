@@ -419,81 +419,6 @@ export function CouncilView() {
               ))}
             </div>
 
-            {/* Agent Icons (Clickable Buttons with Popover Info) - REMOVED */}
-            {/* <div className="flex gap-4">
-                {/* Strategist Button */}
-                <button 
-                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                  onClick={() => {
-                    setActiveAgent('strategist');
-                    setOpenInfo(openInfo === "strategist" ? null : "strategist");
-                  }}
-                >
-                  <Target size={16} className={activeAgent === 'strategist' ? "text-[#D4AF37]" : "text-white/70 group-hover:text-white"} />
-                  <span className="text-[10px] uppercase tracking-wider font-serif">STRATEGIST</span>
-                  
-                  {openInfo === "strategist" && (
-                    <div 
-                      className="absolute bottom-full mb-2 left-0 w-64 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg p-4 shadow-2xl z-50"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <h3 className="text-sm font-bold text-[#D4AF37] mb-2">The Strategist</h3>
-                      <p className="text-xs text-white/70 leading-relaxed">
-                        Analyzes patterns and provides strategic guidance. Focuses on clarity and actionable steps.
-                      </p>
-                    </div>
-                  )}
-                </button>
-                
-                {/* Oracle Button */}
-                <button 
-                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'oracle' ? 'bg-[#A0ECD6]/10 border-[#A0ECD6]/30 text-[#A0ECD6]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                  onClick={() => {
-                    setActiveAgent('oracle');
-                    setOpenInfo(openInfo === "oracle" ? null : "oracle");
-                  }}
-                >
-                  <MoonStar size={16} className={activeAgent === 'oracle' ? "text-[#A0ECD6]" : "text-white/70 group-hover:text-white"} />
-                  <span className="text-[10px] uppercase tracking-wider font-serif">ORACLE</span>
-                  
-                  {openInfo === "oracle" && (
-                    <div 
-                      className="absolute bottom-full mb-2 left-0 w-64 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg p-4 shadow-2xl z-50"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <h3 className="text-sm font-bold text-[#A0ECD6] mb-2">The Oracle</h3>
-                      <p className="text-xs text-white/70 leading-relaxed">
-                        Connects with cosmic energies and provides intuitive insights. Focuses on meaning and timing.
-                      </p>
-                    </div>
-                  )}
-                </button>
-                
-                {/* Alchemist Button */}
-                <button 
-                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'alchemist' ? 'bg-[#9D4EDD]/10 border-[#9D4EDD]/30 text-[#9D4EDD]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
-                  onClick={() => {
-                    setActiveAgent('alchemist');
-                    setOpenInfo(openInfo === "alchemist" ? null : "alchemist");
-                  }}
-                >
-                  <FlaskConical size={16} className={activeAgent === 'alchemist' ? "text-[#9D4EDD]" : "text-white/70 group-hover:text-white"} />
-                  <span className="text-[10px] uppercase tracking-wider font-serif">ALCHEMIST</span>
-                  
-                  {openInfo === "alchemist" && (
-                    <div 
-                      className="absolute bottom-full mb-2 left-0 w-64 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg p-4 shadow-2xl z-50"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <h3 className="text-sm font-bold text-[#9D4EDD] mb-2">The Alchemist</h3>
-                      <p className="text-xs text-white/70 leading-relaxed">
-                        Transforms challenges into opportunities. Focuses on growth and transformation.
-                      </p>
-                    </div>
-                  )}
-                </button>
-            </div> */}
-
             {/* Input field */}
             <div className="relative mt-4">
               <input
@@ -505,7 +430,7 @@ export function CouncilView() {
                     handleSend();
                   }
                 }}
-                placeholder="Ask the Council..."
+                placeholder="Ask to Council..."
                 className="w-full bg-white/[0.02] border border-white/[0.05] rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] transition-colors"
               />
               <button

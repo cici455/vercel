@@ -15,9 +15,6 @@ export type Decree = {
 };
 
 export type StructuredReply = {
-  omen: string;
-  transit: string;
-  
   decrees: {
     id: "d1" | "d2" | "d3";
     type: "pierce" | "cost" | "direction";
@@ -29,6 +26,8 @@ export type StructuredReply = {
   suggestions: string[];
 
   // 下面字段可选（不展示，但保留旧代码不炸）
+  omen?: string;
+  transit?: string;
   why?: string[];
   formulation?: string;
   assumption?: string;

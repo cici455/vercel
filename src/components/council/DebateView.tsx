@@ -14,14 +14,10 @@ import { Send, Terminal, AlertTriangle, RefreshCw, X, Users } from 'lucide-react
 function isStructuredReply(v: any): v is StructuredReply {
   return !!v
     && typeof v === "object"
-    && typeof v.omen === "string"
-    && typeof v.transit === "string"
     && Array.isArray(v.decrees)
-    && Array.isArray(v.why)
     && typeof v.angle === "string"
-    && Array.isArray(v.move)
-    && typeof v.script === "string"
-    && typeof v.question === "string";
+    && typeof v.question === "string"
+    && Array.isArray(v.suggestions);
 }
 
 const AGENT_CONFIG: Record<AgentRole, { name: string; color: string; border: string; font: string }> = {
@@ -143,7 +139,6 @@ export function DebateView() {
         const textFallback = [
           direction,
           payload.angle,
-          payload.script,
           payload.question
         ].filter(Boolean).join("\n");
         const aiId = isStructuredReply(payload)
@@ -320,40 +315,28 @@ export function DebateView() {
                 ) : msg.structured ? (
                   // Structured message with ceremonial card layout
                   <div className="mt-2 space-y-3">
-                    {/* Omen and Transit lines - small, mysterious */}
-                    <div className="text-xs text-white/60 space-y-1 font-serif italic">
-                      <p>{msg.structured.omen}</p>
-                      <p>{msg.structured.transit}</p>
-                    </div>
+                    {/* Angle - astrological explanation */}
+                    {msg.structured.angle && (
+                      <div className="whitespace-pre-wrap text-white/80 text-sm leading-relaxed">
+                        {msg.structured.angle}
+                      </div>
+                    )}
                     
-                    {/* Core - title */}
-                    <h4 className={cn(
-                      "text-lg font-bold text-white",
-                      msg.role === 'strategist' ? "font-mono tracking-wide" :
-                      msg.role === 'oracle' ? "font-serif italic" :
-                      "font-sans"
-                    )}>
-                      {msg.structured.decrees?.find(d => d.type === "direction")?.text ?? msg.structured.angle ?? ""}
-                    </h4>
-                    
-                    {/* Reading - body text */}
-                    <div className="whitespace-pre-wrap text-white/80 text-sm leading-relaxed">
-                      {msg.structured.why?.[0] ?? ""}
-                      {msg.structured.why?.[1] ? `\n${msg.structured.why[1]}` : ""}
-                      {msg.structured.formulation ? `\n${msg.structured.formulation}` : ""}
-                      {msg.structured.angle ? `\n\n${msg.structured.angle}` : ""}
-                    </div>
-                    
-                    {/* Moves - list/chips */}
-                    {Array.isArray(msg.structured.move) && msg.structured.move.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {msg.structured.move.map((move: string, index: number) => (
-                          <span 
+                    {/* Decrees - three verdict lines */}
+                    {Array.isArray(msg.structured.decrees) && msg.structured.decrees.length > 0 && (
+                      <div className="space-y-2">
+                        {msg.structured.decrees.map((decree: Decree, index: number) => (
+                          <div 
                             key={index} 
-                            className="px-2 py-1 bg-starlight/20 text-starlight text-xs rounded-sm"
+                            className={cn(
+                              "text-sm",
+                              decree.type === "pierce" ? "text-amber-300/90" :
+                              decree.type === "cost" ? "text-red-300/90" :
+                              "text-emerald-300/90"
+                            )}
                           >
-                            {move}
-                          </span>
+                            {decree.text}
+                          </div>
                         ))}
                       </div>
                     )}
@@ -398,6 +381,23 @@ export function DebateView() {
           {/* Suggestion Chips */}
           <div className="mb-3 flex flex-wrap gap-2 relative z-50">
             {(() => {
+              const lastAi = [...messages].reverse().find(m => m.role !== 'user' && m.structured?.suggestions);
+              const suggestions = lastAi?.structured?.suggestions;
+              if (Array.isArray(suggestions) && suggestions.length > 0) {
+                return suggestions.map((t: string) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setInput(t)}
+                    className="rounded-full border border-white/15 bg-black/45 px-3 py-1.5 
+                               text-[11px] tracking-wide text-white/85 
+                               hover:text-white hover:border-white/25 hover:bg-black/60 
+                               backdrop-blur-md"
+                  >
+                    {t}
+                  </button>
+                ));
+              }
               const lastUser = [...messages].reverse().find(m => m.role === 'user');
               const [s1, s2, s3] = getSuggestions('random', lastUser?.content);
               return [s1, s2, s3].map((t) => (

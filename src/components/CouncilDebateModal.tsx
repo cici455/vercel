@@ -80,10 +80,12 @@ export function CouncilDebateModal({ open, onClose, seedMessageId, dayKey }: Cou
         // payload 可能是 structured 或 string 
         let text = ""; 
         if (payload && typeof payload === "object") { 
-          // 用 angle + 三句断语拼成群聊一句话（不要暴露结构标签） 
+          // 只展示 angle + decrees（不要暴露结构标签） 
           const angle = String(payload.angle ?? "").trim(); 
-          const d = Array.isArray(payload.decrees) ? payload.decrees.map((x: any) => x.text).filter(Boolean).join(" ") : ""; 
-          text = [angle, d].filter(Boolean).join("\n"); 
+          const decreesText = Array.isArray(payload.decrees) 
+            ? payload.decrees.map((x: any) => x.text).filter(Boolean).join("\n") 
+            : ""; 
+          text = [angle, decreesText].filter(Boolean).join("\n\n"); 
         } else { 
           text = String(payload ?? "No response"); 
         } 

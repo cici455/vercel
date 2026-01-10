@@ -14,6 +14,7 @@ import ReactFlow, {
 import { useLuminaStore } from "@/store/luminaStore";
 import GlowEdge from "./GlowEdge";
 import FateNode from "./FateNode";
+import TreeBackground from "./TreeBackground";
 
 type FateRole = "strategist" | "oracle" | "alchemist" | "council";
 
@@ -86,8 +87,9 @@ export const FateTree = () => {
       const d = depthOf(n.id);
       const ids = groups.get(d)!;
       const i = ids.indexOf(n.id);
-      const x = (i - (ids.length - 1) / 2) * 160;
-      const y = d * 130;
+      // x 固定在主干（SVG 200），y 按层级
+      const x = 200;
+      const y = 800 - d * 120;
       return { ...n, position: { x, y } };
     });
 
@@ -112,10 +114,7 @@ export const FateTree = () => {
 
   return (
     <div className="w-full h-full overflow-hidden relative">
-      {/* Version watermark */}
-      <div className="absolute left-2 top-2 z-[9999] text-[10px] text-white/70">
-        FATE_TREE_V2
-      </div>
+      <TreeBackground />
       <ReactFlow
         nodes={nodes}
         edges={edges}

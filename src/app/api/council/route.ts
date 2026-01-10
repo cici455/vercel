@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       
       const STYLE_RULES = [
         "### ROLE STYLE (MANDATORY)",
-        "- Speak as energy itself. Do NOT say 'I am Strategist/Oracle/Alchemist'.",
+        "- Speak as the energy itself. Do NOT say 'I am the Strategist/Oracle/Alchemist'.",
         "- No therapist disclaimers. No hedging: maybe/might/could/depends.",
         "- Plain, decisive, readable language.",
         "- Do NOT output labels like Omen-> Transit-> Conflict-> Assumption-> or PIERCE/COST/DIRECTION."
@@ -150,16 +150,14 @@ export async function POST(req: Request) {
         "### SUGGESTIONS (MANDATORY)",
         "- Provide exactly 3 suggestions as next user questions.",
         "- Each <= 60 characters.",
-        "- Must be specific to user's question and your angle.",
-        "- Must NOT repeat user's original question."
+        "- Must be specific to the user's question and your angle.",
+        "- Must NOT repeat the user's original question."
       ].join("\n");
 
       systemForLLM = [
         coreProtocol,
         "",
         agentDef,
-        "",
-        lensLine,
         "",
         STYLE_RULES,
         "",
@@ -175,16 +173,87 @@ export async function POST(req: Request) {
         "Output JSON ONLY. No markdown. No code fences.",
         "Total <= 160 words.",
         "Each decree text <= 14 words (or <= 18 Chinese characters).",
-        "why: 2 lines, each <= 30 words.",
-        "angle: 2-3 sentences <= 60 words.",
-        "move: 3 items, each <= 12 words.",
-        "script: 1-2 sentences <= 30 words.",
+        "angle: 3-5 sentences <= 60 words.",
         "question: 1 sentence <= 18 words.",
         "suggestions: 3 questions, each <= 60 characters.",
         "Never rewrite OMEN or TRANSIT. Copy exactly.",
       ].join('\n');
 
+      let fewShotExample;
+      if (activeAgent === 'strategist') {
+        fewShotExample = [
+          "### EXAMPLE (DO NOT COPY, FOLLOW STRUCTURE)",
+          "",
+          "User: \"I want to break up.\"",
+          "",
+          "NATAL LENS (facts): ONLY Sun(Leo): drive=authority, pride, visibility; shadow=control, ego-wounds; need=respect and self-direction. Do NOT mention Moon/Rising.",
+          "",
+          "OMEN: \"The water remembers what you deny.\"",
+          "TRANSIT: \"A slow-burning signal wants commitment.\"",
+          "",
+          "OUTPUT FORMAT (JSON ONLY):",
+          "{",
+          `  "angle": "Your Sun in Leo needs respect and visibility. When you feel undervalued, you try to control narrative or leave. Today's transit says: don't react to ego wounds, but assess what you truly deserve. In this breakup, your pride is not about losing love, but about losing control.",`,
+          '  "decrees": [',
+          '    {"id":"d1","type":"pierce","text":"You want to be seen, not just needed."},',
+          '    {"id":"d2","type":"cost","text":"Staying for pride will erode your self-respect."},',
+          '    {"id":"d3","type":"direction","text":"Admit you deserve more than this."}',
+          "  ],",
+          '  "question": "What respect do you actually need?"',
+          '  "suggestions": ["What do I need to feel seen?", "What am I afraid to lose?", "What boundary would restore my dignity?"]',
+          "}"
+        ].join("\n");
+      } else if (activeAgent === 'oracle') {
+        fewShotExample = [
+          "### EXAMPLE (DO NOT COPY, FOLLOW STRUCTURE)",
+          "",
+          "User: \"I want to break up.\"",
+          "",
+          "NATAL LENS (facts): ONLY Moon(Virgo): drive=precision, competence, improvement; shadow=perfection loop, anxiety; need=certainty and usefulness. Do NOT mention Sun/Rising.",
+          "",
+          "OMEN: \"The water remembers what you deny.\"",
+          "TRANSIT: \"A slow-burning signal wants commitment.\"",
+          "",
+          "OUTPUT FORMAT (JSON ONLY):",
+          "{",
+          `  "angle": "Your Moon in Virgo needs things to be right and useful. When you feel stuck, you try to fix details or blame yourself. Today's transit says: don't rush, but don't keep denying your real feelings. In this breakup, your anxiety is not about the other person, but about not being able to make things perfect.",`,
+          '  "decrees": [',
+          '    {"id":"d1","type":"pierce","text":"You want to end pain, not love."},',
+          '    {"id":"d2","type":"cost","text":"Delaying will turn anxiety into resentment."},',
+          '    {"id":"d3","type":"direction","text":"Admit your need, even if it\'s not perfect."}',
+          "  ],",
+          '  "question": "What truth are you most afraid to say out loud?"',
+          '  "suggestions": ["What do I need most in a relationship?", "What am I afraid will happen if I leave?", "What boundary would change everything?"]',
+          "}"
+        ].join("\n");
+      } else {
+        fewShotExample = [
+          "### EXAMPLE (DO NOT COPY, FOLLOW STRUCTURE)",
+          "",
+          "User: \"I want to break up.\"",
+          "",
+          "NATAL LENS (facts): ONLY Rising(Libra): drive=harmony, fairness, aesthetics; shadow=indecision, people-pleasing; need=clean boundaries without guilt. Do NOT mention Sun/Moon.",
+          "",
+          "OMEN: \"The water remembers what you deny.\"",
+          "TRANSIT: \"A slow-burning signal wants commitment.\"",
+          "",
+          "OUTPUT FORMAT (JSON ONLY):",
+          "{",
+          `  "angle": "Your Rising in Libra seeks harmony and balance. When you face conflict, you try to please everyone or avoid making waves. Today's transit says: don't sacrifice your peace for false harmony. In this breakup, your hesitation is not about fairness, but about fear of being the one who disrupts the balance.",`,
+          '  "decrees": [',
+          '    {"id":"d1","type":"pierce","text":"You\'re trying to be fair to everyone except yourself."},',
+          '    {"id":"d2","type":"cost","text":"Fake harmony will drain your energy completely."},',
+          '    {"id":"d3","type":"direction","text":"Stop pleasing and start choosing."}',
+          "  ],",
+          '  "question": "What balance are you afraid to disrupt?"',
+          '  "suggestions": ["What do I actually want?", "What am I avoiding?", "What choice would feel like me?"]',
+          "}"
+        ].join("\n");
+      }
+
       userForLLM = [
+        fewShotExample,
+        "",
         "**TASK:**",
         taskInstruction,
         "",
@@ -199,8 +268,6 @@ export async function POST(req: Request) {
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "{",
-        '  "omen": ' + q(omenLine) + ",",
-        '  "transit": ' + q(transitLine) + ",",
         '  "angle": "..." ,',
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"..."},',
@@ -287,8 +354,6 @@ export async function POST(req: Request) {
         }
         
         const structured = { 
-          omen: omenLine, 
-          transit: transitLine, 
           angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
           decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
@@ -387,8 +452,6 @@ export async function POST(req: Request) {
         
         // 构建结构化响应
         const structured = { 
-          omen: omenLine, 
-          transit: transitLine, 
           angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
           decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
@@ -433,8 +496,6 @@ export async function POST(req: Request) {
       if (mode === 'solo') {
         // solo模式返回结构化默认响应
         const structured = { 
-          omen: omenLine, 
-          transit: transitLine, 
           angle: "System temporarily unavailable, please try again later.", 
           decrees: [ 
             { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 

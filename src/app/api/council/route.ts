@@ -4,6 +4,32 @@ import { generateTextPrimaryFallback } from '@/lib/llm/router';
 
 const q = (v: unknown) => JSON.stringify(String(v ?? ""));
 
+type Sign = string;
+
+const SIGN_LENS: Record<string, { drive: string; shadow: string; need: string }> = {
+  Leo: { drive: "visibility and authority", shadow: "control and ego wounds", need: "respect and self-direction" },
+  Virgo: { drive: "precision and usefulness", shadow: "perfection loop and anxiety", need: "certainty and competence" },
+  Libra: { drive: "harmony and fairness", shadow: "indecision and people-pleasing", need: "clean boundaries without guilt" },
+  Unknown: { drive: "unknown", shadow: "unknown", need: "clarity first" }
+};
+
+const getLensLine = (agent: string, astro: any) => {
+  const sun = String(astro?.sunSign ?? "Unknown");
+  const moon = String(astro?.moonSign ?? "Unknown");
+  const rising = String(astro?.risingSign ?? "Unknown");
+
+  if (agent === "strategist") {
+    const L = SIGN_LENS[sun] ?? SIGN_LENS.Unknown;
+    return "ONLY Sun(" + sun + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Moon/Rising.";
+  }
+  if (agent === "oracle") {
+    const L = SIGN_LENS[moon] ?? SIGN_LENS.Unknown;
+    return "ONLY Moon(" + moon + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Rising.";
+  }
+  const L = SIGN_LENS[rising] ?? SIGN_LENS.Unknown;
+  return "ONLY Rising(" + rising + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Moon.";
+};
+
 export async function POST(req: Request) {
   try {
     console.log("[API] Request received. Method: POST, URL:", req.url);
@@ -26,33 +52,7 @@ export async function POST(req: Request) {
     
     const { message, astroData, mode = 'council', activeAgent = 'strategist', history = [], dayKey } = body ?? {};
     
-    const SIGN_LENS: Record<string, { drive: string; shadow: string; need: string }> = {
-      Leo: { drive: "authority, pride, visibility", shadow: "control, ego-wounds", need: "respect and self-direction" },
-      Virgo: { drive: "precision, competence, improvement", shadow: "perfection loop, anxiety", need: "certainty and usefulness" },
-      Libra: { drive: "harmony, fairness, aesthetics", shadow: "indecision, people-pleasing", need: "clean boundaries without guilt" },
-      Unknown: { drive: "unknown drive", shadow: "unknown shadow", need: "clarity first" },
-    };
-
-    const getLensLine = (agent: string, astro: any) => {
-      const sun = String(astro?.sunSign ?? "Unknown");
-      const moon = String(astro?.moonSign ?? "Unknown");
-      const rising = String(astro?.risingSign ?? "Unknown");
-
-      if (agent === "strategist") {
-        const L = SIGN_LENS[sun] ?? SIGN_LENS.Unknown;
-        return "ONLY Sun(" + sun + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Moon/Rising.";
-      }
-      if (agent === "oracle") {
-        const L = SIGN_LENS[moon] ?? SIGN_LENS.Unknown;
-        return "ONLY Moon(" + moon + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Rising.";
-      }
-      const L = SIGN_LENS[rising] ?? SIGN_LENS.Unknown;
-      return "ONLY Rising(" + rising + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Moon.";
-    };
-
-    const lensLine = getLensLine(activeAgent, astroData);
-    
-    // Validate message parameter
+    // 构建对话历史上下文
     if (typeof message !== "string" || !message.trim()) {
       console.error("[API Council Error] Missing or invalid \"message\" string");
       return NextResponse.json({ error: 'Missing "message" string' }, { status: 400 });
@@ -119,20 +119,20 @@ export async function POST(req: Request) {
         "### ROLE STYLE (MANDATORY)",
         "- Speak as the energy itself. Do NOT say 'I am the Strategist/Oracle/Alchemist'.",
         "- No therapist disclaimers. No hedging: maybe/might/could/depends.",
-        "- Plain, decisive, readable language.",
+        "- Plain, decisive language.",
         "- Do NOT output labels like Omen-> Transit-> Conflict-> Assumption-> or PIERCE/COST/DIRECTION."
       ].join("\n");
 
       const ORDER_RULES = [
         "### ORDER (MANDATORY)",
-        "- First: angle (astrological explanation).",
+        "- First: angle (astrological explanation, 3–5 sentences).",
         "- Then: decrees (3 verdict lines)."
       ].join("\n");
 
       const ASTRO_RULES = [
         "### ASTRO EXPLANATION (MANDATORY)",
-        "- You MUST use NATAL LENS as facts.",
-        "- You MUST interpret TRANSIT as timing/weather in plain terms.",
+        "- Use NATAL LENS as facts.",
+        "- Interpret TRANSIT as timing/weather in plain terms.",
         "- angle must be 3–5 sentences:",
         "  1–2 sentences: natal mechanism (ONLY allowed placement).",
         "  1 sentence: transit timing meaning (plain).",
@@ -267,7 +267,7 @@ export async function POST(req: Request) {
         "",
         "**INPUT:**",
         "User: " + q(message),
-        "NATAL LENS (facts): " + lensLine,
+        "NATAL LENS (facts): " + getLensLine(activeAgent, astroData),
         "OMEN: " + q(omenLine),
         "TRANSIT: " + q(transitLine),
         "",

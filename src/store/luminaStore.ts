@@ -15,13 +15,14 @@ export type Decree = {
 };
 
 export type StructuredReply = {
+  omen: string;
+  transit: string;
+  angle: string;
   decrees: {
     id: "d1" | "d2" | "d3";
     type: "pierce" | "cost" | "direction";
     text: string;
   }[];
-
-  angle: string;
   question: string;
   suggestions: string[];
   branches?: {
@@ -29,10 +30,7 @@ export type StructuredReply = {
     text: string;
     prediction?: string;
   }[];
-
   // 下面字段可选（不展示，但保留旧代码不炸）
-  omen?: string;
-  transit?: string;
   why?: string[];
   formulation?: string;
   assumption?: string;

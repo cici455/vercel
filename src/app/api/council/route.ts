@@ -157,13 +157,13 @@ export async function POST(req: Request) {
       const BRANCH_RULES = [
         "### DESTINY BRANCHES (MANDATORY)",
         "- Provide exactly 2–3 branches as options for the next step.",
-        "- Each branch must have:",
+        "- Each branch must be a JSON object with:",
         "  - label: short (<= 18 chars), e.g. 'Reflect deeper', 'Take action'",
         "  - description: 1 sentence, explain what this branch means psychologically",
         "  - variable: key psychological variable/choice this branch represents",
         "- Branches must be mutually exclusive and cover main dilemmas in the user's question.",
-        "- Always include a branch for 'custom input' (user can type their own choice).",
-        "- Branches must be specific to user's question and your angle, not generic."
+        "- Branches must be specific to the user's question and your angle, not generic.",
+        "- Do NOT output markdown or code block, only pure JSON."
       ].join("\n");
 
       systemForLLM = [
@@ -288,6 +288,8 @@ export async function POST(req: Request) {
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
         "{",
+        '  "omen": ...,',
+        '  "transit": ...,',
         '  "angle": "..." ,',
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"..."},',
@@ -295,11 +297,11 @@ export async function POST(req: Request) {
         '    {"id":"d3","type":"direction","text":"..."}',
         "  ],",
         '  "question": "...",',
-        '  "suggestions": ["...", "...", "..."]',
+        '  "suggestions": ["...", "...", "..."],',
         '  "branches": [',
-        '    {"label":"Reflect deeper","description":"Pause and clarify your true motive.","variable":"self-reflection"},',
-        '    {"label":"Take immediate action","description":"Act now to break inertia.","variable":"decisiveness"},',
-        '    {"label":"Seek external help","description":"Ask for advice or support.","variable":"support"}',
+        '    { "label": "Reflect deeper", "description": "Pause and clarify your true motive.", "variable": "self-reflection" },',
+        '    { "label": "Take immediate action", "description": "Act now to break inertia.", "variable": "decisiveness" },',
+        '    { "label": "Seek external help", "description": "Ask for advice or support.", "variable": "support" }',
         "  ]",
         "}"
       ].join("\n");
@@ -479,24 +481,13 @@ export async function POST(req: Request) {
           pickDecree("d3", parsedResult?.decrees?.[2]?.type, "先设边界，再做决定。"),
         ];
         
-        // 解析和校验suggestions/branches
-        const suggestionsRaw = Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions : [];
-        const branchesRaw = Array.isArray(parsedResult?.branches) ? parsedResult.branches : [];
-        
-        const suggestions = suggestionsRaw.map(String).slice(0, 3);
-        const branches = branchesRaw.map((b: any) => ({
-          id: String(b?.id || "X"),
-          text: String(b?.text || "Unknown Option"),
-          prediction: String(b?.prediction || "")
-        })).slice(0, 3);
-        
         // 构建结构化响应
         const structured = { 
           angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
           decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-          suggestions: suggestions,
-          branches: branches
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0, 3) : [],
+          branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0, 3) : []
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -509,11 +500,11 @@ export async function POST(req: Request) {
         } 
         
         // 如果没有 branches，提供默认分支
-        if (structured.branches.length < 2) {
+        if (!structured.branches.length) {
            structured.branches = [
-             { id: "A", text: "Reflect deeper" },
-             { id: "B", text: "Take immediate action" },
-             { id: "C", text: "Seek external help" }
+             { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
+             { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
+             { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
            ];
         } 
         
@@ -558,7 +549,8 @@ export async function POST(req: Request) {
             angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
             decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
             question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-            suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+            suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [],
+            branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0,3) : []
           };
           
           if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -576,6 +568,13 @@ export async function POST(req: Request) {
               "What would a clean next question be?" 
             ]; 
           }
+          if (!structured.branches.length) {
+            structured.branches = [
+              { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
+              { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
+              { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+            ];
+          }
           
           return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
         }
@@ -592,7 +591,12 @@ export async function POST(req: Request) {
             { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
           ], 
           question: "Do you need a simpler answer?", 
-          suggestions: ["Try again later", "Simplify the question", "Check network connection"] 
+          suggestions: ["Try again later", "Simplify the question", "Check network connection"],
+          branches: [
+            { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
+            { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
+            { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+          ]
         };
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });

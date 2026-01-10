@@ -329,45 +329,43 @@ export function CouncilView() {
                           {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
 
                           {/* Branches / Options */}
-                          {!!message.structured.branches?.length && (
-                            <div className="mt-6 pt-4 border-t border-white/5 space-y-3">
-                              <div className="text-[10px] uppercase tracking-[0.2em] text-white/30">Destiny Branches</div>
-                              <div className="space-y-2">
-                                {message.structured.branches.map((b, i) => (
-                                  <button
-                                    key={b.label}
-                                    onClick={() => submitMessage(`I choose ${b.label}: ${b.description}`)}
-                                    className="block w-full text-left rounded-lg border border-white/10 bg-black/30 px-4 py-3 mb-2 hover:bg-white/10 transition"
-                                  >
-                                    <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
-                                    <div className="text-white/60 text-xs">{b.description}</div>
-                                    <div className="text-amber-300/80 text-xs">{b.variable}</div>
-                                  </button>
-                                ))}
-                                {/* 自定义分支入口 */}
+                          {message.structured.branches?.length && (
+                            <div className="mt-6">
+                              <div className="text-xs text-white/40 mb-2">DESTINY BRANCHES</div>
+                              {message.structured.branches.map((b, i) => (
                                 <button
-                                  className="block w-full text-left rounded-lg border-dashed border-white/10 bg-black/20 px-4 py-3 mt-2 text-white/60 hover:bg-white/10"
-                                  onClick={() => setShowCustomBranch(true)}
+                                  key={b.label}
+                                  className="block w-full text-left rounded-lg border border-white/10 bg-black/30 px-4 py-3 mb-2 hover:bg-white/10 transition"
+                                  onClick={() => submitMessage(`I choose ${b.label}: ${b.description}`)}
                                 >
-                                  + Enter my own choice
+                                  <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
+                                  <div className="text-white/60 text-xs">{b.description}</div>
+                                  <div className="text-amber-300/80 text-xs">{b.variable}</div>
                                 </button>
-                                {showCustomBranch && (
-                                  <div className="mt-2 flex gap-2">
-                                    <input
-                                      className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 text-white"
-                                      placeholder="Type your own branch..."
-                                      value={customBranch}
-                                      onChange={e => setCustomBranch(e.target.value)}
-                                    />
-                                    <button
-                                      className="px-3 py-2 rounded bg-amber-400 text-black font-bold"
-                                      onClick={handleCustomBranchSubmit}
-                                    >
-                                      Go
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
+                              ))}
+                              {/* 自定义分支入口 */}
+                              <button
+                                className="block w-full text-left rounded-lg border-dashed border-white/10 bg-black/20 px-4 py-3 mt-2 text-white/60 hover:bg-white/10"
+                                onClick={() => setShowCustomBranch(true)}
+                              >
+                                + Enter my own choice
+                              </button>
+                              {showCustomBranch && (
+                                <div className="mt-2 flex gap-2">
+                                  <input
+                                    className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 text-white"
+                                    placeholder="Type your own branch..."
+                                    value={customBranch}
+                                    onChange={e => setCustomBranch(e.target.value)}
+                                  />
+                                  <button
+                                    className="px-3 py-2 rounded bg-amber-400 text-black font-bold"
+                                    onClick={handleCustomBranchSubmit}
+                                  >
+                                    Go
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

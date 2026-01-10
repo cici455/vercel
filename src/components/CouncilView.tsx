@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Target, MoonStar, FlaskConical, ArrowLeft } from 'lucide-react';
+import { Send, ArrowLeft } from 'lucide-react';
 import { Cinzel } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { useLuminaStore, type StructuredReply } from '@/store/luminaStore';
@@ -56,9 +56,6 @@ const cinzel = Cinzel({
   variable: '--font-cinzel',
 });
 
-// Define Archetype type
-type Archetype = "strategist" | "oracle" | "alchemist";
-
 export function CouncilView() {
   const router = useRouter();
   const { 
@@ -75,10 +72,8 @@ export function CouncilView() {
     addClip
   } = useLuminaStore();
   const [input, setInput] = useState('');
-  const [activeAgent, setActiveAgent] = useState<'strategist' | 'oracle' | 'alchemist'>('strategist');
   const [isSummonActive, setIsSummonActive] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
-  const [openInfo, setOpenInfo] = useState<Archetype | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [councilUnlocked, setCouncilUnlocked] = useState(false);
   const [chips, setChips] = useState<string[]>([]);
@@ -86,13 +81,6 @@ export function CouncilView() {
   const [seedMessageId, setSeedMessageId] = useState<string | null>(null);
   const [showCustomBranch, setShowCustomBranch] = useState(false);
   const [customBranch, setCustomBranch] = useState('');
-  
-  // Click outside to close info popover
-  useEffect(() => {
-    const onDown = () => setOpenInfo(null);
-    window.addEventListener("pointerdown", onDown);
-    return () => window.removeEventListener("pointerdown", onDown);
-  }, []);
 
   // Add clip from decree
   const addClipFromDecree = (messageId: string, agent: string, decree: any) => {
@@ -152,20 +140,20 @@ export function CouncilView() {
   // Handle message send
   const submitMessage = async (text: string) => {
     if (!text.trim()) return;
-    
+
     // Use branchFromMessageId if available, otherwise use activeMessageId
     const parent = branchFromMessageId ?? activeMessageId;
     const userMessageId = addMessage("user", text, parent || undefined);
     setBranchFromMessageId(null);
     setLastUserMessage(text);
-    
+
     // 2) Add assistant placeholder (this is the message that will appear in the tree)
-    const aiId = addMessage(activeAgent, "…", userMessageId);
+    const aiId = addMessage("strategist", "…", userMessageId);
     setActiveMessage(aiId);
-    
+
     // Build history for API
     const history = buildHistory(activeMessageId);
-    
+
     try {
       // 3) Call council API with solo mode
       const response = await fetch('/api/council', {
@@ -182,7 +170,7 @@ export function CouncilView() {
           },
           history: history,
           mode: 'solo',
-          activeAgent: activeAgent, // Use currently selected active agent
+          activeAgent: "strategist", // Fixed to strategist for unified council
           dayKey: daily?.dayKey
         })
       });
@@ -194,21 +182,21 @@ export function CouncilView() {
       }
 
       const data = await response.json();
-      
+
       if (!data?.responses) {
         updateMessage(aiId, { content: `No responses returned` });
         return;
       }
-      
+
       // Check if API returned an error
       if (data.error) {
         updateMessage(aiId, { content: `Error: ${data.error}` });
         return; // Exit early
       }
-      
+
       // 4) Store structured data (key part)
-      const payload = data?.responses?.[activeAgent];
-      
+      const payload = data?.responses?.["strategist"];
+
       if (looksLikeStructuredReply(payload)) {
         // content is just fallback text for older UI
         const direction = payload.decrees?.find((d: any) => d.type === "direction")?.text;
@@ -217,14 +205,14 @@ export function CouncilView() {
           .join("\n");
 
         updateMessage(aiId, { content: textFallback || "OK", structured: payload });
-        
+
         // Update chips from suggestions
         setChips(Array.isArray(payload.suggestions) ? payload.suggestions.slice(0,3) : []);
       } else {
         // payload is string or format is incorrect
         updateMessage(aiId, { content: typeof payload === "string" ? payload : "No response" });
       }
-      
+
       // Activate summon button after AI replies
       setIsSummonActive(true);
     } catch (error) {
@@ -431,8 +419,8 @@ export function CouncilView() {
               ))}
             </div>
 
-            {/* Agent Icons (Clickable Buttons with Popover Info) */}
-            <div className="flex gap-4">
+            {/* Agent Icons (Clickable Buttons with Popover Info) - REMOVED */}
+            {/* <div className="flex gap-4">
                 {/* Strategist Button */}
                 <button 
                   className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer border ${activeAgent === 'strategist' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-white/[0.02] border-white/[0.05] text-[#666666] hover:bg-white/[0.05]'}`}
@@ -504,7 +492,7 @@ export function CouncilView() {
                     </div>
                   )}
                 </button>
-            </div>
+            </div> */}
 
             {/* Input field */}
             <div className="relative mt-4">

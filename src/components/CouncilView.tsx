@@ -79,8 +79,6 @@ export function CouncilView() {
   const [chips, setChips] = useState<string[]>([]);
   const [debateOpen, setDebateOpen] = useState(false);
   const [seedMessageId, setSeedMessageId] = useState<string | null>(null);
-  const [showCustomBranch, setShowCustomBranch] = useState(false);
-  const [customBranch, setCustomBranch] = useState('');
 
   // Add clip from decree
   const addClipFromDecree = (messageId: string, agent: string, decree: any) => {
@@ -228,13 +226,6 @@ export function CouncilView() {
     setInput('');
   };
 
-  const handleCustomBranchSubmit = () => {
-    if (!customBranch.trim()) return;
-    submitMessage(customBranch);
-    setShowCustomBranch(false);
-    setCustomBranch('');
-  };
-
   return (
     <div className={`h-screen w-full bg-transparent text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
       <div className="flex h-full">
@@ -334,29 +325,6 @@ export function CouncilView() {
                                   <div className="text-amber-300/80 text-xs">{b.variable}</div>
                                 </button>
                               ))}
-                              {/* 自定义分支入口 */}
-                              <button
-                                className="block w-full text-left rounded-lg border-dashed border-white/10 bg-black/20 px-4 py-3 mt-2 text-white/60 hover:bg-white/10"
-                                onClick={() => setShowCustomBranch(true)}
-                              >
-                                + Enter my own choice
-                              </button>
-                              {showCustomBranch && (
-                                <div className="mt-2 flex gap-2">
-                                  <input
-                                    className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 text-white"
-                                    placeholder="Type your own branch..."
-                                    value={customBranch}
-                                    onChange={e => setCustomBranch(e.target.value)}
-                                  />
-                                  <button
-                                    className="px-3 py-2 rounded bg-amber-400 text-black font-bold"
-                                    onClick={handleCustomBranchSubmit}
-                                  >
-                                    Go
-                                  </button>
-                                </div>
-                              )}
                             </div>
                           )}
                         </div>

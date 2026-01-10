@@ -136,11 +136,11 @@ export function CouncilView() {
   };
 
   // Handle message send
-  const submitMessage = async (text: string) => {
+  const submitMessage = async (text: string, parentId?: string) => {
     if (!text.trim()) return;
 
-    // Use branchFromMessageId if available, otherwise use activeMessageId
-    const parent = branchFromMessageId ?? activeMessageId;
+    // Use provided parentId if available, otherwise use branchFromMessageId ?? activeMessageId
+    const parent = parentId ?? branchFromMessageId ?? activeMessageId;
     const userMessageId = addMessage("user", text, parent || undefined);
     setBranchFromMessageId(null);
     setLastUserMessage(text);
@@ -318,7 +318,10 @@ export function CouncilView() {
                                 <button
                                   key={b.label}
                                   className="block w-full text-left rounded-lg border border-white/10 bg-black/30 px-4 py-3 mb-2 hover:bg-white/10 transition"
-                                  onClick={() => submitMessage(b.label)}
+                                  onClick={() => {
+                                    const parent = branchFromMessageId ?? activeMessageId;
+                                    submitMessage(b.label, parent);
+                                  }}
                                 >
                                   <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
                                   <div className="text-white/60 text-xs">{b.description}</div>

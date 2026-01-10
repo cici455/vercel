@@ -71,7 +71,8 @@ export const FateTree = () => {
       id: m.id,
       type: "fate",
       position: { x: 0, y: 0 },
-      data: { role: m.role }
+      data: { role: m.role },
+      selected: m.id === activeMessageId
     }));
 
     // 树状布局：按 depth 分层

@@ -24,6 +24,13 @@ const edgeTypes: EdgeTypes = { glow: GlowEdge };
 export const FateTree = () => {
   const { messages, activeMessageId, setActiveMessage, setBranchFromMessageId } = useLuminaStore();
 
+  // Helper function to determine node type based on message content
+  const getNodeType = (msg: any) => {
+    if (msg.role === "user" && ["A.", "B.", "C."].some(l => msg.content.startsWith(l))) return "branch";
+    if (msg.role === "user") return "custom";
+    return "main";
+  };
+
   // 注意：泛型写 Node / Edge，不要写 Node[] / Edge[]
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -71,7 +78,7 @@ export const FateTree = () => {
       id: m.id,
       type: "fate",
       position: { x: 0, y: 0 },
-      data: { role: m.role },
+      data: { role: m.role, type: getNodeType(m) },
       selected: m.id === activeMessageId
     }));
 

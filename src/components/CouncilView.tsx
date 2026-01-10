@@ -274,6 +274,7 @@ export function CouncilView() {
                     <div className={`
                       ${message.role !== 'user' ? 'border-amber-500/20 bg-black/35 font-mono tracking-wide' : ''}
                       ${message.role === 'user' ? 'text-[#E0E0E0]' : 'text-[#CCCCCC]'}
+                      ${activeMessageId === message.id ? "ring-2 ring-amber-400/60" : ""}
                       text-base leading-[1.6] font-light p-5 rounded-lg relative overflow-hidden
                     `}>
                       {/* Role-specific background effects */}

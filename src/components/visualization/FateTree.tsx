@@ -139,8 +139,7 @@ export const FateTree = () => {
           const byId = new Map(messages.map(m => [m.id, m]));
           const msg = byId.get(node.id);
           setActiveMessage(node.id);
-          // 下一句从"这条回答之前"（通常是 user message）开始分叉
-          setBranchFromMessageId(msg?.parentId ?? null);
+          setBranchFromMessageId(node.id); // 下一条消息从这里分叉
           // 触发滚动到对应消息
           const el = document.getElementById(`message-${node.id}`);
           if (el) {

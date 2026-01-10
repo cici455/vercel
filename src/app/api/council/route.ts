@@ -162,7 +162,8 @@ export async function POST(req: Request) {
         "  - description: 1 sentence, explain what this branch means psychologically",
         "  - variable: key psychological variable/choice this branch represents",
         "- Branches must be mutually exclusive and cover main dilemmas in the user's question.",
-        "- Always include a branch for 'custom input' (user can type their own choice)."
+        "- Always include a branch for 'custom input' (user can type their own choice).",
+        "- Branches must be specific to user's question and your angle, not generic."
       ].join("\n");
 
       systemForLLM = [

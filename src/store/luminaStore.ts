@@ -24,6 +24,11 @@ export type StructuredReply = {
   angle: string;
   question: string;
   suggestions: string[];
+  branches?: {
+    id: string;
+    text: string;
+    prediction?: string;
+  }[];
 
   // 下面字段可选（不展示，但保留旧代码不炸）
   omen?: string;

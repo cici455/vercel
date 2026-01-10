@@ -23,9 +23,18 @@ export default function FateNode({ data, selected }: NodeProps<Data>) {
     "shadow-[0_0_20px_rgba(255,255,255,0.3)]";
 
   return (
-    <div
-      className={[
-        "w-16 h-16 rounded-full bg-gradient-to-br backdrop-blur-md border-2",
+    <div className="relative flex items-center justify-center">
+      {/* Spinning Gear for Selected Node */}
+      {selected && (
+        <div className="absolute inset-[-6px] rounded-full border border-dashed border-white/30 animate-[spin_10s_linear_infinite]" />
+      )}
+      {selected && (
+         <div className="absolute inset-[-12px] rounded-full border border-dotted border-white/10 animate-[spin_20s_linear_infinite_reverse]" />
+      )}
+
+      <div
+        className={[
+          "w-16 h-16 rounded-full bg-gradient-to-br backdrop-blur-md border-2 relative z-10",
         gradient,
         data.role === "strategist" ? "border-amber-400/50" :
         data.role === "oracle" ? "border-blue-300/50" :
@@ -42,6 +51,7 @@ export default function FateNode({ data, selected }: NodeProps<Data>) {
         data.role === "alchemist" ? "text-fuchsia-200" :
         "text-white/80"
       } />
+    </div>
     </div>
   );
 }

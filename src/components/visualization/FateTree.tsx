@@ -87,9 +87,14 @@ export const FateTree = () => {
       const d = depthOf(n.id);
       const ids = groups.get(d)!;
       const i = ids.indexOf(n.id);
-      // x 固定在主干（SVG 200），y 按层级
-      const x = 200;
-      const y = 800 - d * 120;
+      
+      // Simple horizontal spread for branching
+      // Spacing based on number of nodes at this depth
+      const spacing = 160;
+      const offset = (i - (ids.length - 1) / 2) * spacing;
+      
+      const x = 200 + offset;
+      const y = 800 - d * 180; // Increased vertical spacing
       return { ...n, position: { x, y } };
     });
 

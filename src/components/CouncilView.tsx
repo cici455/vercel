@@ -46,10 +46,7 @@ function isStructuredReply(v: any): v is StructuredReply {
 function looksLikeStructuredReply(v: any) {
   return !!v
     && typeof v === "object"
-    && typeof v.omen === "string"
-    && typeof v.transit === "string"
-    && Array.isArray(v.decrees)
-    && typeof v.question === "string";
+    && Array.isArray(v.decrees);
 }
 
 // Google Font for headers
@@ -151,17 +148,14 @@ export function CouncilView() {
   };
 
   // Handle message send
-  const handleSend = async () => {
-    const messageContent = input;
-    
-    if (!messageContent.trim()) return;
+  const submitMessage = async (text: string) => {
+    if (!text.trim()) return;
     
     // Use branchFromMessageId if available, otherwise use activeMessageId
     const parent = branchFromMessageId ?? activeMessageId;
-    const userMessageId = addMessage("user", messageContent, parent || undefined);
+    const userMessageId = addMessage("user", text, parent || undefined);
     setBranchFromMessageId(null);
-    setInput('');
-    setLastUserMessage(messageContent);
+    setLastUserMessage(text);
     
     // 2) Add assistant placeholder (this is the message that will appear in the tree)
     const aiId = addMessage(activeAgent, "…", userMessageId);
@@ -178,7 +172,7 @@ export function CouncilView() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: messageContent,
+          message: text,
           astroData: {
             sunSign: 'Leo', // This would come from user's actual astro data
             moonSign: 'Virgo',
@@ -236,6 +230,11 @@ export function CouncilView() {
       // Add error message to chat if the fetch itself failed
       addMessage('strategist', "The stars are silent right now... Please try again later.", userMessageId);
     }
+  };
+
+  const handleSend = () => {
+    submitMessage(input);
+    setInput('');
   };
 
   return (
@@ -331,6 +330,40 @@ export function CouncilView() {
                           )}
 
                           {!!message.structured.question && <div className="text-amber-200/90 text-sm italic">{message.structured.question}</div>}
+
+                          {/* Branches / Options */}
+                          {!!message.structured.branches?.length && (
+                            <div className="mt-6 pt-4 border-t border-white/5 space-y-3">
+                              <div className="text-[10px] uppercase tracking-[0.2em] text-white/30">Destiny Branches</div>
+                              <div className="grid gap-2">
+                                {message.structured.branches.map((b) => (
+                                  <button
+                                    key={b.id}
+                                    onClick={() => submitMessage(`I choose option ${b.id}: ${b.text}`)}
+                                    className="relative w-full text-left p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 transition-all group overflow-hidden"
+                                  >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    
+                                    <div className="relative flex items-start gap-4">
+                                       <span className="mt-0.5 flex-shrink-0 flex items-center justify-center w-5 h-5 rounded border border-white/20 text-[10px] font-mono text-white/50 group-hover:border-white/50 group-hover:text-white transition-colors">
+                                         {b.id}
+                                       </span>
+                                       <div className="space-y-1">
+                                         <span className="block text-sm text-white/90 font-medium group-hover:text-white transition-colors tracking-wide">
+                                           {b.text}
+                                         </span>
+                                         {b.prediction && (
+                                           <span className="block text-xs text-white/40 italic group-hover:text-white/60 transition-colors">
+                                             {b.prediction}
+                                           </span>
+                                         )}
+                                       </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <p className={message.role === 'alchemist' ? 'whitespace-pre-wrap' : ''}>

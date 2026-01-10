@@ -451,16 +451,24 @@ export async function POST(req: Request) {
           pickDecree("d3", parsedResult?.decrees?.[2]?.type, "先设边界，再做决定。"),
         ];
         
-        // 解析和校验suggestions
+        // 解析和校验suggestions/branches
         const suggestionsRaw = Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions : [];
+        const branchesRaw = Array.isArray(parsedResult?.branches) ? parsedResult.branches : [];
+        
         const suggestions = suggestionsRaw.map(String).slice(0, 3);
+        const branches = branchesRaw.map((b: any) => ({
+          id: String(b?.id || "X"),
+          text: String(b?.text || "Unknown Option"),
+          prediction: String(b?.prediction || "")
+        })).slice(0, 3);
         
         // 构建结构化响应
         const structured = { 
           angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
           decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
           question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+          suggestions: suggestions,
+          branches: branches
         }; 
         
         if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -471,12 +479,14 @@ export async function POST(req: Request) {
             { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
           ]; 
         } 
-        if (structured.suggestions.length !== 3) { 
-          structured.suggestions = [ 
-            "What do I actually want?", 
-            "What fear is controlling me?", 
-            "What would a clean next question be?" 
-          ]; 
+        
+        // 如果没有 branches，提供默认分支
+        if (structured.branches.length < 2) {
+           structured.branches = [
+             { id: "A", text: "Reflect deeper" },
+             { id: "B", text: "Take immediate action" },
+             { id: "C", text: "Seek external help" }
+           ];
         } 
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });

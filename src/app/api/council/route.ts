@@ -169,6 +169,11 @@ export async function POST(req: Request) {
         "",
         SUGGEST_RULES,
         "",
+        "### JSON FORMAT STRICTNESS",
+        "- Do NOT put a comma after the last item in any array or object.",
+        "- Make sure all brackets and braces are closed.",
+        "- Do NOT output markdown or code block, only pure JSON.",
+        "",
         "**HARD CONSTRAINTS:**",
         "Output JSON ONLY. No markdown. No code fences.",
         "Total <= 160 words.",
@@ -491,6 +496,52 @@ export async function POST(req: Request) {
     } catch (parseError) {
       console.error("[API Council Error] Failed to parse cleaned response as JSON:", (parseError as Error).message);
       console.error("[API Council Error] Cleaned text:", cleanText);
+      
+      // 尝试自动修正 JSON
+      let parsedResult: any = null;
+      try {
+        // 尝试修正最后一个逗号/缺失右括号
+        let fixed = cleanText
+          .replace(/,\s*}/g, "}") // 去掉对象末尾多余逗号
+          .replace(/,\s*]/g, "]") // 去掉数组末尾多余逗号
+          .replace(/}\s*$/g, "}") // 确保对象以 } 结尾
+          .replace(/]\s*$/g, "]"); // 确保数组以 ] 结尾
+        parsedResult = JSON.parse(fixed);
+        console.log("[API] Auto-corrected JSON successfully.");
+      } catch (e2) {
+        console.error("[API Council Error] Auto-correction failed:", (e2 as Error).message);
+        parsedResult = null;
+      }
+      
+      // 如果自动修正成功，使用修正后的结果
+      if (parsedResult) {
+        if (mode === 'solo') {
+          const structured = { 
+            angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
+            decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
+            question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
+            suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
+          };
+          
+          if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
+          if (structured.decrees.length !== 3) { 
+            structured.decrees = [ 
+              { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
+              { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
+              { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
+            ]; 
+          } 
+          if (structured.suggestions.length !== 3) { 
+            structured.suggestions = [ 
+              "What do I actually want?", 
+              "What fear is controlling me?", 
+              "What would a clean next question be?" 
+            ]; 
+          }
+          
+          return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
+        }
+      }
       
       // 作为备选方案，返回一个符合格式的默认响应
       if (mode === 'solo') {

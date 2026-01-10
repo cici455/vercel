@@ -154,6 +154,17 @@ export async function POST(req: Request) {
         "- Must NOT repeat the user's original question."
       ].join("\n");
 
+      const BRANCH_RULES = [
+        "### DESTINY BRANCHES (MANDATORY)",
+        "- Provide exactly 2–3 branches as options for the next step.",
+        "- Each branch must have:",
+        "  - label: short (<= 18 chars), e.g. 'Reflect deeper', 'Take action'",
+        "  - description: 1 sentence, explain what this branch means psychologically",
+        "  - variable: key psychological variable/choice this branch represents",
+        "- Branches must be mutually exclusive and cover main dilemmas in the user's question.",
+        "- Always include a branch for 'custom input' (user can type their own choice)."
+      ].join("\n");
+
       systemForLLM = [
         coreProtocol,
         "",
@@ -169,6 +180,8 @@ export async function POST(req: Request) {
         "",
         SUGGEST_RULES,
         "",
+        BRANCH_RULES,
+        "",
         "### JSON FORMAT STRICTNESS",
         "- Do NOT put a comma after the last item in any array or object.",
         "- Make sure all brackets and braces are closed.",
@@ -181,6 +194,7 @@ export async function POST(req: Request) {
         "angle: 3-5 sentences <= 60 words.",
         "question: 1 sentence <= 18 words.",
         "suggestions: 3 questions, each <= 60 characters.",
+        "branches: 2-3 branches, each with label/description/variable.",
         "Never rewrite OMEN or TRANSIT. Copy exactly.",
       ].join('\n');
 
@@ -281,6 +295,11 @@ export async function POST(req: Request) {
         "  ],",
         '  "question": "...",',
         '  "suggestions": ["...", "...", "..."]',
+        '  "branches": [',
+        '    {"label":"Reflect deeper","description":"Pause and clarify your true motive.","variable":"self-reflection"},',
+        '    {"label":"Take immediate action","description":"Act now to break inertia.","variable":"decisiveness"},',
+        '    {"label":"Seek external help","description":"Ask for advice or support.","variable":"support"}',
+        "  ]",
         "}"
       ].join("\n");
     } else {
@@ -358,27 +377,35 @@ export async function POST(req: Request) {
           parsedResult = null;
         }
         
-        const structured = { 
-          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
-          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
-          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [] 
-        }; 
-        
-        if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
-        if (structured.decrees.length !== 3) { 
-          structured.decrees = [ 
-            { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
-            { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
-            { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
-          ]; 
-        } 
-        if (structured.suggestions.length !== 3) { 
-          structured.suggestions = [ 
-            "What do I actually want?", 
-            "What fear is controlling me?", 
-            "What would a clean next question be?" 
-          ]; 
+        const structured = {
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "",
+          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [],
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "",
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [],
+          branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0,3) : []
+        };
+
+        if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth.";
+        if (structured.decrees.length !== 3) {
+          structured.decrees = [
+            { id: "d1", type: "pierce", text: "You are avoiding real truth." },
+            { id: "d2", type: "cost", text: "Delay increases emotional cost." },
+            { id: "d3", type: "direction", text: "Admit what you want without bargaining." }
+          ];
+        }
+        if (structured.suggestions.length !== 3) {
+          structured.suggestions = [
+            "What do I actually want?",
+            "What fear is controlling me?",
+            "What would a clean next question be?"
+          ];
+        }
+        if (!structured.branches.length) {
+          structured.branches = [
+            { label: "Reflect deeper", description: "Pause and clarify your true motive.", variable: "self-reflection" },
+            { label: "Take immediate action", description: "Act now to break inertia.", variable: "decisiveness" },
+            { label: "Seek external help", description: "Ask for advice or support.", variable: "support" }
+          ];
         } 
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });

@@ -84,6 +84,8 @@ export function CouncilView() {
   const [chips, setChips] = useState<string[]>([]);
   const [debateOpen, setDebateOpen] = useState(false);
   const [seedMessageId, setSeedMessageId] = useState<string | null>(null);
+  const [showCustomBranch, setShowCustomBranch] = useState(false);
+  const [customBranch, setCustomBranch] = useState('');
   
   // Click outside to close info popover
   useEffect(() => {
@@ -237,6 +239,13 @@ export function CouncilView() {
     setInput('');
   };
 
+  const handleCustomBranchSubmit = () => {
+    if (!customBranch.trim()) return;
+    submitMessage(customBranch);
+    setShowCustomBranch(false);
+    setCustomBranch('');
+  };
+
   return (
     <div className={`h-screen w-full bg-transparent text-[#E0E0E0] font-sans overflow-hidden ${cinzel.variable}`}>
       <div className="flex h-full">
@@ -335,32 +344,41 @@ export function CouncilView() {
                           {!!message.structured.branches?.length && (
                             <div className="mt-6 pt-4 border-t border-white/5 space-y-3">
                               <div className="text-[10px] uppercase tracking-[0.2em] text-white/30">Destiny Branches</div>
-                              <div className="grid gap-2">
-                                {message.structured.branches.map((b) => (
+                              <div className="space-y-2">
+                                {message.structured.branches.map((b, i) => (
                                   <button
-                                    key={b.id}
-                                    onClick={() => submitMessage(`I choose option ${b.id}: ${b.text}`)}
-                                    className="relative w-full text-left p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 transition-all group overflow-hidden"
+                                    key={b.label}
+                                    onClick={() => submitMessage(`I choose ${b.label}: ${b.description}`)}
+                                    className="block w-full text-left rounded-lg border border-white/10 bg-black/30 px-4 py-3 mb-2 hover:bg-white/10 transition"
                                   >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    
-                                    <div className="relative flex items-start gap-4">
-                                       <span className="mt-0.5 flex-shrink-0 flex items-center justify-center w-5 h-5 rounded border border-white/20 text-[10px] font-mono text-white/50 group-hover:border-white/50 group-hover:text-white transition-colors">
-                                         {b.id}
-                                       </span>
-                                       <div className="space-y-1">
-                                         <span className="block text-sm text-white/90 font-medium group-hover:text-white transition-colors tracking-wide">
-                                           {b.text}
-                                         </span>
-                                         {b.prediction && (
-                                           <span className="block text-xs text-white/40 italic group-hover:text-white/60 transition-colors">
-                                             {b.prediction}
-                                           </span>
-                                         )}
-                                       </div>
-                                    </div>
+                                    <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
+                                    <div className="text-white/60 text-xs">{b.description}</div>
+                                    <div className="text-amber-300/80 text-xs">{b.variable}</div>
                                   </button>
                                 ))}
+                                {/* 自定义分支入口 */}
+                                <button
+                                  className="block w-full text-left rounded-lg border-dashed border-white/10 bg-black/20 px-4 py-3 mt-2 text-white/60 hover:bg-white/10"
+                                  onClick={() => setShowCustomBranch(true)}
+                                >
+                                  + Enter my own choice
+                                </button>
+                                {showCustomBranch && (
+                                  <div className="mt-2 flex gap-2">
+                                    <input
+                                      className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 text-white"
+                                      placeholder="Type your own branch..."
+                                      value={customBranch}
+                                      onChange={e => setCustomBranch(e.target.value)}
+                                    />
+                                    <button
+                                      className="px-3 py-2 rounded bg-amber-400 text-black font-bold"
+                                      onClick={handleCustomBranchSubmit}
+                                    >
+                                      Go
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}

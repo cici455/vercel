@@ -26,9 +26,9 @@ export type StructuredReply = {
   question: string;
   suggestions: string[];
   branches?: {
-    id: string;
-    text: string;
-    prediction?: string;
+    label: string;
+    description: string;
+    variable: string;
   }[];
   // 下面字段可选（不展示，但保留旧代码不炸）
   why?: string[];

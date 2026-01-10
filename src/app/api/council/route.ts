@@ -139,6 +139,16 @@ export async function POST(req: Request) {
         "  1 sentence: connect directly to the user's question."
       ].join("\n");
 
+      const PROFESSIONAL_PLAIN_RULES = [
+        "### PROFESSIONAL + PLAIN LANGUAGE (MANDATORY)",
+        "- For each placement (Sun/Moon/Rising), first give a short professional/astrological sentence (e.g. \"Sun in Leo: You are driven by a need for recognition and to lead from the front.\").",
+        "- Immediately after, add a plain language explanation in parentheses: (This means you want your work to be seen and respected, not just busywork.)",
+        "- For today's transit, do the same: first professional phrase, then a plain explanation.",
+        "- After all placements, add a 1–2 sentence summary in plain language that combines the three energies and connects to the user's question.",
+        "- Do NOT use astrology jargon without explanation.",
+        "- Do NOT output markdown or code block, only pure JSON."
+      ].join("\n");
+
       const DECREE_RULES = [
         "### DECREES (MANDATORY)",
         "- Return exactly 3 decrees, id d1/d2/d3 with type pierce/cost/direction.",
@@ -176,7 +186,7 @@ export async function POST(req: Request) {
         "",
         ORDER_RULES,
         "",
-        ASTRO_RULES,
+        PROFESSIONAL_PLAIN_RULES,
         "",
         DECREE_RULES,
         "",
@@ -273,7 +283,30 @@ export async function POST(req: Request) {
       }
 
       userForLLM = [
-        fewShotExample,
+        "### EXAMPLE (DO NOT COPY, FOLLOW STRUCTURE)",
+        "",
+        "User: \"I want to begin a business.\"",
+        "",
+        "NATAL LENS (facts): Sun=Leo, Moon=Virgo, Rising=Libra",
+        "",
+        "OMEN: \"The water remembers what you deny.\"",
+        "TRANSIT: \"A slow-burning signal wants commitment.\"",
+        "",
+        "OUTPUT FORMAT (JSON ONLY):",
+        "{",
+        `  "angle": "Sun in Leo: You are driven by a need for recognition and to lead from the front. (This means you want your work to be seen and respected, not just busywork.) Moon in Virgo: You crave clarity, order, and practical results. (You feel safe when you have a clear plan and know that details are right.) Rising in Libra: You care about harmony, first impressions, and how others see your work. (You want your business to feel meaningful and appreciated by others.) Today's transit: Focus on clarity, not speed. (Now is the moment to slow down and get clear on your real goals before you act.) Right now, you feel pulled between acting boldly, making sure everything is perfect, and wanting your work to be valued by others. The challenge is to design a plan that satisfies your pride, calms your worries, and still feels true to your style."`,
+        '  "decrees": [',
+        '    {"id":"d1","type":"pierce","text":"You want to be recognized, not just busy."},',
+        '    {"id":"d2","type":"cost","text":"If you rush, you'll lose your sense of control and confidence."},',
+        '    {"id":"d3","type":"direction","text":"Be honest about what success really means to you."}',
+        "  ],",
+        '  "question": "What would make you feel proud and secure if you started this business?",',
+        '  "branches": [',
+        '    { "label": "Define your vision", "description": "Write down what "success" means to you—money, respect, freedom, or something else.", "variable": "clarity" },',
+        '    { "label": "Seek support", "description": "Talk to someone you trust about your idea and listen to their honest feedback.", "variable": "validation" },',
+        '    { "label": "Test your idea", "description": "Try a small experiment to see if your idea works before making a big commitment.", "variable": "experiment" }',
+        "  ]",
+        "}",
         "",
         "**TASK:**",
         taskInstruction,
@@ -293,7 +326,7 @@ export async function POST(req: Request) {
         "{",
         '  "omen": ...,',
         '  "transit": ...,',
-        '  "angle": "..." ,',
+        '  "angle": "A 3–5 sentence explanation. For each placement, first give a professional/astrological sentence, then a plain language explanation in parentheses. End with a summary in plain language that combines of three energies and connects to user\'s question.",',
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"..."},',
         '    {"id":"d2","type":"cost","text":"..."},',

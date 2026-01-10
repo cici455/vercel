@@ -177,6 +177,17 @@ export async function POST(req: Request) {
         "- Do NOT use placeholders like 'Option A/B/C' or 'Reflect deeper'."
       ].join("\n");
 
+      const BRANCH_NARRATIVE_RULES = [
+        "### BRANCH NARRATIVE (MANDATORY)",
+        "- If the user's input matches one of your previous branches (label or description), treat it as the user's chosen path.",
+        "- For each branch, generate a new angle, decrees, question, and 2–3 new branches, all specific to the choice the user made.",
+        "- The new angle must explain the psychological meaning and likely outcome of this choice, in plain language.",
+        "- The new decrees must reflect the new situation after this choice.",
+        "- The new question must help the user reflect on the next dilemma.",
+        "- The new branches must be specific to the new situation, not repeat previous options.",
+        "- Do NOT repeat the previous angle or decrees. Each branch is a new narrative path."
+      ].join("\n");
+
       systemForLLM = [
         coreProtocol,
         "",
@@ -193,6 +204,8 @@ export async function POST(req: Request) {
         SUGGEST_RULES,
         "",
         BRANCH_RULES,
+        "",
+        BRANCH_NARRATIVE_RULES,
         "",
         "### JSON FORMAT STRICTNESS",
         "- Do NOT put a comma after the last item in any array or object.",
@@ -311,7 +324,7 @@ export async function POST(req: Request) {
         "**TASK:**",
         taskInstruction,
         "",
-        "- If user input matches one of your previous branches, treat it as user's chosen path and continue narrative for that branch.",
+        "- If user input matches a previous branch label or description, continue the narrative for that branch.",
         "",
         "**CONTEXT HISTORY (most recent last):**",
         historyText || "NONE",

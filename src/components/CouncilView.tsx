@@ -394,20 +394,6 @@ export function CouncilView() {
 
           {/* Input Area */}
           <div className="border-t border-white/[0.05] p-6">
-            {/* Suggestion Chips from structured.suggestions */}
-            <div className="mb-3 flex flex-wrap gap-2">
-              {chips.slice(0, 3).map((chip, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setInput(chip)}
-                  className="px-3 py-1.5 bg-white/[0.02] border border-white/[0.05] rounded-full text-[11px] text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all"
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-
             {/* Input field */}
             <div className="relative mt-4">
               <input

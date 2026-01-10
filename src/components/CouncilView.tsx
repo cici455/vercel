@@ -325,7 +325,9 @@ export function CouncilView() {
                                 >
                                   <div className="font-bold text-white/90">{String.fromCharCode(65 + i)}. {b.label}</div>
                                   <div className="text-white/60 text-xs">{b.description}</div>
-                                  <div className="text-amber-300/80 text-xs">{b.variable}</div>
+                                  <div className="inline-block mt-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400/30 to-amber-200/10 text-amber-300 text-[11px] font-bold tracking-wide uppercase">
+                                    {b.variable}
+                                  </div>
                                 </button>
                               ))}
                             </div>

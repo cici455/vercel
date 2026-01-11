@@ -11,9 +11,9 @@ const DateInput = ({ value, onChange }: { value: string, onChange: (val: string)
   const [y, m, d] = value ? value.split('-') : ['', '', ''];
   
   const update = (type: 'y'|'m'|'d', val: string) => {
-    let ny = type === 'y' ? val : y;
-    let nm = type === 'm' ? val : m;
-    let nd = type === 'd' ? val : d;
+    const ny = type === 'y' ? val : y;
+    const nm = type === 'm' ? val : m;
+    const nd = type === 'd' ? val : d;
     onChange(`${ny}-${nm}-${nd}`);
   };
 

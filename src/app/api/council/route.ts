@@ -18,16 +18,7 @@ const getLensLine = (agent: string, astro: any) => {
   const moon = String(astro?.moonSign ?? "Unknown");
   const rising = String(astro?.risingSign ?? "Unknown");
 
-  if (agent === "strategist") {
-    const L = SIGN_LENS[sun] ?? SIGN_LENS.Unknown;
-    return "ONLY Sun(" + sun + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Moon/Rising.";
-  }
-  if (agent === "oracle") {
-    const L = SIGN_LENS[moon] ?? SIGN_LENS.Unknown;
-    return "ONLY Moon(" + moon + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Rising.";
-  }
-  const L = SIGN_LENS[rising] ?? SIGN_LENS.Unknown;
-  return "ONLY Rising(" + rising + "): drive=" + L.drive + "; shadow=" + L.shadow + "; need=" + L.need + ". Do NOT mention Sun/Moon.";
+  return "Sun=" + sun + ", Moon=" + moon + ", Rising=" + rising;
 };
 
 export async function POST(req: Request) {
@@ -129,14 +120,16 @@ export async function POST(req: Request) {
         "- Then: decrees (3 verdict lines)."
       ].join("\n");
 
-      const ASTRO_RULES = [
-        "### ASTRO EXPLANATION (MANDATORY)",
-        "- Use NATAL LENS as facts.",
-        "- Interpret TRANSIT as timing/weather in plain terms.",
-        "- angle must be 3–5 sentences:",
-        "  1–2 sentences: natal mechanism (ONLY allowed placement).",
-        "  1 sentence: transit timing meaning (plain).",
-        "  1 sentence: connect directly to the user's question."
+      const COUNCIL_FUSION_RULES = [
+        "### COUNCIL FUSION (MANDATORY)",
+        "- You are fusion of Sun, Moon, and Rising energies.",
+        "- In angle, you MUST explain user's situation by integrating all three placements (Sun, Moon, Rising) and today's transit into a single, unified explanation (3–5 sentences).",
+        "- For each placement, first give a short professional/astrological sentence (e.g. \"Sun in Leo: You are driven by a need for recognition and to lead from the front.\"), then immediately add a plain language explanation in parentheses.",
+        "- For today's transit, do the same: first professional phrase, then a plain explanation.",
+        "- After all placements, add a 1–2 sentence summary in plain language that combines the three energies and connects to the user's question.",
+        "- Do NOT output three separate paragraphs. Instead, show how the three energies interact, conflict, and resolve in the user's current question.",
+        "- Do NOT use astrology jargon without explanation.",
+        "- Do NOT output markdown or code block, only pure JSON."
       ].join("\n");
 
       const PROFESSIONAL_PLAIN_RULES = [
@@ -197,7 +190,7 @@ export async function POST(req: Request) {
         "",
         ORDER_RULES,
         "",
-        PROFESSIONAL_PLAIN_RULES,
+        COUNCIL_FUSION_RULES,
         "",
         DECREE_RULES,
         "",
@@ -339,7 +332,7 @@ export async function POST(req: Request) {
         "{",
         '  "omen": ...,',
         '  "transit": ...,',
-        '  "angle": "A 3–5 sentence explanation. For each placement, first give a professional/astrological sentence, then a plain language explanation in parentheses. End with a summary in plain language that combines of three energies and connects to user\'s question.",',
+        '  "angle": "A 3–5 sentence explanation. For each placement (Sun, Moon, Rising), first give a professional/astrological sentence, then a plain language explanation in parentheses. End with a summary in plain language that combines of three energies and connects to user\'s question.",',
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"..."},',
         '    {"id":"d2","type":"cost","text":"..."},',

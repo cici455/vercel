@@ -40,7 +40,7 @@ export function generateDailyOmen(
   // We look at the top 3 signals
   const topSignals = signals.slice(0, 3);
   
-  let candidates: { template: NarrativeTemplate; signal: AspectSignal | null }[] = [];
+  const candidates: { template: NarrativeTemplate; signal: AspectSignal | null }[] = [];
 
   // Match signals to templates
   for (const signal of topSignals) {

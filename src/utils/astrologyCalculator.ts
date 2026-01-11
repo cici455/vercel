@@ -78,7 +78,7 @@ export const calculateNatalChart = (dateUtc: Date, lat: number, lng: number): Na
 
   // 2. Calculate Ascendant (ASC)
   // 2.1 Greenwich Apparent Sidereal Time (hours)
-  let gastHours = Astronomy.SiderealTime(astroTime);
+  const gastHours = Astronomy.SiderealTime(astroTime);
   // 2.2 Local Sidereal Time LST (hours)
   let lstHours = gastHours + lng / 15.0;
   lstHours = ((lstHours % 24) + 24) % 24;

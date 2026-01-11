@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     const lowercaseQuery = query.toLowerCase();
 
     // 1. Search in hardcoded majorCities
-    let results = majorCities.filter(city => 
+    const results = majorCities.filter(city => 
       city.name.toLowerCase().startsWith(lowercaseQuery)
     );
 

@@ -280,7 +280,7 @@ export async function POST(req: Request) {
           '  "decrees": [',
           '    {"id":"d1","type":"pierce","text":"You want to end pain, not love."},',
           '    {"id":"d2","type":"cost","text":"Delaying will turn anxiety into resentment."},',
-          '    {"id":"d3","type":"direction","text":"Admit your need, even if it's not perfect."}',
+          '    {"id":"d3","type":"direction","text":"Admit your need, even if it\\'s not perfect."}',
           "  ],",
           '  "question": "What truth are you most afraid to say out loud?"',
           '  "suggestions": ["What do I need most in a relationship?", "What am I afraid will happen if I leave?", "What boundary would change everything?"]',

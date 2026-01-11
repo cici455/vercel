@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Send, ArrowLeft } from 'lucide-react';
 import { Cinzel } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { useLuminaStore, type StructuredReply } from '@/store/luminaStore';
+import { useLuminaStore, type StructuredReply, type Message } from '@/store/luminaStore';
 import { FateTree } from '@/components/visualization/FateTree';
 import { CouncilDebateModal } from '@/components/CouncilDebateModal';
 

@@ -237,7 +237,7 @@ export async function POST(req: Request) {
         "suggestions: 3 questions, each <= 60 characters.",
         "branches: 2-3 branches, each with label/description/variable.",
         "Never rewrite OMEN or TRANSIT. Copy exactly.",
-      ].join('\n');
+      ].join("\n");
 
       let fewShotExample;
       if (activeAgent === 'strategist') {
@@ -407,21 +407,21 @@ export async function POST(req: Request) {
         "**OUTPUT FORMAT (JSON ONLY):**",
         "**MANDATORY STRUCTURE:**",
         "{",
-        '  "omen": ...,',
-        '  "transit": ...,',
+        "  \"omen\": ...,",
+        "  \"transit\": ...,",
         "  \"angle\": \"A 2–3 sentence explanation that combines the user's natal chart and today's transit (already shown to the user) with their question, focusing on why they are stuck, what they want, and what they fear. Do NOT repeat or explain the chart or transit; focus on new insight.\",",
-        '  "decrees": [',
-        '    {"id":"d1","type":"pierce","text":"..."},',
-        '    {"id":"d2","type":"cost","text":"..."},',
-        '    {"id":"d3","type":"direction","text":"..."}',
-        "  ],',
-        '  "question": "...",',
-        '  "suggestions": ["...", "...", "..."],',
-        '  "branches": [',
+        "  \"decrees\": [",
+        "    {\"id\":\"d1\",\"type\":\"pierce\",\"text\":\"...\"},",
+        "    {\"id\":\"d2\",\"type\":\"cost\",\"text\":\"...\"},",
+        "    {\"id\":\"d3\",\"type\":\"direction\",\"text\":\"...\"}",
+        "  ],",
+        "  \"question\": \"...\",",
+        "  \"suggestions\": [\"...\", \"...\", \"...\"],",
+        "  \"branches\": [",
         "    { \"label\": \"Set a boundary\", \"description\": \"Tell your partner what you will and won't accept.\", \"variable\": \"self-respect\" },",
-        '    { "label": "Have the talk", "description": "Say what you need directly without blaming.", "variable": "communication" },',
-        '    { "label": "Take space", "description": "Step back for a week to see if you miss them.", "variable": "clarity" }',
-        '  ]',
+        "    { \"label\": \"Have the talk\", \"description\": \"Say what you need directly without blaming.\", \"variable\": \"communication\" },",
+        "    { \"label\": \"Take space\", \"description\": \"Step back for a week to see if you miss them.\", \"variable\": \"clarity\" }",
+        "  ]",
         "}"
       ].join("\n");
     } else {
@@ -442,7 +442,7 @@ export async function POST(req: Request) {
         "No extra sections.",
         "No preamble.",
         "Keep each response concise and focused.",
-      ].join('\n');
+      ].join("\n");
 
       userForLLM = [
         "**TASK:**",
@@ -461,12 +461,12 @@ export async function POST(req: Request) {
         "**OUTPUT FORMAT (JSON ONLY):**",
         "**MANDATORY STRUCTURE:**",
         "{",
-        '  "turnLabel": "A mystical yet cybernetic title for this session",',
-        '  "responses": {',
-        '    "strategist": "Focus on logic/risk. Maximum 80 words.",',
-        '    "oracle": "Focus on feelings/shadow. Maximum 80 words.",',
-        '    "alchemist": "Focus on synthesis/action. Maximum 80 words."',
-        '  }',
+        "  \"turnLabel\": \"A mystical yet cybernetic title for this session\",",
+        "  \"responses\": {",
+        "    \"strategist\": \"Focus on logic/risk. Maximum 80 words.\",",
+        "    \"oracle\": \"Focus on feelings/shadow. Maximum 80 words.\",",
+        "    \"alchemist\": \"Focus on synthesis/action. Maximum 80 words.\"",
+        "  }",
         "}"
       ].join("\n");
     }
@@ -717,7 +717,8 @@ export async function POST(req: Request) {
           return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
         }
       }
-    } catch (error: any) {
+    }
+  } catch (error: any) {
     console.error("[API Council Error]", error.message);
     console.error("[API Council Error Stack]", error.stack);
     

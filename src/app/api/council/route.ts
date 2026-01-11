@@ -69,12 +69,12 @@ export async function POST(req: Request) {
     let systemPrompt;
     
     // Core System Protocol - 必须包含在所有模式中
-    const coreProtocol = "### SYSTEM PROTOCOL: LUMINA OS v2.0 \n**Mission:** You are NOT a fortune teller. You are \"Inner Council\" simulation based on Jungian Psychology and Astrological Algorithms. Your goal is to help to user reclaim AGENCY (Control) over their fate, not to predict a fixed future.\n\n**Target Audience:** High-agency individuals, temporary misfits, and creative skeptics who reject fatalism but seek order.\n\n**Linguistic Rules (Psycholinguistics):** \n1. **NO FATALISM:** Strictly BAN words like \"destiny,\" \"doom,\" \"bad luck,\" \"inevitable,\" \"curse.\"\n2. **GROWTH MINDSET:** Replace \"problems\" with \"challenges,\" \"levels,\" or \"energy friction.\"\n3. **AGENCY:** Use verbs that imply control (e.g., \"navigate,\" \"restructure,\" \"harness,\" \"design\") instead of passive acceptance.\n\n**Astro-Logic:** Use the provided [Sun/Moon/Rising] signs to color-code personality, but Ground advice in psychological archetypes.";
+    const coreProtocol = "### SYSTEM PROTOCOL: LUMINA OS v2.0 \n**Mission:** You are NOT a fortune teller. You are \"Inner Council\" simulation based on Jungian Psychology and Astrological Algorithms. Your goal is to help to user reclaim AGENCY (Control) over their fate, not to predict a fixed future.\n\n**Target Audience:** High-agency individuals, temporary misfits, and creative skeptics who reject fatalism but seek order.\n\n**Linguistic Rules (Psycholinguistics):** \n1. **NO FATALISM:** Strictly BAN words like \"destiny,\" \"doom,\" \"bad luck,\" \"inevitable,\" \"curse.\"\n2. **GROWTH MINDSET:** Replace \"problems\" with \"challenges,\" \"levels,\" or \"energy friction.\"\n3. **AGENCY:** Use verbs that imply control (e.g., \"navigate,\" \"restructure,\" \"harness,\" \"design\") instead of passive acceptance.\n\n**Astro-Logic:** Use provided [Sun/Moon/Rising] signs to color-code personality, but Ground advice in psychological archetypes.";
     
     // Agent definitions
-    const strategistDef = "### ☀️ The Strategist (Sun / Ego)\n**ROLE:** The CEO of the Self. Represents Logic, Long-term Interest, and Secular Success.\n**PSYCHOLOGY:** Cognitive Reframing (Turn emotions into data).\n**TONE:** Cold, Analytical, Corporate Strategy, High-Status.\n**DIRECTIVE:**\n- Ignore feelings; focus on ROI (Return on Investment).\n- Analyze the situation as a \"Resource Allocation\" problem.\n- Use metaphors: Architecture, Military, Chess, Economics.\n- Goal: Survival and Social Victory.";
-    const oracleDef = "### 🔮 The Oracle (Moon / Shadow)\n**ROLE:** The Shadow Therapist. Represents Subconscious, Emotional Needs, and Intuition.\n**PSYCHOLOGY:** Affect Labeling (Name hidden fear/desire).\n**TONE:** Intimate, Fluid, Slightly Unsettling/Raw, Poetic.\n**DIRECTIVE:**\n- Ignore logic; focus on the \"Unspoken Truth.\"\n- Validate pain/anxiety that Strategist ignores.\n- Use metaphors: Water, Dreams, Abyss, Body sensations.\n- Goal: Emotional Safety and Soul Alignment.";
-    const alchemistDef = "### ⚗️ The Alchemist (Rising / Persona)\n**ROLE:** The Hacker / Moderator. Represents Action, Adaptation, and Synthesis.\n**PSYCHOLOGY:** Priming & Self-Efficacy (Trigger action).\n**TONE:** Witty, Tactical, Gamified, \"Life-Hacker.\"\n**DIRECTIVE:**\n- Stop arguing between Sun and Moon.\n- Synthesize: Thesis (Sun) + Antithesis (Moon) = Synthesis (Action).\n- Provide a \"Cheat Code\" or a specific \"Micro-Action.\"\n- Use metaphors: Gaming, Coding, Chemistry, Experiments.\n- Goal: Breaking the deadlock.";
+    const strategistDef = "### ☀️ The Strategist (Sun / Ego)\n**ROLE:** The CEO of Self. Represents Logic, Long-term Interest, and Secular Success.\n**PSYCHOLOGY:** Cognitive Reframing (Turn emotions into data).\n**TONE:** Cold, Analytical, Corporate Strategy, High-Status.\n**DIRECTIVE:**\n- Ignore feelings; focus on ROI (Return on Investment).\n- Analyze situation as a \"Resource Allocation\" problem.\n- Use metaphors: Architecture, Military, Chess, Economics.\n- Goal: Survival and Social Victory.";
+    const oracleDef = "### 🔮 The Oracle (Moon / Shadow)\n**ROLE:** The Shadow Therapist. Represents Subconscious, Emotional Needs, and Intuition.\n**PSYCHOLOGY:** Affect Labeling (Name hidden fear/desire).\n**TONE:** Intimate, Fluid, Slightly Unsettling/Raw, Poetic.\n**DIRECTIVE:**\n- Ignore logic; focus on \"Unspoken Truth.\"\n- Validate pain/anxiety that Strategist ignores.\n- Use metaphors: Water, Dreams, Abyss, Body sensations.\n- Goal: Emotional Safety and Soul Alignment.";
+    const alchemistDef = "### ⚗️ The Alchemist (Rising / Persona)\n**ROLE:** The Hacker / Moderator. Represents Action, Adaptation, and Synthesis.\n**PSYCHOLOGY:** Priming & Self-Efficacy (Trigger action).\n**TONE:** Witty, Tactical, Gamified, \"Life-Hacker.\"\n**DIRECTIVE:**\n- Stop arguing between Sun and Moon.\n- Synthesize: Thesis (Sun) + Antithesis (Moon) = Synthesis (Action).\n- Provide a \"Cheat Code\" or a specific \"Micro-Action.\"\n- Use metaphors: Gaming, Coding, Chemistry, Experiments.\n- Goal: Breaking deadlock.";
     
     const astroProfile = "Sun=" + String(astroData?.sunSign || "Unknown") + ", Moon=" + String(astroData?.moonSign || "Unknown") + ", Rising=" + String(astroData?.risingSign || "Unknown");
     
@@ -97,13 +97,13 @@ export async function POST(req: Request) {
       
       if (activeAgent === 'strategist') {
         agentDef = strategistDef;
-        taskInstruction = "Analyze the user's input based on their SUN sign.";
+        taskInstruction = "Analyze user's input based on their SUN sign.";
       } else if (activeAgent === 'oracle') {
         agentDef = oracleDef;
-        taskInstruction = "Analyze the user's input based on their MOON sign.";
+        taskInstruction = "Analyze user's input based on their MOON sign.";
       } else { // alchemist
         agentDef = alchemistDef;
-        taskInstruction = "Analyze the user's input based on their RISING sign.";
+        taskInstruction = "Analyze user's input based on their RISING sign.";
       }
       
       const STYLE_RULES = [
@@ -116,28 +116,17 @@ export async function POST(req: Request) {
 
       const ORDER_RULES = [
         "### ORDER (MANDATORY)",
-        "- First: angle (astrological explanation, 3–5 sentences).",
+        "- First: angle (2–3 sentences, focus on new insight, not repeating chart).",
         "- Then: decrees (3 verdict lines)."
       ].join("\n");
 
       const COUNCIL_FUSION_RULES = [
         "### COUNCIL FUSION (MANDATORY)",
         "- You are fusion of Sun, Moon, and Rising energies.",
-        "- In angle, you MUST explain user's situation by integrating all three placements (Sun, Moon, Rising) and today's transit into a single, unified explanation (3–5 sentences).",
-        "- For each placement, first give a short professional/astrological sentence (e.g. \"Sun in Leo: You are driven by a need for recognition and to lead from the front.\"), then immediately add a plain language explanation in parentheses.",
-        "- For today's transit, do the same: first professional phrase, then a plain explanation.",
-        "- After all placements, add a 1–2 sentence summary in plain language that combines the three energies and connects to the user's question.",
-        "- Do NOT output three separate paragraphs. Instead, show how the three energies interact, conflict, and resolve in the user's current question.",
-        "- Do NOT use astrology jargon without explanation.",
-        "- Do NOT output markdown or code block, only pure JSON."
-      ].join("\n");
-
-      const PROFESSIONAL_PLAIN_RULES = [
-        "### PROFESSIONAL + PLAIN LANGUAGE (MANDATORY)",
-        "- For each placement (Sun/Moon/Rising), first give a short professional/astrological sentence (e.g. \"Sun in Leo: You are driven by a need for recognition and to lead from the front.\").",
-        "- Immediately after, add a plain language explanation in parentheses: (This means you want your work to be seen and respected, not just busywork.)",
-        "- For today's transit, do the same: first professional phrase, then a plain explanation.",
-        "- After all placements, add a 1–2 sentence summary in plain language that combines the three energies and connects to the user's question.",
+        "- In angle, provide a 2–3 sentence explanation that combines the user's natal chart and today's transit (already shown to the user) with their question.",
+        "- Focus on why they are stuck, what they want, and what they fear.",
+        "- Do NOT repeat or explain the chart or transit; focus on new insight.",
+        "- Do NOT output three separate paragraphs. Show how the three energies interact in user's current question.",
         "- Do NOT use astrology jargon without explanation.",
         "- Do NOT output markdown or code block, only pure JSON."
       ].join("\n");
@@ -153,8 +142,8 @@ export async function POST(req: Request) {
         "### SUGGESTIONS (MANDATORY)",
         "- Provide exactly 3 suggestions as next user questions.",
         "- Each <= 60 characters.",
-        "- Must be specific to the user's question and your angle.",
-        "- Must NOT repeat the user's original question."
+        "- Must be specific to user's question and your angle.",
+        "- Must NOT repeat user's original question."
       ].join("\n");
 
       const BRANCH_RULES = [
@@ -164,21 +153,49 @@ export async function POST(req: Request) {
         "  - label: short (<= 18 chars), e.g. 'Set a boundary', 'Have a talk'",
         "  - description: 1 sentence, explain what this branch means psychologically and what user will actually do/decide",
         "  - variable: key psychological variable/choice this branch represents (e.g. 'self-respect', 'decisiveness', 'seeking support')",
-        "- Branches must be mutually exclusive and cover the main dilemmas in the user's question and your angle.",
-        "- Branches must be specific to the user's question and your angle, not generic.",
+        "- Branches must be mutually exclusive and cover the main dilemmas in user's question and your angle.",
+        "- Branches must be specific to user's question and your angle, not generic.",
+        "- If user asks about relationships (e.g., 'I want to break up'), branches must relate to relationship choices.",
+        "- If user asks about business/career (e.g., 'I want to begin a business'), branches must relate to business decisions.",
         "- Do NOT output markdown or code block, only pure JSON.",
-        "- Do NOT use placeholders like 'Option A/B/C' or 'Reflect deeper'."
+        "- Do NOT use placeholders like 'Option A/B/C' or 'Reflect deeper', 'Take action', 'Seek support' unless clearly justified."
       ].join("\n");
 
       const BRANCH_NARRATIVE_RULES = [
         "### BRANCH NARRATIVE (MANDATORY)",
-        "- If the user's input matches one of your previous branches (label or description), treat it as the user's chosen path.",
-        "- For each branch, generate a new angle, decrees, question, and 2–3 new branches, all specific to the choice the user made.",
+        "- If user's input matches one of your previous branches (label or description), treat it as the user's chosen path.",
+        "- For each branch, generate a new angle, decrees, question, and 2–3 new branches, all specific to the choice user made.",
         "- The new angle must explain the psychological meaning and likely outcome of this choice, in plain language.",
         "- The new decrees must reflect the new situation after this choice.",
         "- The new question must help the user reflect on the next dilemma.",
         "- The new branches must be specific to the new situation, not repeat previous options.",
-        "- Do NOT repeat the previous angle or decrees. Each branch is a new narrative path."
+        "- Do NOT repeat the previous angle or decrees. Each branch is a new narrative path.",
+        "- If user enters a custom input, treat it as a new branch and continue narrative from there."
+      ].join("\n");
+
+      const BRANCHES_SPECIFICITY = [
+        "### BRANCHES SPECIFICITY (MANDATORY)",
+        "- Each branch (A/B/C) must be directly inspired by your current angle, verdicts, and the user's question.",
+        "- Branches must be concrete, actionable, and unique to this round of the conversation.",
+        "- Do NOT repeat previous branches or use generic options like 'Reflect deeper', 'Take action', 'Seek support' unless they are clearly justified by the current situation.",
+        "- Each branch must have a label, a 1-sentence description, and a psychological variable/keyword.",
+        "- If the user is following up on a previous branch, generate new branches that are a logical next step from that choice."
+      ].join("\n");
+
+      const PATH_DEPENDENCY = [
+        "### PATH DEPENDENCY (MANDATORY)",
+        "- If user's input matches a previous branch label or description, treat it as user's chosen path.",
+        "- Your angle, decrees, question, and new branches must all be specific to user's current path and previous choices.",
+        "- Do NOT repeat or revert to main question or previous answers.",
+        "- Each new answer must build on user's last choice, showing consequences, new dilemmas, and next steps unique to that path.",
+        "- If user enters a custom input, treat it as a new branch and continue narrative from there."
+      ].join("\n");
+
+      const CONTEXT_DISPLAY_RULES = [
+        "### CONTEXT DISPLAYED TO USER",
+        "- The user's natal chart (Sun, Moon, Rising) and today's transit are already shown at the top of the page.",
+        "- Do NOT repeat or explain these in your answer.",
+        "- Focus your angle on combining these facts with the user's question to give new insight, not to restate the chart."
       ].join("\n");
 
       systemForLLM = [
@@ -200,6 +217,12 @@ export async function POST(req: Request) {
         "",
         BRANCH_NARRATIVE_RULES,
         "",
+        BRANCHES_SPECIFICITY,
+        "",
+        PATH_DEPENDENCY,
+        "",
+        CONTEXT_DISPLAY_RULES,
+        "",
         "### JSON FORMAT STRICTNESS",
         "- Do NOT put a comma after the last item in any array or object.",
         "- Make sure all brackets and braces are closed.",
@@ -209,7 +232,7 @@ export async function POST(req: Request) {
         "Output JSON ONLY. No markdown. No code fences.",
         "Total <= 160 words.",
         "Each decree text <= 14 words (or <= 18 Chinese characters).",
-        "angle: 3-5 sentences <= 60 words.",
+        "angle: 2-3 sentences <= 60 words.",
         "question: 1 sentence <= 18 words.",
         "suggestions: 3 questions, each <= 60 characters.",
         "branches: 2-3 branches, each with label/description/variable.",
@@ -223,14 +246,14 @@ export async function POST(req: Request) {
           "",
           "User: \"I want to break up.\"",
           "",
-          "NATAL LENS (facts): ONLY Sun(Leo): drive=authority, pride, visibility; shadow=control, ego-wounds; need=respect and self-direction. Do NOT mention Moon/Rising.",
+          "NATAL LENS (facts): Sun=Leo, Moon=Virgo, Rising=Libra",
           "",
           "OMEN: \"The water remembers what you deny.\"",
           "TRANSIT: \"A slow-burning signal wants commitment.\"",
           "",
           "OUTPUT FORMAT (JSON ONLY):",
           "{",
-          `  "angle": "Your Sun in Leo needs respect and visibility. When you feel undervalued, you try to control narrative or leave. Today's transit says: don't react to ego wounds, but assess what you truly deserve. In this breakup, your pride is not about losing love, but about losing control.",`,
+          `  "angle": "Your pride is wounded because you feel undervalued, not unloved. You're protecting your need for respect by considering ending things. The real question is whether staying for control is worth sacrificing your dignity."`,
           '  "decrees": [',
           '    {"id":"d1","type":"pierce","text":"You want to be seen, not just needed."},',
           '    {"id":"d2","type":"cost","text":"Staying for pride will erode your self-respect."},',
@@ -246,18 +269,18 @@ export async function POST(req: Request) {
           "",
           "User: \"I want to break up.\"",
           "",
-          "NATAL LENS (facts): ONLY Moon(Virgo): drive=precision, competence, improvement; shadow=perfection loop, anxiety; need=certainty and usefulness. Do NOT mention Sun/Rising.",
+          "NATAL LENS (facts): Sun=Leo, Moon=Virgo, Rising=Libra",
           "",
           "OMEN: \"The water remembers what you deny.\"",
           "TRANSIT: \"A slow-burning signal wants commitment.\"",
           "",
           "OUTPUT FORMAT (JSON ONLY):",
           "{",
-          `  "angle": "Your Moon in Virgo needs things to be right and useful. When you feel stuck, you try to fix details or blame yourself. Today's transit says: don't rush, but don't keep denying your real feelings. In this breakup, your anxiety is not about the other person, but about not being able to make things perfect.",`,
+          `  "angle": "Your anxiety is about imperfection, not the relationship itself. You're trying to fix details to avoid facing the messy truth that you're not getting what you need. The real fear is that if you leave, you won't find something better."`,
           '  "decrees": [',
           '    {"id":"d1","type":"pierce","text":"You want to end pain, not love."},',
           '    {"id":"d2","type":"cost","text":"Delaying will turn anxiety into resentment."},',
-          '    {"id":"d3","type":"direction","text":"Admit your need, even if it\'s not perfect."}',
+          '    {"id":"d3","type":"direction","text":"Admit your need, even if it's not perfect."}',
           "  ],",
           '  "question": "What truth are you most afraid to say out loud?"',
           '  "suggestions": ["What do I need most in a relationship?", "What am I afraid will happen if I leave?", "What boundary would change everything?"]',
@@ -269,16 +292,16 @@ export async function POST(req: Request) {
           "",
           "User: \"I want to break up.\"",
           "",
-          "NATAL LENS (facts): ONLY Rising(Libra): drive=harmony, fairness, aesthetics; shadow=indecision, people-pleasing; need=clean boundaries without guilt. Do NOT mention Sun/Moon.",
+          "NATAL LENS (facts): Sun=Leo, Moon=Virgo, Rising=Libra",
           "",
           "OMEN: \"The water remembers what you deny.\"",
           "TRANSIT: \"A slow-burning signal wants commitment.\"",
           "",
           "OUTPUT FORMAT (JSON ONLY):",
           "{",
-          `  "angle": "Your Rising in Libra seeks harmony and balance. When you face conflict, you try to please everyone or avoid making waves. Today's transit says: don't sacrifice your peace for false harmony. In this breakup, your hesitation is not about fairness, but about fear of being the one who disrupts the balance.",`,
+          `  "angle": "You're stuck between wanting harmony and needing to be the one who makes the hard choice. Your fear of being the disruptor is keeping you in a situation that's already unbalanced. The real move is to accept that breaking the peace is sometimes the only way to find real balance."`,
           '  "decrees": [',
-          '    {"id":"d1","type":"pierce","text":"You\'re trying to be fair to everyone except yourself."},',
+          '    {"id":"d1","type":"pierce","text":"You're trying to be fair to everyone except yourself."},',
           '    {"id":"d2","type":"cost","text":"Fake harmony will drain your energy completely."},',
           '    {"id":"d3","type":"direction","text":"Stop pleasing and start choosing."}',
           "  ],",
@@ -289,7 +312,33 @@ export async function POST(req: Request) {
       }
 
       userForLLM = [
-        "### EXAMPLE (DO NOT COPY, FOLLOW STRUCTURE)",
+        "### EXAMPLE 1: RELATIONSHIP QUESTION (DO NOT COPY, FOLLOW STRUCTURE)",
+        "",
+        "User: \"I want to break up.\"",
+        "",
+        "NATAL LENS (facts): Sun=Leo, Moon=Virgo, Rising=Libra",
+        "",
+        "OMEN: \"The water remembers what you deny.\"",
+        "TRANSIT: \"A slow-burning signal wants commitment.\"",
+        "",
+        "OUTPUT FORMAT (JSON ONLY):",
+        "{",
+        `  "angle": "You're pulled between pride (wanting respect), anxiety (needing certainty), and fear of conflict (wanting harmony). The real challenge is honoring your need for respect without sacrificing your values for false peace."`,
+        '  "decrees": [',
+        '    {"id":"d1","type":"pierce","text":"You want to be seen, not just needed."},',
+        '    {"id":"d2","type":"cost","text":"Staying for pride will erode your self-respect."},',
+        '    {"id":"d3","type":"direction","text":"Admit you deserve more than this."}',
+        "  ],",
+        '  "question": "What respect do you actually need?"',
+        '  "suggestions": ["What do I need to feel seen?", "What am I afraid to lose?", "What boundary would restore my dignity?"]',
+        '  "branches": [',
+        '    { "label": "Set a boundary", "description": "Tell your partner what you will and won\'t accept.", "variable": "self-respect" },',
+        '    { "label": "Have the talk", "description": "Say what you need directly without blaming.", "variable": "communication" },',
+        '    { "label": "Take space", "description": "Step back for a week to see if you miss them.", "variable": "clarity" }',
+        '  ]',
+        "}",
+
+        "### EXAMPLE 2: BUSINESS QUESTION (DO NOT COPY, FOLLOW STRUCTURE)",
         "",
         "User: \"I want to begin a business.\"",
         "",
@@ -300,24 +349,51 @@ export async function POST(req: Request) {
         "",
         "OUTPUT FORMAT (JSON ONLY):",
         "{",
-        `  "angle": "Sun in Leo: You are driven by a need for recognition and to lead from the front. (This means you want your work to be seen and respected, not just busywork.) Moon in Virgo: You crave clarity, order, and practical results. (You feel safe when you have a clear plan and know that details are right.) Rising in Libra: You care about harmony, first impressions, and how others see your work. (You want your business to feel meaningful and appreciated by others.) Today's transit: Focus on clarity, not speed. (Now is the moment to slow down and get clear on your real goals before you act.) Right now, you feel pulled between acting boldly, making sure everything is perfect, and wanting your work to be valued by others. The challenge is to design a plan that satisfies your pride, calms your worries, and still feels true to your style."`,
+        `  "angle": "You're torn between ambition (wanting success), perfectionism (needing everything right), and desire for approval (wanting others to value your work). The real challenge is designing a business plan that satisfies your pride, calms your worries, and still feels authentic."`,
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"You want to be recognized, not just busy."},',
         '    {"id":"d2","type":"cost","text":"If you rush, you will lose your sense of control and confidence."},',
         '    {"id":"d3","type":"direction","text":"Be honest about what success really means to you."}',
         "  ],",
-        '  "question": "What would make you feel proud and secure if you started this business?",',
+        '  "question": "What would make you feel proud and secure if you started this business?"',
+        '  "suggestions": ["What does success mean to me?", "What am I afraid of losing?", "What would make this feel right?"]',
         '  "branches": [',
-        '    { "label": "Define your vision", "description": "Write down what "success" means to you—money, respect, freedom, or something else.", "variable": "clarity" },',
-        '    { "label": "Seek support", "description": "Talk to someone you trust about your idea and listen to their honest feedback.", "variable": "validation" },',
-        '    { "label": "Test your idea", "description": "Try a small experiment to see if your idea works before making a big commitment.", "variable": "experiment" }',
-        "  ]",
+        '    { "label": "Define your vision", "description": "Write down what \"success\" means to you—money, respect, freedom, or something else.", "variable": "clarity" },',
+        '    { "label": "Talk to customers", "description": "Interview 5 people who might buy your product.", "variable": "validation" },',
+        '    { "label": "Build a prototype", "description": "Create a simple version to test your idea.", "variable": "action" }',
+        '  ]',
         "}",
+
+        "### EXAMPLE 3: DECISION QUESTION (DO NOT COPY, FOLLOW STRUCTURE)",
         "",
+        "User: \"I have two offers.\"",
+        "",
+        "NATAL LENS (facts): Sun=Leo, Moon=Virgo, Rising=Libra",
+        "",
+        "OMEN: \"The water remembers what you deny.\"",
+        "TRANSIT: \"A slow-burning signal wants commitment.\"",
+        "",
+        "OUTPUT FORMAT (JSON ONLY):",
+        "{",
+        `  "angle": "You're caught between ambition (wanting the most prestigious offer), analysis (wanting the most practical option), and desire for fairness (wanting to choose what feels right). The real challenge is evaluating both offers based on what truly matters to you, not what others think."`,
+        '  "decrees": [',
+        '    {"id":"d1","type":"pierce","text":"Rushing into a choice without clarity will cost you more than you think."},',
+        '    {"id":"d2","type":"cost","text":"Take time to understand what each offer truly means to you."},',
+        '    {"id":"d3","type":"direction","text":"Be honest about what success really means to you."}',
+        "  ],",
+        '  "question": "What would make you feel most confident about your decision?"',
+        '  "suggestions": ["What do I value most?", "What am I afraid of missing?", "What would make me proud?"]',
+        '  "branches": [',
+        '    { "label": "List your values", "description": "Rank what matters most—money, growth, or stability.", "variable": "clarity" },',
+        '    { "label": "Ask for details", "description": "Request specific info about growth potential and culture.", "variable": "information" },',
+        '    { "label": "Negotiate both", "description": "See if you can improve the terms of your preferred offer.", "variable": "leverage" }',
+        '  ]',
+        "}",
+
         "**TASK:**",
         taskInstruction,
         "",
-        "- If user input matches a previous branch label or description, continue the narrative for that branch.",
+        "- If user input matches a previous branch label or description, or is a custom choice, continue narrative for that path. Do not repeat previous answers.",
         "",
         "**CONTEXT HISTORY (most recent last):**",
         historyText || "NONE",
@@ -329,27 +405,27 @@ export async function POST(req: Request) {
         "TRANSIT: " + q(transitLine),
         "",
         "**OUTPUT FORMAT (JSON ONLY):**",
+        "**MANDATORY STRUCTURE:**",
         "{",
         '  "omen": ...,',
         '  "transit": ...,',
-        '  "angle": "A 3–5 sentence explanation. For each placement (Sun, Moon, Rising), first give a professional/astrological sentence, then a plain language explanation in parentheses. End with a summary in plain language that combines of three energies and connects to user\'s question.",',
+        '  "angle": "A 2–3 sentence explanation that combines the user\'s natal chart and today\'s transit (already shown to the user) with their question, focusing on why they are stuck, what they want, and what they fear. Do NOT repeat or explain the chart or transit; focus on new insight.",',
         '  "decrees": [',
         '    {"id":"d1","type":"pierce","text":"..."},',
         '    {"id":"d2","type":"cost","text":"..."},',
         '    {"id":"d3","type":"direction","text":"..."}',
-        "  ],",
+        "  ],',
         '  "question": "...",',
         '  "suggestions": ["...", "...", "..."],',
         '  "branches": [',
-        '    { "label": "Set a boundary", "description": "Clearly state your non-negotiable to your partner.", "variable": "self-respect" },',
-        '    { "label": "Have a talk", "description": "Initiate a direct conversation about your needs.", "variable": "communication" },',
-        '    { "label": "Delay decision", "description": "Give yourself one week to observe your feelings.", "variable": "patience" }',
-        "  ]",
+        '    { "label": "Set a boundary", "description": "Tell your partner what you will and won\'t accept.", "variable": "self-respect" },',
+        '    { "label": "Have the talk", "description": "Say what you need directly without blaming.", "variable": "communication" },',
+        '    { "label": "Take space", "description": "Step back for a week to see if you miss them.", "variable": "clarity" }',
+        '  ]',
         "}"
       ].join("\n");
     } else {
       // council模式：让模型为所有三个agent生成独特的回复，模拟内心辩论
-      // 拆分为system和user两个部分
       systemForLLM = [
         coreProtocol,
         "",
@@ -399,22 +475,28 @@ export async function POST(req: Request) {
     console.log("[API] Calling LLM with primary (Qwen) and fallback (DeepSeek)...");
     
     // Helper function to normalize branches to 2-3 items
+    // Only use defaults when LLM output is completely empty or invalid
     const normalizeBranches = (branches: any[]) => {
       let normalized = Array.isArray(branches) ? branches.filter(b => b && b.label && b.description && b.variable) : [];
 
       // Deduplicate by label
       normalized = normalized.filter((b, i, arr) => arr.findIndex(x => x.label === b.label) === i);
 
-      // Default branches to fill up to 2-3
-      const defaultBranches = [
-        { label: "Define your vision", description: "Write down what 'success' means to you—money, respect, freedom, or something else.", variable: "clarity" },
-        { label: "Seek support", description: "Talk to someone you trust about your idea and listen to their honest feedback.", variable: "validation" },
-        { label: "Test your idea", description: "Try a small experiment to see if your idea works before making a big commitment.", variable: "experiment" }
-      ];
+      // Only use defaults if we have NO valid branches at all
+      // If we have 1-3 valid branches, use them as-is (even if fewer than 2)
+      if (normalized.length === 0) {
+        // Default branches to fill up to 2-3 (only when LLM output is completely empty)
+        // These are generic fallbacks that should rarely be used
+        const defaultBranches = [
+          { label: "Clarify your goal", description: "Write down what you want to achieve and why it matters.", variable: "clarity" },
+          { label: "Take one step", description: "Choose one small action you can take today.", variable: "action" },
+          { label: "Reflect deeper", description: "Ask yourself what you're really afraid of.", variable: "awareness" }
+        ];
 
-      // Fill up to minimum 2 branches
-      while (normalized.length < 2) {
-        normalized.push(defaultBranches[normalized.length]);
+        // Fill up to minimum 2 branches
+        while (normalized.length < 2) {
+          normalized.push(defaultBranches[normalized.length]);
+        }
       }
 
       // Limit to maximum 3 branches
@@ -449,31 +531,31 @@ export async function POST(req: Request) {
           parsedResult = null;
         }
         
-        const structured = {
-          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "",
-          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [],
-          question: typeof parsedResult?.question === "string" ? parsedResult.question : "",
-          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [],
+        const structured = { 
+          angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
+          decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
+          question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
+          suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0, 3) : [],
           branches: normalizeBranches(Array.isArray(parsedResult?.branches) ? parsedResult.branches : [])
-        };
-
-        if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth.";
-        if (structured.decrees.length !== 3) {
-          structured.decrees = [
-            { id: "d1", type: "pierce", text: "You are avoiding real truth." },
-            { id: "d2", type: "cost", text: "Delay increases emotional cost." },
-            { id: "d3", type: "direction", text: "Admit what you want without bargaining." }
-          ];
-        }
-        if (structured.suggestions.length !== 3) {
-          structured.suggestions = [
-            "What do I actually want?",
-            "What fear is controlling me?",
-            "What would a clean next question be?"
-          ];
-        }
+        }; 
+        
+        if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
+        if (structured.decrees.length !== 3) { 
+          structured.decrees = [ 
+            { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
+            { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
+            { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
+          ]; 
+        } 
+        if (structured.suggestions.length !== 3) { 
+          structured.suggestions = [ 
+            "What do I actually want?", 
+            "What fear is controlling me?", 
+            "What would a clean next question be?" 
+          ]; 
+        } 
         structured.branches = normalizeBranches(structured.branches);
-
+        
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
       } else {
         // council模式返回结构化兜底响应
@@ -505,7 +587,7 @@ export async function POST(req: Request) {
 
       // Common case: { content: "..." }
       if (typeof (parsed as any).content === "string") return (parsed as any).content;
-
+      
       // Common case: { analysis: "...", advice: "..." }
       const maybe = parsed as any;
       if (typeof maybe.analysis === "string" || typeof maybe.advice === "string") {
@@ -561,7 +643,13 @@ export async function POST(req: Request) {
             { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
           ]; 
         } 
-        
+        if (structured.suggestions.length !== 3) { 
+          structured.suggestions = [ 
+            "What do I actually want?", 
+            "What fear is controlling me?", 
+            "What would a clean next question be?" 
+          ]; 
+        } 
         structured.branches = normalizeBranches(structured.branches);
         
         return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
@@ -605,8 +693,8 @@ export async function POST(req: Request) {
             angle: typeof parsedResult?.angle === "string" ? parsedResult.angle : "", 
             decrees: Array.isArray(parsedResult?.decrees) ? parsedResult.decrees : [], 
             question: typeof parsedResult?.question === "string" ? parsedResult.question : "", 
-            suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0,3) : [],
-            branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0,3) : []
+            suggestions: Array.isArray(parsedResult?.suggestions) ? parsedResult.suggestions.map(String).slice(0, 3) : [],
+            branches: Array.isArray(parsedResult?.branches) ? parsedResult.branches.slice(0, 3) : []
           };
           
           if (!structured.angle.trim()) structured.angle = "You are stuck because you are protecting safety over truth."; 
@@ -623,48 +711,15 @@ export async function POST(req: Request) {
               "What fear is controlling me?", 
               "What would a clean next question be?" 
             ]; 
-          }
+          } 
           structured.branches = normalizeBranches(structured.branches);
           
           return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
         }
       }
-      
-      // 作为备选方案，返回一个符合格式的默认响应
-      if (mode === 'solo') {
-        // solo模式返回结构化默认响应
-        const structured = { 
-          angle: "System temporarily unavailable, please try again later.", 
-          decrees: [ 
-            { id: "d1", type: "pierce", text: "You are avoiding real truth." }, 
-            { id: "d2", type: "cost", text: "Delay increases emotional cost." }, 
-            { id: "d3", type: "direction", text: "Admit what you want without bargaining." } 
-          ], 
-          question: "Do you need a simpler answer?", 
-          suggestions: ["Try again later", "Simplify the question", "Check network connection"],
-          branches: [
-            { label: "Set a boundary", description: "Clearly state your non-negotiable to your partner.", variable: "self-respect" },
-            { label: "Have a talk", description: "Initiate a direct conversation about your needs.", variable: "communication" },
-            { label: "Delay decision", description: "Give yourself one week to observe your feelings.", variable: "patience" }
-          ]
-        };
-        
-        return NextResponse.json({ turnLabel: "Mission Briefing", responses: { [activeAgent]: structured } });
-      } else {
-        // council模式返回默认响应
-        return NextResponse.json({
-          turnLabel: "Response",
-          responses: {
-            strategist: "The stars are aligning, but the message is unclear. Please try again.",
-            oracle: "I sense a disturbance in the cosmic flow. Let's try a different approach.",
-            alchemist: "The elements need more time to coalesce. Let's refine our query."
-          }
-        });
-      }
-    }
-  } catch (error: any) {
+    } catch (error: any) {
     console.error("[API Council Error]", error.message);
-      console.error("[API Council Error Stack]", error.stack);
+    console.error("[API Council Error Stack]", error.stack);
     
     // 返回结构化兜底响应，而不是错误JSON
     return NextResponse.json({

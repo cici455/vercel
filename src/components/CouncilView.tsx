@@ -69,7 +69,8 @@ export function CouncilView() {
     daily,
     domain,
     setDomain,
-    addClip
+    addClip,
+    userData
   } = useLuminaStore();
   const [input, setInput] = useState('');
   const [isSummonActive, setIsSummonActive] = useState(false);
@@ -231,6 +232,25 @@ export function CouncilView() {
       <div className="flex h-full">
         {/* Left Panel: CouncilChamber (75%) */}
         <div className="w-[75%] h-full flex flex-col border-r border-white/[0.05] bg-[#0A0A0A]/50 backdrop-blur-md">
+          {/* Natal Chart Display */}
+          <div className="w-full px-8 py-4 border-b border-white/10 bg-black/40 flex flex-col gap-2">
+            <div className="flex gap-8">
+              <div>
+                <div className="text-xs text-white/50 uppercase tracking-widest mb-1">Your Natal Chart</div>
+                <div className="flex gap-4 text-sm">
+                  <span className="text-amber-300 font-bold">Sun: {userData.sunSign ?? "—"}</span>
+                  <span className="text-blue-200 font-bold">Moon: {userData.moonSign ?? "—"}</span>
+                  <span className="text-fuchsia-300 font-bold">Rising: {userData.risingSign ?? "—"}</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-white/50 uppercase tracking-widest mb-1">Today's Transit</div>
+                <div className="text-amber-200 italic">{daily?.lines?.strategist?.omen ?? "—"}</div>
+                <div className="text-blue-200 italic">{daily?.lines?.strategist?.transit ?? "—"}</div>
+              </div>
+            </div>
+          </div>
+
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.05]">
             <div className="flex items-center gap-3">
@@ -251,6 +271,10 @@ export function CouncilView() {
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             {messages.map((message, index) => {
               const level = getDepth(message.id);
+              const path = getPathToRoot(messages, message.id);
+              const pathLabels = path
+                .filter(m => m.role === "user" && m.content)
+                .map(m => m.content);
               
               return (
                 <motion.div
@@ -262,6 +286,18 @@ export function CouncilView() {
                   style={{ marginLeft: level * 20 }}
                 >
                   <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    {/* Path chain display */}
+                    {pathLabels.length > 1 && (
+                      <div className="mb-2 text-xs text-white/40 flex flex-wrap gap-1 items-center">
+                        {pathLabels.map((label, i) => (
+                          <React.Fragment key={i}>
+                            <span>{label}</span>
+                            {i < pathLabels.length - 1 && <span className="mx-1">→</span>}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Role indicator */}
                     {message.role !== 'user' && (
                       <div className="flex items-center gap-2 mb-2 text-[10px] text-[#D4AF37] uppercase tracking-wider font-serif">
@@ -418,4 +454,16 @@ function getDepth(messageId: string, messages: any[] = []): number {
     current = map.get(current.parentId);
   }
   return depth;
+}
+
+// Helper function to get path from message to root
+function getPathToRoot(messages: Message[], nodeId: string): Message[] {
+  const map = new Map(messages.map(m => [m.id, m]));
+  const path: Message[] = [];
+  let cur = map.get(nodeId);
+  while (cur) {
+    path.push(cur);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return path.reverse();
 }

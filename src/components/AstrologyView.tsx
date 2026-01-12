@@ -98,6 +98,47 @@ const OracleLine = ({ omen }: { omen: OmenOutput }) => (
   </motion.div>
 );
 
+const CycleCard = ({ title, omen, transit, color }: { title: string; omen: string; transit: string; color: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.8, duration: 0.5 }}
+    className={`${color} rounded-xl px-6 py-4 min-w-[180px]`}
+  >
+    <div className="text-xs text-white/50 uppercase mb-1">{title}</div>
+    <div className="text-amber-200 italic text-sm">{omen}</div>
+    <div className="text-blue-200 italic text-sm">{transit}</div>
+  </motion.div>
+);
+
+const CycleFortuneCards = ({ dailyLines }: { dailyLines: any }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 1, duration: 0.5 }}
+    className="flex justify-center gap-6 mb-8 flex-wrap"
+  >
+    <CycleCard 
+      title="This Week" 
+      omen={dailyLines?.strategist?.week?.omen || ""} 
+      transit={dailyLines?.strategist?.week?.transit || ""}
+      color="bg-black/30"
+    />
+    <CycleCard 
+      title="This Month" 
+      omen={dailyLines?.strategist?.month?.omen || ""} 
+      transit={dailyLines?.strategist?.month?.transit || ""}
+      color="bg-black/30"
+    />
+    <CycleCard 
+      title="This Year" 
+      omen={dailyLines?.strategist?.year?.omen || ""} 
+      transit={dailyLines?.strategist?.year?.transit || ""}
+      color="bg-black/30"
+    />
+  </motion.div>
+);
+
 const PlanetRow = ({ item }: { item: CardItem }) => {
   const getPlanetIcon = () => {
     switch (item.planet) {
@@ -323,6 +364,8 @@ const AstrologyView: React.FC<AstrologyViewProps> = ({ userData, onEnterRitual, 
             </p>
           )}
           <OracleLine omen={chartData.omen} />
+          
+          {!loadingDaily && dailyLines && <CycleFortuneCards dailyLines={dailyLines} />}
 
           <div className="w-full max-w-2xl space-y-2 relative z-10">
             <div className="text-center mb-6">

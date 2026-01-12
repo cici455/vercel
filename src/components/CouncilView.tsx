@@ -245,8 +245,8 @@ export function CouncilView() {
               </div>
               <div>
                 <div className="text-xs text-white/50 uppercase tracking-widest mb-1">Today's Transit</div>
-                <div className="text-amber-200 italic">{daily?.lines?.strategist?.omen ?? "—"}</div>
-                <div className="text-blue-200 italic">{daily?.lines?.strategist?.transit ?? "—"}</div>
+                <div className="text-amber-200 italic">{daily?.lines?.strategist?.today?.omen ?? "—"}</div>
+                <div className="text-blue-200 italic">{daily?.lines?.strategist?.today?.transit ?? "—"}</div>
               </div>
             </div>
           </div>

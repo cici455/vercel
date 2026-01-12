@@ -85,7 +85,12 @@ export interface ArchiveItem {
 export interface DailyLines {
   dayKey: string;
   astroProfile: string;
-  lines: Record<AgentRole, { omen: string; transit: string }>;
+  lines: Record<AgentRole, {
+    today: { omen: string; transit: string };
+    week: { omen: string; transit: string };
+    month: { omen: string; transit: string };
+    year: { omen: string; transit: string };
+  }>;
 }
 
 interface LuminaState {

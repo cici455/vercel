@@ -1,4 +1,4 @@
-import { OMENS, type AgentRole } from "@/lib/corpus/omens";
+import { OMENS, type AgentRole, type CycleType } from "@/lib/corpus/omens";
 import { TRANSITS } from "@/lib/corpus/transits";
 import { pickLine } from "@/lib/corpus/pick";
 
@@ -11,13 +11,21 @@ export function getDailyLines(params: {
   astroProfile: string;
   userSeed?: string;
   dayKey?: string;
+  cycle?: CycleType;
 }) {
+  const cycle = params.cycle ?? "today";
   const dayKey = params.dayKey ?? dayKeyUTC();
-  const seed = `${dayKey}|${params.astroProfile}|${params.userSeed ?? ""}|${params.agent}`;
+  const seed = `${dayKey}|${params.astroProfile}|${params.userSeed ?? ""}|${params.agent}|${cycle}`;
+
+  const omenList = OMENS[params.agent]?.[cycle] ?? [];
+  const omen = omenList.length ? pickLine(omenList, seed) : "";
+
+  const transitList = TRANSITS[cycle] ?? [];
+  const transit = transitList.length ? pickLine(transitList, seed) : "";
 
   return {
     dayKey,
-    omen: pickLine(OMENS[params.agent], seed),
-    transit: pickLine(TRANSITS, seed),
+    omen,
+    transit,
   };
 }

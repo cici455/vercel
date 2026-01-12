@@ -8,16 +8,25 @@ export async function POST(req: Request) {
   const userSeed = body?.userSeed ?? "";
   const dayKey = body?.dayKey;
 
-  const strategist = getDailyLines({ agent: "strategist" as AgentRole, astroProfile, userSeed, dayKey });
-  const oracle = getDailyLines({ agent: "oracle" as AgentRole, astroProfile, userSeed, dayKey });
-  const alchemist = getDailyLines({ agent: "alchemist" as AgentRole, astroProfile, userSeed, dayKey });
+  const agents = ["strategist", "oracle", "alchemist"] as const;
+  const cycles = ["today", "week", "month", "year"] as const;
+
+  const lines: any = {};
+  for (const agent of agents) {
+    lines[agent] = {};
+    for (const cycle of cycles) {
+      lines[agent][cycle] = getDailyLines({
+        agent,
+        astroProfile,
+        userSeed,
+        dayKey,
+        cycle
+      });
+    }
+  }
 
   return NextResponse.json({
-    dayKey: strategist.dayKey,
-    lines: {
-      strategist: { omen: strategist.omen, transit: strategist.transit },
-      oracle: { omen: oracle.omen, transit: oracle.transit },
-      alchemist: { omen: alchemist.omen, transit: alchemist.transit },
-    },
+    dayKey,
+    lines
   });
 }

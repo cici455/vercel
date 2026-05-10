@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import React, { useState } from "react";
+
 
 // 这是前端页面：课程销售页 + 视频观看页。
 // 当前使用 Stripe Payment Link MVP 版：
